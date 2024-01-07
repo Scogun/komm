@@ -9,6 +9,7 @@ kotlin {
             dependencies {
                 implementation(project(":komm-annotations"))
                 implementation("com.google.devtools.ksp:symbol-processing-api:1.9.22-1.0.16")
+                implementation("com.squareup:kotlinpoet-ksp:1.15.3")
             }
             kotlin.srcDir("src/main/kotlin")
             resources.srcDir("src/main/resources")

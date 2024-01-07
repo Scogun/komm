@@ -1,6 +1,7 @@
 package com.ucasoft.komm.simple
 
 fun main() {
-    val ec = ExtendClass()
-    println(ec.fromMapper())
+    val source = SourceObject()
+    val destination = source.toDestinationObject()
+    println(destination)
 }
