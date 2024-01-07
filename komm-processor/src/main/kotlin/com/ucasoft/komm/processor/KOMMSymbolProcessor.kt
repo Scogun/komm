@@ -11,6 +11,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConvert
+import com.ucasoft.komm.annotations.MapDefault
 import com.ucasoft.komm.annotations.MapFrom
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 
@@ -46,6 +47,13 @@ class KOMMSymbolProcessor(
         return symbols.filterNot { it.validate() }.toList()
     }
 
+    enum class MapTo {
+
+        Constructor,
+
+        Also
+    }
+
     inner class Visitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid() {
 
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
@@ -69,14 +77,14 @@ class KOMMSymbolProcessor(
         }
 
         private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
-            val sourceProperties =
-                (source.declaration as KSClassDeclaration).getAllProperties().associateBy { it.toString() }
+            val sourceClass = source.declaration as KSClassDeclaration
+            val sourceProperties = sourceClass.getAllProperties().associate { it.toString() to it as KSDeclaration }.toMutableMap().apply {  putAll(sourceClass.getAllFunctions().associateBy { it.toString().substring(3).lowercase() }) }
             var result = "return $destination(\n"
             val properties = destination.getAllProperties().groupBy { p ->
                 destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
             }
             properties[true]?.forEach {
-                result += "\t${mapProperty(it, sourceProperties, config)},\n"
+                result += "\t${mapProperty(it, sourceProperties, config, MapTo.Constructor)},\n"
             }
             if (properties.containsKey(false)) {
                 val noConstructorProperties = properties[false]!!.filter {
@@ -85,7 +93,7 @@ class KOMMSymbolProcessor(
                 if (noConstructorProperties.isNotEmpty()) {
                     result = "${result.trimEnd('\n', ',')}\n).also { \n"
                     noConstructorProperties.forEach {
-                        result += "\tit.${mapProperty(it, sourceProperties, config)}\n"
+                        result += "\tit.${mapProperty(it, sourceProperties, config, MapTo.Also)}\n"
                     }
                     return "$result}"
                 }
@@ -95,12 +103,16 @@ class KOMMSymbolProcessor(
 
         private fun mapProperty(
             destination: KSPropertyDeclaration,
-            sourceProperties: Map<String, KSPropertyDeclaration>,
-            config: KSAnnotation
+            sourceProperties: Map<String, KSDeclaration>,
+            config: KSAnnotation,
+            mapTo: MapTo
         ): String {
             val sourceName = getSourceName(destination)
             val converter = findConverter(destination)
-            return if (converter != null) {
+            val resolver = findResolver(destination)
+            return if (resolver != null) {
+                "$destination = $resolver(${ if(mapTo == MapTo.Constructor) "null" else "it" }).resolve()"
+            } else if (converter != null) {
                 "$destination = $converter(this).convert($sourceName)"
             } else {
                 "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)}"
@@ -130,20 +142,34 @@ class KOMMSymbolProcessor(
             return null
         }
 
-        private fun getSourceWithCast(
-            destinationProperty: KSPropertyDeclaration,
-            sourcePropertyType: KSPropertyDeclaration,
-            config: KSAnnotation
-        ): String {
-            val pureProperty = sourcePropertyType.toString()
-            if (destinationProperty.type.toTypeName() != sourcePropertyType.type.toTypeName()) {
-                if (!config.arguments[0].value?.toString().toBoolean()) {
-                    throw KOMMCastException()
-                }
-                return "$pureProperty.to${destinationProperty.type}()"
+        private fun findResolver(member: KSPropertyDeclaration) : String? {
+            val mapDefault = member.annotations.firstOrNull { it.shortName.asString() == MapDefault::class.simpleName }
+            if (mapDefault != null) {
+                val resolverArgument = mapDefault.arguments.first { it.name?.asString() == MapDefault<*>::resolver.name }
+                return resolverArgument.value.toString()
             }
 
-            return pureProperty
+            return null
+        }
+
+        private fun getSourceWithCast(
+            destinationProperty: KSPropertyDeclaration,
+            sourcePropertyType: KSDeclaration,
+            config: KSAnnotation
+        ) = when (sourcePropertyType) {
+            is KSPropertyDeclaration -> {
+                val pureProperty = sourcePropertyType.toString()
+                if (destinationProperty.type.toTypeName() != sourcePropertyType.type.toTypeName()) {
+                    if (!config.arguments[0].value?.toString().toBoolean()) {
+                        throw KOMMCastException()
+                    }
+                    "$pureProperty.to${destinationProperty.type}()"
+                } else {
+                    pureProperty
+                }
+            }
+            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3).lowercase()
+            else -> sourcePropertyType.toString()
         }
     }
 }
