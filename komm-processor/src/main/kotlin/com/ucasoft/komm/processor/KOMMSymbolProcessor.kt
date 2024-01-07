@@ -1,5 +1,6 @@
 package com.ucasoft.komm.processor
 
+import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
@@ -8,12 +9,10 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
-import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConvert
 import com.ucasoft.komm.annotations.MapFrom
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
-import kotlin.reflect.KClass
 
 class KOMMSymbolProcessor(
     private val codeGenerator: CodeGenerator,
@@ -65,20 +64,42 @@ class KOMMSymbolProcessor(
         }
 
         private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
-            val sourceProperties = (source.declaration as KSClassDeclaration).getAllProperties().associate {
-                it.toString() to it
-            }
+            val sourceProperties =
+                (source.declaration as KSClassDeclaration).getAllProperties().associateBy { it.toString() }
             var result = "return $destination(\n"
-            destination.getAllProperties().forEach {
-                val sourceName = getSourceName(it)
-                val converter = findConverter(it)
-                if (converter != null) {
-                    result += "\t$it = $converter(this).convert($sourceName),\n"
-                } else {
-                    result += "\t$it = ${getSourceWithCast(it, sourceProperties[sourceName]!!, config)},\n"
+            val properties = destination.getAllProperties().groupBy { p ->
+                destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
+            }
+            properties[true]?.forEach {
+                result += "\t${mapProperty(it, sourceProperties, config)},\n"
+            }
+            if (properties.containsKey(false)) {
+                val noConstructorProperties = properties[false]!!.filter {
+                    !it.isPrivate() && it.setter != null && !it.setter!!.modifiers.contains(Modifier.PRIVATE)
+                }
+                if (noConstructorProperties.isNotEmpty()) {
+                    result = "${result.trimEnd('\n', ',')}\n).also { \n"
+                    noConstructorProperties.forEach {
+                        result += "\tit.${mapProperty(it, sourceProperties, config)}\n"
+                    }
+                    return "$result}"
                 }
             }
-            return "${result.trimEnd(',')})"
+            return "${result.trimEnd('\n', ',')}\n)"
+        }
+
+        private fun mapProperty(
+            destination: KSPropertyDeclaration,
+            sourceProperties: Map<String, KSPropertyDeclaration>,
+            config: KSAnnotation
+        ): String {
+            val sourceName = getSourceName(destination)
+            val converter = findConverter(destination)
+            return if (converter != null) {
+                "$destination = $converter(this).convert($sourceName)"
+            } else {
+                "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)}"
+            }
         }
 
         private fun getSourceName(member: KSPropertyDeclaration) : String {
