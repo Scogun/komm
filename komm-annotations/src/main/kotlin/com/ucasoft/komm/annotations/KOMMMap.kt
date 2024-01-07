@@ -4,4 +4,5 @@ import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
-annotation class KOMMMap(val from: Array<KClass<*>>)
+@Repeatable
+annotation class KOMMMap(val from: KClass<*>, val config: MapConfiguration = MapConfiguration())

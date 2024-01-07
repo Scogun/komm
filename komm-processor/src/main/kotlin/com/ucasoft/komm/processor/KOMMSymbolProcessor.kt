@@ -8,7 +8,12 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
+import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapConvert
+import com.ucasoft.komm.annotations.MapFrom
+import com.ucasoft.komm.processor.exceptions.KOMMCastException
+import kotlin.reflect.KClass
 
 class KOMMSymbolProcessor(
     private val codeGenerator: CodeGenerator,
@@ -27,7 +32,7 @@ class KOMMSymbolProcessor(
 
         symbols.forEach { it.accept(Visitor(functions), Unit) }
 
-        var file = FileSpec.builder("com.ucasoft.komm.simple", "GeneratedFunctions")
+        var file = FileSpec.builder("com.ucasoft.komm.simple", "MappingExtensions")
         functions.forEach {
            file = file.addFunction(it)
         }
@@ -40,36 +45,75 @@ class KOMMSymbolProcessor(
     inner class Visitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid() {
 
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
-            val annotation = classDeclaration.annotations.first { it.shortName.asString() == KOMMMap::class.simpleName }
-            val nameArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }
-            val sourceClasses = nameArgument.value as ArrayList<KSType>
-            val fromSourceFunctionName = "to$classDeclaration"
-            for (source in sourceClasses) {
+            val annotations =
+                classDeclaration.annotations.filter { it.shortName.asString() == KOMMMap::class.simpleName }
+            for (annotation in annotations) {
+                val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }
+                val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
+                val config = configArgument.value as KSAnnotation
+                val source = fromArgument.value as KSType
+                val fromSourceFunctionName = "to$classDeclaration"
                 functions.add(
                     FunSpec
                         .builder(fromSourceFunctionName)
                         .receiver(source.toTypeName())
                         .returns(classDeclaration.toClassName())
-                        .addStatement(buildStatement(source, classDeclaration))
+                        .addStatement(buildStatement(source, classDeclaration, config))
                         .build()
                 )
             }
         }
 
-        private fun buildStatement(source: KSType, destination: KSClassDeclaration): String {
+        private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
             val sourceProperties = (source.declaration as KSClassDeclaration).getAllProperties().associate {
-                it.toString() to it.type.toString()
+                it.toString() to it
             }
             var result = "return $destination(\n"
             destination.getAllProperties().forEach {
-                result += "$it = ${getSourceWithCast(it, sourceProperties[it.toString()])}, "
+                val sourceName = getSourceName(it)
+                val converter = findConverter(it)
+                if (converter != null) {
+                    result += "\t$it = $converter(this).convert($sourceName),\n"
+                } else {
+                    result += "\t$it = ${getSourceWithCast(it, sourceProperties[sourceName]!!, config)},\n"
+                }
             }
-            return "${result.trimEnd(',', ' ')})"
+            return "${result.trimEnd(',')})"
         }
 
-        private fun getSourceWithCast(destinationProperty: KSPropertyDeclaration, sourcePropertyType: String?): String {
-            val pureProperty = destinationProperty.toString()
-            if (destinationProperty.type.toString() != sourcePropertyType) {
+        private fun getSourceName(member: KSPropertyDeclaration) : String {
+            val mapFrom = member.annotations.firstOrNull { it.shortName.asString() == MapFrom::class.simpleName || it.shortName.asString() == MapConvert::class.simpleName }
+            if (mapFrom != null) {
+                val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
+                val name = nameArgument.value.toString()
+                if (name.isNotEmpty()) {
+                    return name
+                }
+            }
+
+            return member.toString()
+        }
+
+        private fun findConverter(member: KSPropertyDeclaration): String? {
+            val mapConverter = member.annotations.firstOrNull { it.shortName.asString() == MapConvert::class.simpleName }
+            if (mapConverter != null) {
+                val converterArgument = mapConverter.arguments.first { it.name?.asString() == MapConvert<*>::converter.name }
+                return converterArgument.value.toString()
+            }
+
+            return null
+        }
+
+        private fun getSourceWithCast(
+            destinationProperty: KSPropertyDeclaration,
+            sourcePropertyType: KSPropertyDeclaration,
+            config: KSAnnotation
+        ): String {
+            val pureProperty = sourcePropertyType.toString()
+            if (destinationProperty.type.toTypeName() != sourcePropertyType.type.toTypeName()) {
+                if (!config.arguments[0].value?.toString().toBoolean()) {
+                    throw KOMMCastException()
+                }
                 return "$pureProperty.to${destinationProperty.type}()"
             }
 
