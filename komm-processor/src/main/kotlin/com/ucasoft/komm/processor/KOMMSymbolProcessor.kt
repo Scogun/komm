@@ -27,16 +27,21 @@ class KOMMSymbolProcessor(
             return emptyList()
         }
 
-        val functions = mutableListOf<FunSpec>()
 
-        symbols.forEach { it.accept(Visitor(functions), Unit) }
+        symbols.groupBy { it.packageName }.forEach { (pn, cs) ->
+            var file = FileSpec.builder(pn.asString(), "MappingExtensions")
+            val functions = mutableListOf<FunSpec>()
 
-        var file = FileSpec.builder("com.ucasoft.komm.simple", "MappingExtensions")
-        functions.forEach {
-           file = file.addFunction(it)
+            cs.forEach {
+                it.accept(Visitor(functions), Unit)
+            }
+
+            functions.forEach {
+                file = file.addFunction(it)
+            }
+
+            file.build().writeTo(codeGenerator, false)
         }
-
-        file.build().writeTo(codeGenerator, false)
 
         return symbols.filterNot { it.validate() }.toList()
     }

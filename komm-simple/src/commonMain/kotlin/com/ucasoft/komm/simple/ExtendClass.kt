@@ -21,3 +21,9 @@ class CostConverter(source: SourceObject) : KOMMConverter<SourceObject, Double, 
 
     override fun convert(sourceMember: Double) = "$sourceMember ${source.currency}"
 }
+
+@KOMMMap(from = SourceObject::class)
+data class SecondDestinationObject(
+    val id: Int,
+    val stringToInt: Int
+)
