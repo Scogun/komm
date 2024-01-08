@@ -22,7 +22,8 @@ class KOMMSymbolProcessor(
 ) : SymbolProcessor {
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver.getSymbolsWithAnnotation(KOMMMap::class.qualifiedName!!).filterIsInstance<KSClassDeclaration>()
+        val symbols =
+            resolver.getSymbolsWithAnnotation(KOMMMap::class.qualifiedName!!).filterIsInstance<KSClassDeclaration>()
 
         if (!symbols.iterator().hasNext()) {
             return emptyList()
@@ -30,18 +31,15 @@ class KOMMSymbolProcessor(
 
 
         symbols.groupBy { it.packageName }.forEach { (pn, cs) ->
-            var file = FileSpec.builder(pn.asString(), "MappingExtensions")
             val functions = mutableListOf<FunSpec>()
 
             cs.forEach {
                 it.accept(Visitor(functions), Unit)
             }
 
-            functions.forEach {
-                file = file.addFunction(it)
-            }
+            val file = FileSpec.builder(pn.asString(), "MappingExtensions").apply { functions.forEach { this.addFunction(it) } }.build()
 
-            file.build().writeTo(codeGenerator, false)
+            file.writeTo(codeGenerator, false)
         }
 
         return symbols.filterNot { it.validate() }.toList()
@@ -78,27 +76,31 @@ class KOMMSymbolProcessor(
 
         private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
             val sourceClass = source.declaration as KSClassDeclaration
-            val sourceProperties = sourceClass.getAllProperties().associate { it.toString() to it as KSDeclaration }.toMutableMap().apply {  putAll(sourceClass.getAllFunctions().associateBy { it.toString().substring(3).lowercase() }) }
-            var result = "return $destination(\n"
+            val sourceProperties =
+                sourceClass.getAllProperties().associate { it.toString() to it as KSDeclaration }.toMutableMap().apply {
+                    putAll(
+                        sourceClass.getAllFunctions().associateBy { it.toString().substring(3).lowercase() })
+                }
+            val statementBuilder = StringBuilder("return $destination(").appendLine()
             val properties = destination.getAllProperties().groupBy { p ->
                 destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
             }
             properties[true]?.forEach {
-                result += "\t${mapProperty(it, sourceProperties, config, MapTo.Constructor)},\n"
+                statementBuilder.appendLine("\t${mapProperty(it, sourceProperties, config, MapTo.Constructor)},")
             }
             if (properties.containsKey(false)) {
                 val noConstructorProperties = properties[false]!!.filter {
                     !it.isPrivate() && it.setter != null && !it.setter!!.modifiers.contains(Modifier.PRIVATE)
                 }
                 if (noConstructorProperties.isNotEmpty()) {
-                    result = "${result.trimEnd('\n', ',')}\n).also { \n"
+                    statementBuilder.deleteLast(2).appendLine(").also { ")
                     noConstructorProperties.forEach {
-                        result += "\tit.${mapProperty(it, sourceProperties, config, MapTo.Also)}\n"
+                        statementBuilder.appendLine("\tit.${mapProperty(it, sourceProperties, config, MapTo.Also)}")
                     }
-                    return "$result}"
+                    return statementBuilder.append("}").toString()
                 }
             }
-            return "${result.trimEnd('\n', ',')}\n)"
+            return statementBuilder.deleteLast(2).append(")").toString()
         }
 
         private fun mapProperty(
@@ -111,7 +113,7 @@ class KOMMSymbolProcessor(
             val converter = findConverter(destination)
             val resolver = findResolver(destination)
             return if (resolver != null) {
-                "$destination = $resolver(${ if(mapTo == MapTo.Constructor) "null" else "it" }).resolve()"
+                "$destination = $resolver(${if (mapTo == MapTo.Constructor) "null" else "it"}).resolve()"
             } else if (converter != null) {
                 "$destination = $converter(this).convert($sourceName)"
             } else {
@@ -119,8 +121,9 @@ class KOMMSymbolProcessor(
             }
         }
 
-        private fun getSourceName(member: KSPropertyDeclaration) : String {
-            val mapFrom = member.annotations.firstOrNull { it.shortName.asString() == MapFrom::class.simpleName || it.shortName.asString() == MapConvert::class.simpleName }
+        private fun getSourceName(member: KSPropertyDeclaration): String {
+            val mapFrom =
+                member.annotations.firstOrNull { it.shortName.asString() == MapFrom::class.simpleName || it.shortName.asString() == MapConvert::class.simpleName }
             if (mapFrom != null) {
                 val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
                 val name = nameArgument.value.toString()
@@ -132,20 +135,20 @@ class KOMMSymbolProcessor(
             return member.toString()
         }
 
-        private fun findConverter(member: KSPropertyDeclaration): String? {
-            val mapConverter = member.annotations.firstOrNull { it.shortName.asString() == MapConvert::class.simpleName }
-            if (mapConverter != null) {
-                val converterArgument = mapConverter.arguments.first { it.name?.asString() == MapConvert<*>::converter.name }
-                return converterArgument.value.toString()
-            }
+        private fun findConverter(member: KSPropertyDeclaration) =
+            findMapAnnotation(member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
 
-            return null
-        }
+        private fun findResolver(member: KSPropertyDeclaration) =
+            findMapAnnotation(member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
 
-        private fun findResolver(member: KSPropertyDeclaration) : String? {
-            val mapDefault = member.annotations.firstOrNull { it.shortName.asString() == MapDefault::class.simpleName }
+        private fun findMapAnnotation(
+            member: KSPropertyDeclaration,
+            annotationName: String?,
+            argumentName: String
+        ): String? {
+            val mapDefault = member.annotations.firstOrNull { it.shortName.asString() == annotationName }
             if (mapDefault != null) {
-                val resolverArgument = mapDefault.arguments.first { it.name?.asString() == MapDefault<*>::resolver.name }
+                val resolverArgument = mapDefault.arguments.first { it.name?.asString() == argumentName }
                 return resolverArgument.value.toString()
             }
 
@@ -168,8 +171,11 @@ class KOMMSymbolProcessor(
                     pureProperty
                 }
             }
+
             is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3).lowercase()
             else -> sourcePropertyType.toString()
         }
     }
 }
+
+fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
