@@ -46,5 +46,6 @@ data class SecondDestinationObject(
 
 @KOMMMap(from = Currency::class)
 data class ExCurrency(
-    val symbol: String
+    val symbol: String,
+    val numericCode: String
 )
