@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.9.22"
+    kotlin("multiplatform")
 }
 
 kotlin {
@@ -8,8 +8,8 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":komm-annotations"))
-                implementation("com.google.devtools.ksp:symbol-processing-api:1.9.22-1.0.16")
-                implementation("com.squareup:kotlinpoet-ksp:1.15.3")
+                implementation(libs.ksp.processor)
+                implementation(libs.kotlin.poet.ksp)
             }
             kotlin.srcDir("src/main/kotlin")
             resources.srcDir("src/main/resources")
