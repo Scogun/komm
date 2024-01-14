@@ -24,6 +24,7 @@ kotlin {
                 implementation(libs.kotlin.compile.testing.ksp)
                 implementation(libs.junit.jupiter)
                 implementation(libs.kotest.assertions)
+                implementation(kotlin("reflect"))
             }
             kotlin.srcDir("src/test/kotlin")
         }
