@@ -13,4 +13,6 @@ class SourceObject {
     val cost = 499.99
 
     val currency: String = "Kc"
+
+    val nullable: Int? = null
 }
