@@ -8,6 +8,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
+import com.ucasoft.komm.processor.extensions.getConfigValue
 
 class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid() {
 
@@ -156,13 +157,13 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         val destinationType = destinationProperty.type.resolve()
 
         if (!destinationType.isAssignableFrom(propertyType)) {
-            if (!getConfigValue<Boolean>(config, MapConfiguration::tryAutoCast.name)) {
+            if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
                 throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
             }
 
             if (propertyType.toTypeName().isNullable) {
                 val destinationHasNullSubstitute = destinationProperty.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.count() != 0
-                if (!destinationHasNullSubstitute && !getConfigValue<Boolean>(config, MapConfiguration::allowNotNullAssertion.name)) {
+                if (!destinationHasNullSubstitute && !config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)) {
                     throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
                 }
                 if (propertyType.isAssignableFrom(destinationType)) {
@@ -178,11 +179,3 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 }
 
 fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
-
-inline fun <reified T> getConfigValue(config: KSAnnotation, key: String) : T {
-    val stringValue = config.arguments.first { it.name?.asString() == key }.value.toString()
-    return when(T::class) {
-        Boolean::class -> stringValue.toBoolean()
-        else -> throw Exception()
-    } as T
-}

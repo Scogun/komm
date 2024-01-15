@@ -1,4 +1,4 @@
-package com.ucasoft.komm
+package com.ucasoft.komm.processor
 
 import KOMMProcessorProvider
 import com.squareup.kotlinpoet.*
@@ -17,11 +17,11 @@ abstract class CompilationTests {
 
     abstract val packageName: String
 
-    fun buildFileSpec(
+    internal fun buildFileSpec(
         className: String,
         constructorProperties: Map<String, KClass<*>>,
         classAnnotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
-        properties: Map<String, KClass<*>> = emptyMap()
+        properties: Map<String, PropertySpecInit> = emptyMap()
     ) = FileSpec
         .builder(packageName, "$className.kt")
         .addType(
@@ -61,8 +61,8 @@ abstract class CompilationTests {
                     properties.forEach {
                         addProperty(
                             PropertySpec
-                                .builder(it.key, it.value)
-                                .initializer("%S", "")
+                                .builder(it.key, it.value.type)
+                                .initializer(it.value.format, it.value.arg)
                                 .mutable()
                                 .build()
                         )
@@ -79,4 +79,6 @@ abstract class CompilationTests {
         symbolProcessorProviders = listOf(KOMMProcessorProvider())
         workingDir = tempDir
     }.compile()
+
+    internal class PropertySpecInit(val type: KClass<*>, val format: String, val arg: Any)
 }
