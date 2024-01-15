@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.util.*
 import java.util.stream.Stream
 
 internal class ProcessorTests : CompilationTests() {
@@ -99,6 +100,29 @@ internal class ProcessorTests : CompilationTests() {
             destinationInstance::class.shouldHaveMemberProperty(property.name) {
                 it.getter.call(destinationInstance).shouldBe(property.value)
             }
+        }
+    }
+
+    @Test
+    fun mapJavaObject() {
+        val propertyName = "symbol"
+        val generated = generate(
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(propertyName to String::class),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceInstance = Currency.getInstance(Locale.US)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(destinationInstance).shouldBe(sourceInstance.symbol)
         }
     }
 
