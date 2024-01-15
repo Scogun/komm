@@ -19,7 +19,7 @@ abstract class CompilationTests {
 
     internal fun buildFileSpec(
         className: String,
-        constructorProperties: Map<String, KClass<*>>,
+        constructorProperties: Map<String, PropertySpecInit>,
         classAnnotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
         properties: Map<String, PropertySpecInit> = emptyMap()
     ) = FileSpec
@@ -35,7 +35,7 @@ abstract class CompilationTests {
                         .constructorBuilder()
                         .apply {
                             constructorProperties.forEach {
-                                addParameter(it.key, it.value)
+                                addParameter(it.key, it.value.type)
                             }
                         }
                         .build())
@@ -55,8 +55,22 @@ abstract class CompilationTests {
                     constructorProperties.forEach {
                         addProperty(
                             PropertySpec
-                                .builder(it.key, it.value)
+                                .builder(it.key, it.value.type)
                                 .initializer(it.key)
+                                .apply {
+                                    it.value.annotation.forEach {
+                                        addAnnotation(
+                                            AnnotationSpec
+                                                .builder(it.first)
+                                                .apply {
+                                                    it.second.forEach { (format, args) ->
+                                                        addMember(format, *args.toTypedArray())
+                                                    }
+                                                }
+                                                .build()
+                                        )
+                                    }
+                                }
                                 .build()
                         )
                     }
@@ -64,6 +78,20 @@ abstract class CompilationTests {
                         addProperty(
                             PropertySpec
                                 .builder(it.key, it.value.type)
+                                .apply {
+                                    it.value.annotation.forEach {
+                                        addAnnotation(
+                                            AnnotationSpec
+                                                .builder(it.first)
+                                                .apply {
+                                                    it.second.forEach { (format, args) ->
+                                                        addMember(format, *args.toTypedArray())
+                                                    }
+                                                }
+                                                .build()
+                                        )
+                                    }
+                                }
                                 .initializer(it.value.format, it.value.arg)
                                 .mutable()
                                 .build()
@@ -88,5 +116,10 @@ abstract class CompilationTests {
         fun toPropertySpecInit() = PropertySpecInit(type, if (value is String) "%S" else "%L", value)
     }
 
-    internal class PropertySpecInit(val type: KClass<*>, val format: String, val arg: Any)
+    internal class PropertySpecInit(
+        val type: KClass<*>,
+        val format: String = "",
+        val arg: Any? = null,
+        val annotation: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList()
+    )
 }

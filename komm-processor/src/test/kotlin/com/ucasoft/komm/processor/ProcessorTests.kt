@@ -7,6 +7,7 @@ import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldBeEmpty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -20,13 +21,13 @@ internal class ProcessorTests : CompilationTests() {
 
     @Test
     fun checkSuccessGeneration() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to Int::class))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
         val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to Int::class),
+                mapOf("id" to PropertySpecInit(Int::class)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -42,13 +43,13 @@ internal class ProcessorTests : CompilationTests() {
     @ParameterizedTest
     @MethodSource("simpleMapArguments")
     fun checkSimpleObjectMapping(properties: List<TestProperty>) {
-        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to it.type })
+        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
         val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                properties.associate { it.name to it.type },
+                properties.associate { it.name to PropertySpecInit(it.type) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -74,13 +75,13 @@ internal class ProcessorTests : CompilationTests() {
     @MethodSource("simpleMapArguments")
     fun checkMapNotConstructorProperty(properties: List<TestProperty>) {
         val notConstructorProperty = properties.last().name
-        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to it.type })
+        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
         val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                properties.filter { it.name != notConstructorProperty }.associate { it.name to it.type },
+                properties.filter { it.name != notConstructorProperty }.associate { it.name to PropertySpecInit(it.type) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
                 properties.filter { it.name == notConstructorProperty }.associate { it.name to it.toPropertySpecInit() }
             )
@@ -109,7 +110,7 @@ internal class ProcessorTests : CompilationTests() {
         val generated = generate(
             buildFileSpec(
                 "DestinationObject",
-                mapOf(propertyName to String::class),
+                mapOf(propertyName to PropertySpecInit(String::class)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
             )
         )

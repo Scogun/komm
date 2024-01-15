@@ -99,7 +99,12 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         val sourceName = getSourceName(destination)
         if(!sourceProperties.containsKey(sourceName)) {
             if (mapTo == MapTo.Constructor) {
-                throw KOMMException("There is no mapping for ${destination.simpleName.asString()} property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+                val destinationName = destination.simpleName.asString()
+                if (destinationName == sourceName) {
+                    throw KOMMException("There is no mapping for $destinationName property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+                } else {
+                    throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
+                }
             }
             else {
                 return null
