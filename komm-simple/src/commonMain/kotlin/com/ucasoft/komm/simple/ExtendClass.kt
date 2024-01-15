@@ -6,7 +6,7 @@ import com.ucasoft.komm.annotations.*
 import java.time.Instant
 import java.util.*
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = SourceObject::class, config = MapConfiguration(allowNotNullAssertion = true))
 data class DestinationObject(
     val id: Int,
     val stringToInt: Int,
@@ -16,8 +16,10 @@ data class DestinationObject(
     val cost: String,
     @MapDefault<DateResolver>(DateResolver::class)
     val activeDate: Date,
-    @NullSubstitute("nullable", MapDefault(IntResolver::class))
-    val notNullable: Int
+    @MapFrom("nullable") //, MapDefault(StringResolver::class))
+    val notNullable: String,
+    @MapFrom("iAmInt")
+    val iAmNullable: Int?
 ) {
     var intToString: String = ""
 
@@ -27,8 +29,8 @@ data class DestinationObject(
     @MapConvert<CostConverter>(name = "cost", converter = CostConverter::class)
     var otherCost: String = ""
 
-    @NullSubstitute("nullable", MapDefault(IntResolver::class))
-    var otherNotNullable: Int = 1
+    @MapFrom("nullable") //, MapDefault(StringResolver::class))
+    var otherNotNullable: Int? = 1
 }
 
 class CostConverter(source: SourceObject) : KOMMConverter<SourceObject, Double, String>(source) {
@@ -40,9 +42,9 @@ class DateResolver(destination: DestinationObject?) : KOMMResolver<DestinationOb
     override fun resolve(): Date = Date.from(Instant.now())
 }
 
-class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObject, Int>(destination) {
+class StringResolver(destination: DestinationObject?): KOMMResolver<DestinationObject, String>(destination) {
 
-    override fun resolve() = 123
+    override fun resolve() = "123"
 }
 
 @KOMMMap(from = SourceObject::class)

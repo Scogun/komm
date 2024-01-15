@@ -15,4 +15,6 @@ class SourceObject {
     val currency: String = "Kc"
 
     val nullable: Int? = null
+
+    val iAmInt = 123
 }

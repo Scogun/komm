@@ -1,3 +1,3 @@
 package com.ucasoft.komm.processor.exceptions
 
-class KOMMCastException : KOMMException()
+class KOMMCastException(message: String) : KOMMException(message)

@@ -91,7 +91,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         } else if (converter != null) {
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
-            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)} ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
+            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config).trimEnd('!').replace("!!", "?")} ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
             "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)}"
         }
@@ -148,17 +148,29 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         config: KSAnnotation
     ) : String {
         val (propertyName, propertyType) = when (sourcePropertyType) {
-            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3).lowercase() to sourcePropertyType.returnType!!
-            is KSPropertyDeclaration -> sourcePropertyType.toString() to sourcePropertyType.type
-            else -> throw KOMMException()
+            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3).lowercase() to sourcePropertyType.returnType!!.resolve()
+            is KSPropertyDeclaration -> sourcePropertyType.toString() to sourcePropertyType.type.resolve()
+            else -> throw KOMMException("There is no source property for ${destinationProperty.simpleName}")
         }
 
-        if (destinationProperty.type.toTypeName() != propertyType.toTypeName()) {
-            if (!config.arguments[0].value.toString().toBoolean()) {
-                throw KOMMCastException()
+        val destinationType = destinationProperty.type.resolve()
+
+        if (!destinationType.isAssignableFrom(propertyType)) {
+            if (!getConfigValue<Boolean>(config, MapConfiguration::tryAutoCast.name)) {
+                throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
             }
 
-            return "$propertyName${if (propertyType.toTypeName().isNullable) "?" else ""}.to${destinationProperty.type}()"
+            if (propertyType.toTypeName().isNullable) {
+                val destinationHasNullSubstitute = destinationProperty.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.count() != 0
+                if (!destinationHasNullSubstitute && !getConfigValue<Boolean>(config, MapConfiguration::allowNotNullAssertion.name)) {
+                    throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
+                }
+                if (propertyType.isAssignableFrom(destinationType)) {
+                    return "$propertyName!!"
+                }
+            }
+
+            return "$propertyName${if (propertyType.toTypeName().isNullable) "!!" else ""}.to${destinationProperty.type}()"
         }
 
         return propertyName
@@ -166,3 +178,11 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 }
 
 fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
+
+inline fun <reified T> getConfigValue(config: KSAnnotation, key: String) : T {
+    val stringValue = config.arguments.first { it.name?.asString() == key }.value.toString()
+    return when(T::class) {
+        Boolean::class -> stringValue.toBoolean()
+        else -> throw Exception()
+    } as T
+}
