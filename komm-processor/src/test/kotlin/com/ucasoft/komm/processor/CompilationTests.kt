@@ -24,6 +24,7 @@ abstract class CompilationTests {
         properties: Map<String, PropertySpecInit> = emptyMap()
     ) = FileSpec
         .builder(packageName, "$className.kt")
+        .addImport("com.ucasoft.komm.annotations", "MapConfiguration")
         .addType(
             TypeSpec
                 .classBuilder(className)
@@ -79,6 +80,12 @@ abstract class CompilationTests {
         symbolProcessorProviders = listOf(KOMMProcessorProvider())
         workingDir = tempDir
     }.compile()
+
+
+    internal open class TestProperty(val name: String, val type: KClass<*>, val value: Any) {
+
+        fun toPropertySpecInit() = PropertySpecInit(type, if (value is String) "%S" else "%L", value)
+    }
 
     internal class PropertySpecInit(val type: KClass<*>, val format: String, val arg: Any)
 }

@@ -81,13 +81,7 @@ internal class ProcessorTests : CompilationTests() {
                 "DestinationObject",
                 properties.filter { it.name != notConstructorProperty }.associate { it.name to it.type },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
-                properties.filter { it.name == notConstructorProperty }.associate {
-                    it.name to PropertySpecInit(
-                        it.type,
-                        if (it.value is String) "%S" else "%L",
-                        it.value
-                    )
-                }
+                properties.filter { it.name == notConstructorProperty }.associate { it.name to it.toPropertySpecInit() }
             )
         )
 
