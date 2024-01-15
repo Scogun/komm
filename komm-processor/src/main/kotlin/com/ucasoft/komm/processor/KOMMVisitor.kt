@@ -56,13 +56,21 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
                 !it.isPrivate() && it.setter != null && !it.setter!!.modifiers.contains(Modifier.PRIVATE)
             }
             if (noConstructorProperties.isNotEmpty()) {
-                statementBuilder.deleteLast(2).appendLine(").also { ")
-                noConstructorProperties.forEach {
-                    statementBuilder.appendLine("\tit.${mapProperty(it, sourceProperties, config,
-                        MapTo.Also
-                    )}")
+                val noConstructorStatements = noConstructorProperties.mapNotNull {
+                    val mapExpression = mapProperty(it, sourceProperties, config, MapTo.Also)
+                    if (mapExpression != null) {
+                        "\tit.$mapExpression"
+                    } else {
+                        null
+                    }
                 }
-                return statementBuilder.append("}").toString()
+                if (noConstructorStatements.isNotEmpty()) {
+                    statementBuilder.deleteLast(2).appendLine(").also { ")
+                    noConstructorStatements.forEach {
+                        statementBuilder.appendLine(it)
+                    }
+                    return statementBuilder.append("}").toString()
+                }
             }
         }
         return statementBuilder.deleteLast(2).append(")").toString()
@@ -82,14 +90,25 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         sourceProperties: Map<String, KSDeclaration>,
         config: KSAnnotation,
         mapTo: MapTo
-    ): String {
-        val sourceName = getSourceName(destination)
-        val converter = findConverter(destination)
+    ): String? {
         val resolver = findResolver(destination)
+        if (resolver != null) {
+            return "$destination = ${mapResolver(resolver, mapTo)}"
+        }
+
+        val sourceName = getSourceName(destination)
+        if(!sourceProperties.containsKey(sourceName)) {
+            if (mapTo == MapTo.Constructor) {
+                throw KOMMException("There is no mapping for ${destination.simpleName.asString()} property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+            }
+            else {
+                return null
+            }
+        }
+
+        val converter = findConverter(destination)
         val nullSubstituteResolver = findSubstituteResolver(destination)
-        return if (resolver != null) {
-            "$destination = ${mapResolver(resolver, mapTo)}"
-        } else if (converter != null) {
+        return if (converter != null) {
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
             "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config).trimEnd('!').replace("!!", "?")} ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
