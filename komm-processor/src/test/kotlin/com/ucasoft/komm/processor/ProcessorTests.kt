@@ -17,12 +17,10 @@ import java.util.stream.Stream
 
 internal class ProcessorTests : CompilationTests() {
 
-    override val packageName = "com.test.model"
-
     @Test
     fun checkSuccessGeneration() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -44,7 +42,7 @@ internal class ProcessorTests : CompilationTests() {
     @MethodSource("simpleMapArguments")
     fun checkSimpleObjectMapping(properties: List<TestProperty>) {
         val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -76,7 +74,7 @@ internal class ProcessorTests : CompilationTests() {
     fun checkMapNotConstructorProperty(properties: List<TestProperty>) {
         val notConstructorProperty = properties.last().name
         val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(

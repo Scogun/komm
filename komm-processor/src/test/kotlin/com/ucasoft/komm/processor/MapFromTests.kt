@@ -1,6 +1,8 @@
 package com.ucasoft.komm.processor
 
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
@@ -17,12 +19,10 @@ import kotlin.test.Test
 
 internal class MapFromTests: CompilationTests() {
 
-    override val packageName = "com.test.model"
-
     @Test
     fun notConstructorPropertiesMapFail() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -39,7 +39,7 @@ internal class MapFromTests: CompilationTests() {
     @Test
     fun noConstructorPropertiesTest() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -69,14 +69,14 @@ internal class MapFromTests: CompilationTests() {
     @MethodSource("mapFromArguments")
     fun checkSuccessCasting(properties: List<MapTestProperty>) {
         val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.fromName to PropertySpecInit(it.fromType) })
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
                 properties.associate { it.toName to PropertySpecInit(
                     it.toType,
-                    annotation = listOf(
+                    annotations = listOf(
                         MapFrom::class to mapOf("name = %S" to listOf(it.fromName))
                     )
                 ) },
@@ -104,14 +104,14 @@ internal class MapFromTests: CompilationTests() {
     @Test
     fun mapFromBadNameFail() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(Int::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
                 mapOf("toId" to PropertySpecInit(
                     Int::class,
-                    annotation = listOf(
+                    annotations = listOf(
                         MapFrom::class to mapOf("name = %S" to listOf("id"))
                     )
                 )),
@@ -123,7 +123,7 @@ internal class MapFromTests: CompilationTests() {
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
     }
 
-    class MapTestProperty(val fromName: String, fromType: KClass<*>, fromValue: Any, val toName: String, toType: KClass<*>, toValue: Any) : CastTests.CastTestProperty(toName, fromType, fromValue, toType, toValue)
+    class MapTestProperty(val fromName: String, fromType: KClass<*>, fromValue: Any, val toName: String, toType: KClass<*>, toValue: Any) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
 
     companion object {
 

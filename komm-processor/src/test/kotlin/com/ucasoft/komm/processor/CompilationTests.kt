@@ -15,7 +15,7 @@ abstract class CompilationTests {
     @TempDir
     private lateinit var tempDir: File
 
-    abstract val packageName: String
+    open val packageName: String = "com.test.model"
 
     internal fun buildFileSpec(
         className: String,
@@ -58,7 +58,19 @@ abstract class CompilationTests {
                                 .builder(it.key, it.value.type)
                                 .initializer(it.key)
                                 .apply {
-                                    it.value.annotation.forEach {
+                                    it.value.annotations.forEach {
+                                        addAnnotation(
+                                            AnnotationSpec
+                                                .builder(it.first)
+                                                .apply {
+                                                    it.second.forEach { (format, args) ->
+                                                        addMember(format, *args.toTypedArray())
+                                                    }
+                                                }
+                                                .build()
+                                        )
+                                    }
+                                    it.value.parametrizedAnnotations.forEach {
                                         addAnnotation(
                                             AnnotationSpec
                                                 .builder(it.first)
@@ -79,7 +91,19 @@ abstract class CompilationTests {
                             PropertySpec
                                 .builder(it.key, it.value.type)
                                 .apply {
-                                    it.value.annotation.forEach {
+                                    it.value.annotations.forEach {
+                                        addAnnotation(
+                                            AnnotationSpec
+                                                .builder(it.first)
+                                                .apply {
+                                                    it.second.forEach { (format, args) ->
+                                                        addMember(format, *args.toTypedArray())
+                                                    }
+                                                }
+                                                .build()
+                                        )
+                                    }
+                                    it.value.parametrizedAnnotations.forEach {
                                         addAnnotation(
                                             AnnotationSpec
                                                 .builder(it.first)
@@ -116,10 +140,13 @@ abstract class CompilationTests {
         fun toPropertySpecInit() = PropertySpecInit(type, if (value is String) "%S" else "%L", value)
     }
 
+    internal open class CastTestProperty(name: String, val fromType: KClass<*>, val fromValue: Any, val toType: KClass<*>, val toValue: Any) : TestProperty(name, toType, toValue)
+
     internal class PropertySpecInit(
         val type: KClass<*>,
         val format: String = "",
         val arg: Any? = null,
-        val annotation: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList()
+        val annotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
+        val parametrizedAnnotations: List<Pair<ParameterizedTypeName, Map<String, List<Any>>>> = emptyList()
     )
 }

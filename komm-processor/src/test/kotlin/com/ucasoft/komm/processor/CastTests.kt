@@ -24,12 +24,10 @@ import kotlin.test.Test
 
 internal class CastTests: CompilationTests() {
 
-    override val packageName = "com.test.model"
-
     @Test
     fun autoCastOffFail() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -51,7 +49,7 @@ internal class CastTests: CompilationTests() {
     @Test
     fun runtimeCastFail() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(String::class)))
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -79,7 +77,7 @@ internal class CastTests: CompilationTests() {
     @MethodSource("castMapArguments")
     fun checkSuccessCasting(properties: List<CastTestProperty>) {
         val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.fromType) })
-        val sourceObjectClassName = sourceSpec.members.filterIsInstance<TypeSpec>().first().name
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
@@ -128,8 +126,6 @@ internal class CastTests: CompilationTests() {
             it.getter.call(destinationInstance).shouldBe(sourceInstance.numericCode.toString())
         }
     }
-
-    open class CastTestProperty(name: String, val fromType: KClass<*>, val fromValue: Any, val toType: KClass<*>, val toValue: Any) : TestProperty(name, toType, toValue)
 
     companion object {
 
