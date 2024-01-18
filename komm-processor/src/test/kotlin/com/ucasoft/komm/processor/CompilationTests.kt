@@ -142,6 +142,8 @@ abstract class CompilationTests {
 
     internal open class CastTestProperty(name: String, val fromType: KClass<*>, val fromValue: Any, val toType: KClass<*>, val toValue: Any) : TestProperty(name, toType, toValue)
 
+    internal class MapTestProperty(val fromName: String, fromType: KClass<*>, fromValue: Any, val toName: String, toType: KClass<*>, toValue: Any) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
+
     internal class PropertySpecInit(
         val type: KClass<*>,
         val format: String = "",

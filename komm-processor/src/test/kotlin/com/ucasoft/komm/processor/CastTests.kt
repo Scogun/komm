@@ -1,6 +1,5 @@
 package com.ucasoft.komm.processor
 
-import com.squareup.kotlinpoet.TypeSpec
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
@@ -19,7 +18,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.lang.reflect.InvocationTargetException
 import java.util.*
 import java.util.stream.Stream
-import kotlin.reflect.KClass
 import kotlin.test.Test
 
 internal class CastTests: CompilationTests() {

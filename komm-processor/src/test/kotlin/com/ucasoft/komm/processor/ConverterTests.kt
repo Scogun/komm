@@ -5,9 +5,12 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapConfiguration
 import com.ucasoft.komm.annotations.MapConvert
 import com.ucasoft.komm.annotations.MapFrom
 import com.ucasoft.komm.processor.exceptions.KOMMException
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
@@ -19,7 +22,7 @@ internal class ConverterTests: CompilationTests() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(Int::class)))
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
-        val converterSpec = buildConverter(sourceObjectClassName)
+        val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
         val converterClassName = converterSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
@@ -45,19 +48,114 @@ internal class ConverterTests: CompilationTests() {
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
     }
 
-    private fun buildConverter(sourceType: ClassName) = FileSpec
+    @Test
+    fun mapConvertSameName() {
+        val propertyName = "id"
+        val sourceSpec = buildFileSpec("SourceObject", mapOf(propertyName to PropertySpecInit(Int::class)))
+        val sourceType = sourceSpec.typeSpecs.first()
+        val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
+        val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
+        val converterClassName = converterSpec.typeSpecs.first().name!!
+        val generated = generate(
+            sourceSpec,
+            converterSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    propertyName to PropertySpecInit(
+                        String::class,
+                        parametrizedAnnotations = listOf(
+                            MapConvert::class.asTypeName().parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                                "converter = %L" to listOf("$converterClassName::class")
+                            )
+                        )
+                    )
+                ),
+                listOf(KOMMMap::class to mapOf(
+                    "from = %L" to listOf("$sourceObjectClassName::class"),
+                    "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
+                ))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceObjectClassName.canonicalName)
+        val sourceInstance = sourceClass.constructors.first().newInstance(123)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+        destinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(destinationInstance).shouldBe("123")
+        }
+    }
+
+    @Test
+    fun mapConvertFromWholeSource() {
+        val sourceSpec = buildFileSpec("SourceObject", mapOf(
+            "name" to PropertySpecInit(String::class),
+            "surname" to PropertySpecInit(String::class)
+        ))
+        val sourceType = sourceSpec.typeSpecs.first()
+        val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
+        val converterSpec = buildConverter(sourceObjectClassName, STRING, STRING, "return \"\${source.name} \${source.surname}\"")
+        val converterClassName = converterSpec.typeSpecs.first().name!!
+        val generated = generate(
+            sourceSpec,
+            converterSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    "fullName" to PropertySpecInit(
+                        String::class,
+                        parametrizedAnnotations = listOf(
+                            MapConvert::class.asTypeName().parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                                "name = %S" to listOf("name"),
+                                "converter = %L" to listOf("$converterClassName::class")
+                            )
+                        )
+                    )
+                ),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceObjectClassName.canonicalName)
+        val sourceInstance = sourceClass.constructors.first().newInstance("John", "Doe")
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+        destinationInstance::class.shouldHaveMemberProperty("fullName") {
+            it.getter.call(destinationInstance).shouldBe("John Doe")
+        }
+    }
+
+    private fun buildConverter(sourceType: ClassName, srcType: ClassName, destType: ClassName, statement: String) = FileSpec
         .builder(packageName, "TestConverter.kt")
         .addType(
             TypeSpec
                 .classBuilder("TestConverter")
-                .superclass(KOMMConverter::class.asTypeName().parameterizedBy(sourceType, INT, STRING))
+                .superclass(KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destType))
+                .addSuperclassConstructorParameter("source")
+                .primaryConstructor(
+                    FunSpec
+                        .constructorBuilder()
+                        .addParameter("source", sourceType)
+                        .build()
+                )
                 .addFunction(
                     FunSpec
                         .builder("convert")
                         .addModifiers(KModifier.OVERRIDE)
-                        .addParameter("sourceMember", Int::class)
-                        .returns(String::class)
-                        .addStatement("return sourceMember.toString()")
+                        .addParameter("sourceMember", srcType)
+                        .returns(destType)
+                        .addStatement(statement)
                         .build()
                 )
                 .build()

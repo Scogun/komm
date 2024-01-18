@@ -1,8 +1,5 @@
 package com.ucasoft.komm.processor
 
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asTypeName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
@@ -14,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
-import kotlin.reflect.KClass
 import kotlin.test.Test
 
 internal class MapFromTests: CompilationTests() {
@@ -122,8 +118,6 @@ internal class MapFromTests: CompilationTests() {
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
     }
-
-    class MapTestProperty(val fromName: String, fromType: KClass<*>, fromValue: Any, val toName: String, toType: KClass<*>, toValue: Any) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
 
     companion object {
 
