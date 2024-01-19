@@ -125,10 +125,10 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
             "$destination = ${
-                getSourceWithCast(destination, sourceProperties[sourceName]!!, config).trimEnd('!').replace("!!", "?")
+                getSourceWithCast(destination, sourceProperties[sourceName], config).trimEnd('!').replace("!!", "?")
             } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
-            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)}"
+            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName], config)}"
         }
     }
 
@@ -234,7 +234,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 
     private fun getSourceWithCast(
         destinationProperty: KSPropertyDeclaration,
-        sourcePropertyType: KSDeclaration,
+        sourcePropertyType: KSDeclaration?,
         config: KSAnnotation
     ): String {
         val (propertyName, propertyType) = when (sourcePropertyType) {
