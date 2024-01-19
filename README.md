@@ -14,6 +14,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Specify mapping from property with different name
   * Specify a converter to map data from source unusual way
   * Specify a resolver to map default values into properties
+  * Specify null substitute to map nullable properties into not-nullable
 
 ## Usage
 ### Add with Gradle
@@ -114,7 +115,7 @@ data class DestinationObject(
 ```
 ### Generation result
 ```console
-e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException
+e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: AutoCast is turned off! You have to use @MapConvert annotation to cast (stringToInt: Int) from (stringToInt: String)
 ```
 
 ### @MapFrom annotation
@@ -210,4 +211,54 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     //...
     it.otherDate = DateResolver(it).resolve()
 }
+```
+### Use NullSubstitute
+#### Mapping configuration
+###### Classes declaration
+```kotlin
+@KOMMMap(
+    from = SourceObject::class,
+    config = MapConfiguration(
+      allowNotNullAssertion = true
+    )
+)
+data class DestinationObject(
+    val id: Int
+)
+data class SourceObject(
+    val id: Int?
+)
+```
+###### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+    id = id!!
+)
+```
+###### Otherwise
+```console
+e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: Auto Not-Null Assertion is not allowed! You have to use @NullSubstitute annotation for id property.
+```
+#### Resolver declaration
+```kotlin
+class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObject, Int>(destination) {
+
+    override fun resolve() = 1
+}
+```
+#### Classes declaration
+```kotlin
+@KOMMMap(
+    from = SourceObject::class
+)
+data class DestinationObject(
+    @NullSubatitute(default = MapDefault(IntResolver::class))
+    val id: Int
+)
+```
+#### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+    id = id ?: IntResolver(null).resolve()
+)
 ```
