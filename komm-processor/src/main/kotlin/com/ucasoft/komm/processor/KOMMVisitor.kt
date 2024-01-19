@@ -2,6 +2,7 @@ package com.ucasoft.komm.processor
 
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.*
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -137,7 +138,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     private fun getSourceName(source: KSType, member: KSPropertyDeclaration): String {
         val mapFroms = member.annotations.filter { it.shortName.asString() in namedAnnotations }.associateWith { it.associateWithFrom() }
 
-        val mapFrom = filterAnnotationsBySource(source::class, mapFroms, member)
+        val mapFrom = filterAnnotationsBySource(source.toClassName(), mapFroms, member)
 
         if (mapFrom != null) {
             val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
@@ -151,15 +152,15 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     private fun findConverter(source: KSType, member: KSPropertyDeclaration) =
-        findMapAnnotation(source::class, member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
+        findMapAnnotation(source.toClassName(), member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
 
     private fun findResolver(source: KSType, member: KSPropertyDeclaration) =
-        findMapAnnotation(source::class, member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
+        findMapAnnotation(source.toClassName(), member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
 
     private fun findSubstituteResolver(source: KSType, member: KSPropertyDeclaration): String? {
         val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.associateWith { it.associateWithFrom() }
 
-        val annotation = filterAnnotationsBySource(source::class, annotations, member)
+        val annotation = filterAnnotationsBySource(source.toClassName(), annotations, member)
 
         if (annotation != null) {
             val resolverArgument =
@@ -171,7 +172,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     private fun findMapAnnotation(
-        source: KClass<out KSType>,
+        source: ClassName,
         member: KSPropertyDeclaration,
         annotationName: String?,
         argumentName: String
@@ -191,11 +192,11 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 
     @Suppress("UNCHECKED_CAST")
     private fun KSAnnotation.associateWithFrom() =
-        this.arguments.first { it.name?.asString() == MapFrom::from.name }.value as ArrayList<KClass<*>>
+        (this.arguments.first { it.name?.asString() == MapFrom::from.name }.value as ArrayList<KSType>).map { it.toClassName() }
 
     private fun filterAnnotationsBySource(
-        source: KClass<out KSType>,
-        annotationMap: Map<KSAnnotation, ArrayList<KClass<*>>>,
+        source: ClassName,
+        annotationMap: Map<KSAnnotation, List<ClassName>>,
         member: KSPropertyDeclaration
     ): KSAnnotation? {
         var annotations = annotationMap.filter { it.value.contains(source) }
@@ -204,7 +205,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         }
         if (annotations.count() > 1) {
             val annotation = annotations.keys.first()
-            throw KOMMException("There are too many @${annotation.shortName} annotations for ${member.simpleName} property could be applied for ${source.simpleName}")
+            throw KOMMException("There are too many @${annotation.shortName.asString()} annotations for ${member.simpleName.asString()} property could be applied for ${source.simpleName}")
         }
 
         return annotations.keys.firstOrNull()
