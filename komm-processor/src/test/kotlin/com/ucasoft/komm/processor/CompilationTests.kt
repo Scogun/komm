@@ -25,6 +25,7 @@ abstract class CompilationTests {
     ) = FileSpec
         .builder(packageName, "$className.kt")
         .addImport("com.ucasoft.komm.annotations", "MapConfiguration")
+        .addImport("com.ucasoft.komm.annotations", "MapDefault")
         .addImport("java.util", "Currency")
         .addType(
             TypeSpec
@@ -35,7 +36,7 @@ abstract class CompilationTests {
                         .constructorBuilder()
                         .apply {
                             constructorProperties.forEach {
-                                addParameter(it.key, it.value.type)
+                                addParameter(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
                             }
                         }
                         .build())
@@ -55,7 +56,7 @@ abstract class CompilationTests {
                     constructorProperties.forEach {
                         addProperty(
                             PropertySpec
-                                .builder(it.key, it.value.type)
+                                .builder(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
                                 .initializer(it.key)
                                 .apply {
                                     it.value.annotations.forEach {
@@ -89,7 +90,7 @@ abstract class CompilationTests {
                     properties.forEach {
                         addProperty(
                             PropertySpec
-                                .builder(it.key, it.value.type)
+                                .builder(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
                                 .apply {
                                     it.value.annotations.forEach {
                                         addAnnotation(
@@ -148,6 +149,7 @@ abstract class CompilationTests {
         val type: KClass<*>,
         val format: String = "",
         val arg: Any? = null,
+        val isNullable: Boolean = false,
         val annotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
         val parametrizedAnnotations: List<Pair<ParameterizedTypeName, Map<String, List<Any>>>> = emptyList()
     )
