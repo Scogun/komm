@@ -152,7 +152,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     private fun findConverter(source: KSType, member: KSPropertyDeclaration) =
-        findMapAnnotation(source.toClassName(), member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
+        findMapAnnotation(source.toClassName(), member, MapConvert::class.simpleName, MapConvert<*, *>::converter.name)
 
     private fun findResolver(source: KSType, member: KSPropertyDeclaration) =
         findMapAnnotation(source.toClassName(), member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)

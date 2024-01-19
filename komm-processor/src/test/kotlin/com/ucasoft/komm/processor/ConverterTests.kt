@@ -23,7 +23,7 @@ internal class ConverterTests: SatelliteTests() {
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
         val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
-        val converterClassName = converterSpec.typeSpecs.first().name
+        val converterClassName = converterSpec.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             converterSpec,
@@ -33,7 +33,7 @@ internal class ConverterTests: SatelliteTests() {
                     "toId" to PropertySpecInit(
                         String::class,
                         parametrizedAnnotations = listOf(
-                            MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName) to mapOf(
+                            MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("id"),
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
@@ -66,7 +66,7 @@ internal class ConverterTests: SatelliteTests() {
                         String::class,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
-                                .parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                                .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
                         )
@@ -118,7 +118,7 @@ internal class ConverterTests: SatelliteTests() {
                         String::class,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
-                                .parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                                .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("name"),
                                 "converter = %L" to listOf("$converterClassName::class")
                             )

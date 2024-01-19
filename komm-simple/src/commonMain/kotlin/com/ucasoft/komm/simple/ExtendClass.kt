@@ -12,7 +12,7 @@ data class DestinationObject(
     val stringToInt: Int,
     @MapFrom("userName")
     val name: String,
-    @MapConvert<CostConverter>(converter = CostConverter::class)
+    @MapConvert<SourceObject, CostConverter>(converter = CostConverter::class)
     val cost: String,
     @MapDefault<DateResolver>(DateResolver::class)
     val activeDate: Date,
@@ -26,7 +26,7 @@ data class DestinationObject(
     @MapDefault<DateResolver>(DateResolver::class)
     var otherDate: Date = Date.from(Instant.now())
 
-    @MapConvert<CostConverter>(name = "cost", converter = CostConverter::class)
+    @MapConvert<SourceObject, CostConverter>(name = "cost", converter = CostConverter::class)
     var otherCost: String = ""
 
     @MapFrom("nullable") //, MapDefault(StringResolver::class))
