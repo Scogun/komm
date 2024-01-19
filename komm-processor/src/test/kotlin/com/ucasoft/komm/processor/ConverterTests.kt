@@ -15,7 +15,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
-internal class ConverterTests: CompilationTests() {
+internal class ConverterTests: SatelliteTests() {
 
     @Test
     fun mapConvertBadNameFail() {
@@ -65,16 +65,19 @@ internal class ConverterTests: CompilationTests() {
                     propertyName to PropertySpecInit(
                         String::class,
                         parametrizedAnnotations = listOf(
-                            MapConvert::class.asTypeName().parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                            MapConvert::class.asTypeName()
+                                .parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf(
-                    "from = %L" to listOf("$sourceObjectClassName::class"),
-                    "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
-                ))
+                listOf(
+                    KOMMMap::class to mapOf(
+                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
+                    )
+                )
             )
         )
 
@@ -94,13 +97,16 @@ internal class ConverterTests: CompilationTests() {
 
     @Test
     fun mapConvertFromWholeSource() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf(
-            "name" to PropertySpecInit(String::class),
-            "surname" to PropertySpecInit(String::class)
-        ))
+        val sourceSpec = buildFileSpec(
+            "SourceObject", mapOf(
+                "name" to PropertySpecInit(String::class),
+                "surname" to PropertySpecInit(String::class)
+            )
+        )
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
-        val converterSpec = buildConverter(sourceObjectClassName, STRING, STRING, "return \"\${source.name} \${source.surname}\"")
+        val converterSpec =
+            buildConverter(sourceObjectClassName, STRING, STRING, "return \"\${source.name} \${source.surname}\"")
         val converterClassName = converterSpec.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
@@ -111,7 +117,8 @@ internal class ConverterTests: CompilationTests() {
                     "fullName" to PropertySpecInit(
                         String::class,
                         parametrizedAnnotations = listOf(
-                            MapConvert::class.asTypeName().parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
+                            MapConvert::class.asTypeName()
+                                .parameterizedBy(ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("name"),
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
@@ -136,29 +143,15 @@ internal class ConverterTests: CompilationTests() {
         }
     }
 
-    private fun buildConverter(sourceType: ClassName, srcType: ClassName, destType: ClassName, statement: String) = FileSpec
-        .builder(packageName, "TestConverter.kt")
-        .addType(
-            TypeSpec
-                .classBuilder("TestConverter")
-                .superclass(KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destType))
-                .addSuperclassConstructorParameter("source")
-                .primaryConstructor(
-                    FunSpec
-                        .constructorBuilder()
-                        .addParameter("source", sourceType)
-                        .build()
-                )
-                .addFunction(
-                    FunSpec
-                        .builder("convert")
-                        .addModifiers(KModifier.OVERRIDE)
-                        .addParameter("sourceMember", srcType)
-                        .returns(destType)
-                        .addStatement(statement)
-                        .build()
-                )
-                .build()
+    private fun buildConverter(sourceType: ClassName, srcType: ClassName, destType: ClassName, statement: String) =
+        buildSatellite(
+            "TestConverter",
+            KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destType),
+            "source",
+            sourceType,
+            "convert",
+            srcType,
+            destType,
+            statement
         )
-        .build()
 }

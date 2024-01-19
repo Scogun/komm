@@ -11,7 +11,7 @@ import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-internal class MapDefaultTests: CompilationTests() {
+internal class MapDefaultTests: SatelliteTests() {
 
     @Test
     fun mapDefaultConstructorTest() {
@@ -29,7 +29,8 @@ internal class MapDefaultTests: CompilationTests() {
                     "otherProperty" to PropertySpecInit(
                         String::class,
                         parametrizedAnnotations = listOf(
-                            MapDefault::class.asTypeName().parameterizedBy(ClassName(packageName, resolverClassName)) to mapOf(
+                            MapDefault::class.asTypeName()
+                                .parameterizedBy(ClassName(packageName, resolverClassName)) to mapOf(
                                 "resolver = %L" to listOf("$resolverClassName::class")
                             )
                         )
@@ -104,28 +105,14 @@ internal class MapDefaultTests: CompilationTests() {
         }
     }
 
-    private fun buildResolver() = FileSpec
-        .builder(packageName, "TestResolver.kt")
-        .addType(
-            TypeSpec
-                .classBuilder("TestResolver")
-                .superclass(KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), STRING))
-                .addSuperclassConstructorParameter("destination")
-                .primaryConstructor(
-                    FunSpec
-                        .constructorBuilder()
-                        .addParameter("destination", ClassName(packageName, "DestinationObject").copy(true))
-                        .build()
-                )
-                .addFunction(
-                    FunSpec
-                        .builder("resolve")
-                        .addModifiers(KModifier.OVERRIDE)
-                        .returns(STRING)
-                        .addStatement("return \"I'm default! Destination is \${destination}.\"")
-                        .build()
-                )
-                .build()
-        )
-        .build()
+    private fun buildResolver() = buildSatellite(
+        "TestResolver",
+        KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), STRING),
+        "destination",
+        ClassName(packageName, "DestinationObject").copy(true),
+        "resolve",
+        null,
+        STRING,
+        "return \"I'm default! Destination is \${destination}.\""
+    )
 }
