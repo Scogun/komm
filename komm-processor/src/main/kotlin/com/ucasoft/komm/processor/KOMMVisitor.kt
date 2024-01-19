@@ -9,6 +9,7 @@ import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
+import kotlin.reflect.KClass
 
 class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid() {
 
@@ -19,7 +20,8 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         Also
     }
 
-    private val namedAnnotations = listOf(MapFrom::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
+    private val namedAnnotations =
+        listOf(MapFrom::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
 
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
         val annotations =
@@ -47,9 +49,14 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }
         properties[true]?.forEach {
-            statementBuilder.appendLine("\t${mapProperty(it, sourceProperties, config,
-                MapTo.Constructor
-            )},")
+            statementBuilder.appendLine(
+                "\t${
+                    mapProperty(
+                        it, source, sourceProperties, config,
+                        MapTo.Constructor
+                    )
+                },"
+            )
         }
         if (properties.containsKey(false)) {
             val noConstructorProperties = properties[false]!!.filter {
@@ -57,7 +64,7 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
             }
             if (noConstructorProperties.isNotEmpty()) {
                 val noConstructorStatements = noConstructorProperties.mapNotNull {
-                    val mapExpression = mapProperty(it, sourceProperties, config, MapTo.Also)
+                    val mapExpression = mapProperty(it, source, sourceProperties, config, MapTo.Also)
                     if (mapExpression != null) {
                         "\tit.$mapExpression"
                     } else {
@@ -87,17 +94,18 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 
     private fun mapProperty(
         destination: KSPropertyDeclaration,
+        source: KSType,
         sourceProperties: Map<String, KSDeclaration>,
         config: KSAnnotation,
         mapTo: MapTo
     ): String? {
-        val resolver = findResolver(destination)
+        val resolver = findResolver(source, destination)
         if (resolver != null) {
             return "$destination = ${mapResolver(resolver, mapTo)}"
         }
 
-        val sourceName = getSourceName(destination)
-        if(!sourceProperties.containsKey(sourceName)) {
+        val sourceName = getSourceName(source, destination)
+        if (!sourceProperties.containsKey(sourceName)) {
             if (mapTo == MapTo.Constructor) {
                 val destinationName = destination.simpleName.asString()
                 if (destinationName == sourceName) {
@@ -105,27 +113,32 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
                 } else {
                     throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
                 }
-            }
-            else {
+            } else {
                 return null
             }
         }
 
-        val converter = findConverter(destination)
-        val nullSubstituteResolver = findSubstituteResolver(destination)
+        val converter = findConverter(source, destination)
+        val nullSubstituteResolver = findSubstituteResolver(source, destination)
         return if (converter != null) {
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
-            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config).trimEnd('!').replace("!!", "?")} ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
+            "$destination = ${
+                getSourceWithCast(destination, sourceProperties[sourceName]!!, config).trimEnd('!').replace("!!", "?")
+            } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
             "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName]!!, config)}"
         }
     }
 
-    private fun mapResolver(resolver: String, mapTo: MapTo) = "$resolver(${if (mapTo == MapTo.Constructor) "null" else "it"}).resolve()"
+    private fun mapResolver(resolver: String, mapTo: MapTo) =
+        "$resolver(${if (mapTo == MapTo.Constructor) "null" else "it"}).resolve()"
 
-    private fun getSourceName(member: KSPropertyDeclaration): String {
-        val mapFrom = member.annotations.firstOrNull { it.shortName.asString() in namedAnnotations }
+    private fun getSourceName(source: KSType, member: KSPropertyDeclaration): String {
+        val mapFroms = member.annotations.filter { it.shortName.asString() in namedAnnotations }.associateWith { it.associateWithFrom() }
+
+        val mapFrom = filterAnnotationsBySource(source::class, mapFroms, member)
+
         if (mapFrom != null) {
             val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
             val name = nameArgument.value.toString()
@@ -137,16 +150,20 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         return member.toString()
     }
 
-    private fun findConverter(member: KSPropertyDeclaration) =
-        findMapAnnotation(member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
+    private fun findConverter(source: KSType, member: KSPropertyDeclaration) =
+        findMapAnnotation(source::class, member, MapConvert::class.simpleName, MapConvert<*>::converter.name)
 
-    private fun findResolver(member: KSPropertyDeclaration) =
-        findMapAnnotation(member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
+    private fun findResolver(source: KSType, member: KSPropertyDeclaration) =
+        findMapAnnotation(source::class, member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
 
-    private fun findSubstituteResolver(member: KSPropertyDeclaration): String? {
-        val annotation = member.annotations.firstOrNull { it.shortName.asString() == NullSubstitute::class.simpleName }
+    private fun findSubstituteResolver(source: KSType, member: KSPropertyDeclaration): String? {
+        val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.associateWith { it.associateWithFrom() }
+
+        val annotation = filterAnnotationsBySource(source::class, annotations, member)
+
         if (annotation != null) {
-            val resolverArgument = annotation.arguments.first { it.name?.asString() == NullSubstitute::default.name }.value as KSAnnotation
+            val resolverArgument =
+                annotation.arguments.first { it.name?.asString() == NullSubstitute::default.name }.value as KSAnnotation
             return resolverArgument.arguments.first { it.name?.asString() == MapDefault<*>::resolver.name }.value.toString()
         }
 
@@ -154,11 +171,16 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     private fun findMapAnnotation(
+        source: KClass<out KSType>,
         member: KSPropertyDeclaration,
         annotationName: String?,
         argumentName: String
     ): String? {
-        val annotation = member.annotations.firstOrNull { it.shortName.asString() == annotationName }
+        val annotations =
+            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith { it.associateWithFrom() }
+
+        val annotation = filterAnnotationsBySource(source, annotations, member)
+
         if (annotation != null) {
             val resolverArgument = annotation.arguments.first { it.name?.asString() == argumentName }
             return resolverArgument.value.toString()
@@ -167,13 +189,36 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         return null
     }
 
+    @Suppress("UNCHECKED_CAST")
+    private fun KSAnnotation.associateWithFrom() =
+        this.arguments.first { it.name?.asString() == MapFrom::from.name }.value as ArrayList<KClass<*>>
+
+    private fun filterAnnotationsBySource(
+        source: KClass<out KSType>,
+        annotationMap: Map<KSAnnotation, ArrayList<KClass<*>>>,
+        member: KSPropertyDeclaration
+    ): KSAnnotation? {
+        var annotations = annotationMap.filter { it.value.contains(source) }
+        if (annotations.isEmpty()) {
+            annotations = annotationMap.filter { it.value.isEmpty() }
+        }
+        if (annotations.count() > 1) {
+            val annotation = annotations.keys.first()
+            throw KOMMException("There are too many @${annotation.shortName} annotations for ${member.simpleName} property could be applied for ${source.simpleName}")
+        }
+
+        return annotations.keys.firstOrNull()
+    }
+
     private fun getSourceWithCast(
         destinationProperty: KSPropertyDeclaration,
         sourcePropertyType: KSDeclaration,
         config: KSAnnotation
-    ) : String {
+    ): String {
         val (propertyName, propertyType) = when (sourcePropertyType) {
-            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3).lowercase() to sourcePropertyType.returnType!!.resolve()
+            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3)
+                .lowercase() to sourcePropertyType.returnType!!.resolve()
+
             is KSPropertyDeclaration -> sourcePropertyType.toString() to sourcePropertyType.type.resolve()
             else -> throw KOMMException("There is no source property for ${destinationProperty.simpleName}")
         }
@@ -186,7 +231,9 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
             }
 
             if (propertyType.toTypeName().isNullable) {
-                val destinationHasNullSubstitute = destinationProperty.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.count() != 0
+                val destinationHasNullSubstitute =
+                    destinationProperty.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }
+                        .count() != 0
                 if (!destinationHasNullSubstitute && !config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)) {
                     throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
                 }
@@ -200,6 +247,6 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
 
         return propertyName
     }
-}
 
-fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
+    private fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
+}
