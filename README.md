@@ -163,11 +163,11 @@ class SourceObject {
 @KOMMMap(from = SourceObject::class)
 data class DestinationObject(
     //...
-    @MapConvert<CostConverter>(converter = CostConverter::class)
+    @MapConvert<SourceObject, CostConverter>(CostConverter::class)
     val cost: String
 ) {
     //...
-    @MapConvert<CostConverter>(name = "cost", converter = CostConverter::class)
+    @MapConvert<SourceObject, CostConverter>(CostConverter::class, "cost")
     var otherCost: String = ""
 }
 ```
@@ -252,13 +252,18 @@ class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObje
     from = SourceObject::class
 )
 data class DestinationObject(
-    @NullSubatitute(default = MapDefault(IntResolver::class))
+    @NullSubatitute(MapDefault(IntResolver::class))
     val id: Int
-)
+) {
+    @NullSubatitute(MapDefault(IntResolver::class), "id")
+    var otherId: Int = 0
+}
 ```
 #### Generated extension function
 ```kotlin
 fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     id = id ?: IntResolver(null).resolve()
-)
+).also {
+    it.otherId = id ?: IntResolver(it).resolve()
+}
 ```

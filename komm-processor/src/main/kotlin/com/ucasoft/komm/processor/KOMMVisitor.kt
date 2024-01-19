@@ -136,7 +136,8 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         "$resolver(${if (mapTo == MapTo.Constructor) "null" else "it"}).resolve()"
 
     private fun getSourceName(source: KSType, member: KSPropertyDeclaration): String {
-        val mapFroms = member.annotations.filter { it.shortName.asString() in namedAnnotations }.associateWith { it.associateWithFrom() }
+        val mapFroms = member.annotations.filter { it.shortName.asString() in namedAnnotations }
+            .associateWith(::associateWithFrom)
 
         val mapFrom = filterAnnotationsBySource(source.toClassName(), mapFroms, member)
 
@@ -152,13 +153,26 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     private fun findConverter(source: KSType, member: KSPropertyDeclaration) =
-        findMapAnnotation(source.toClassName(), member, MapConvert::class.simpleName, MapConvert<*, *>::converter.name)
+        findMapAnnotation(
+            source.toClassName(),
+            member,
+            MapConvert::class.simpleName,
+            MapConvert<*, *>::converter.name
+        ) {
+            listOf(it.annotationType.element!!.typeArguments.first().type!!.resolve().toClassName())
+        }
 
     private fun findResolver(source: KSType, member: KSPropertyDeclaration) =
-        findMapAnnotation(source.toClassName(), member, MapDefault::class.simpleName, MapDefault<*>::resolver.name)
+        findMapAnnotation(
+            source.toClassName(),
+            member,
+            MapDefault::class.simpleName,
+            MapDefault<*>::resolver.name
+        )
 
     private fun findSubstituteResolver(source: KSType, member: KSPropertyDeclaration): String? {
-        val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }.associateWith { it.associateWithFrom() }
+        val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }
+            .associateWith(::associateWithFrom)
 
         val annotation = filterAnnotationsBySource(source.toClassName(), annotations, member)
 
@@ -175,10 +189,11 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         source: ClassName,
         member: KSPropertyDeclaration,
         annotationName: String?,
-        argumentName: String
+        argumentName: String,
+        withFrom: (KSAnnotation) -> List<ClassName> = ::associateWithFrom
     ): String? {
         val annotations =
-            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith { it.associateWithFrom() }
+            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith(withFrom)
 
         val annotation = filterAnnotationsBySource(source, annotations, member)
 
@@ -191,8 +206,14 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun KSAnnotation.associateWithFrom() =
-        (this.arguments.first { it.name?.asString() == MapFrom::from.name }.value as ArrayList<KSType>).map { it.toClassName() }
+    private fun associateWithFrom(item: KSAnnotation): List<ClassName> {
+        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapFrom::from.name }
+        if (fromArgument == null) {
+            return emptyList()
+        }
+
+        return (fromArgument.value as ArrayList<KSType>).map { it.toClassName() }
+    }
 
     private fun filterAnnotationsBySource(
         source: ClassName,
