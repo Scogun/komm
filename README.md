@@ -3,6 +3,19 @@
 The **Kotlin Object Multiplatform Mapper** provides you a possibility to generate (via [KSP](https://github.com/google/ksp)) extension function to map one object to another.
 
 ---
+* [Features](#features)
+* [Usage](#usage)
+  * [Add](#add-with-gradle)
+    * [JVM project](#jvm-project)
+    * [Multiplatform project](#multiplatform-project)
+  * [Simple mapping](#simple-mapping)
+  * [Configuration](#mapping-configuration)
+  * [@MapFrom](#mapfrom-annotation)
+  * [@MapConverter](#use-converter)
+  * [@MapDefault](#use-resolver)
+  * [@NullSubstitute](#use-nullsubstitute)
+    * [Allow Not-Null Assertion](#mapping-configuration-1)
+---
 
 ## Features
 * Supports KSP Multiplatform
@@ -22,10 +35,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.22-1.0.16"
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.0.1"
+val kommVersion = "0.0.5"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -35,10 +48,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.22-1.0.16"
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.0.1"
+val kommVersion = "0.0.5"
 
 kotlin {
     jvm {
