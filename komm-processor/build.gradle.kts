@@ -1,11 +1,15 @@
 plugins {
     kotlin("multiplatform")
+    alias(libs.plugins.kotlinx.kover)
 }
 
 kotlin {
     jvm {
         tasks.withType<Test> {
             useJUnitPlatform()
+            reports {
+                junitXml.required.set(true)
+            }
         }
     }
     sourceSets {
