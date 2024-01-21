@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.kover)
+    id("publish")
 }
 
 kotlin {
@@ -33,4 +34,9 @@ kotlin {
             kotlin.srcDir("src/test/kotlin")
         }
     }
+}
+
+libraryData {
+    name.set("KOMM Processor")
+    description.set("Kotlin Object Multiplatform Mapper Processor")
 }

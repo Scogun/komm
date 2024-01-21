@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    id("publish")
 }
 
 kotlin {
@@ -9,4 +10,9 @@ kotlin {
             kotlin.srcDir("src/main/kotlin")
         }
     }
+}
+
+libraryData {
+    name.set("KOMM Annotations")
+    description.set("Annotations library for Kotlin Object Multiplatform Mapper")
 }
