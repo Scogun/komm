@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    //alias(libs.plugins.kotlinx.kover) TODO It raises `Could not apply withXml() to generated POM` exception during publishing
+    alias(libs.plugins.kotlinx.kover)
     id("publish")
 }
 
