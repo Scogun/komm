@@ -40,10 +40,12 @@ jobs:
           reporter: java-junit
 
       - name: "Run Coverage"
+        if: ${{ false }}
         run: ./gradlew :komm-processor:koverXmlReport
         shell: bash
 
       - name: "Coverage Report"
+        if: ${{ false }}
         uses: mi-kas/kover-report@v1
         with:
           path: ./komm-processor/build/reports/kover/report.xml
