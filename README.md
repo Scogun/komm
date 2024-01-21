@@ -15,6 +15,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [@MapDefault](#use-resolver)
   * [@NullSubstitute](#use-nullsubstitute)
     * [Allow Not-Null Assertion](#mapping-configuration-1)
+  * [Multi Sources](#multi-sources-support)
 ---
 
 ## Features
@@ -38,7 +39,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.0.5"
+val kommVersion = "0.1.0"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -51,7 +52,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.0.5"
+val kommVersion = "0.1.0"
 
 kotlin {
     jvm {
@@ -279,4 +280,42 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 ).also {
     it.otherId = id ?: IntResolver(it).resolve()
 }
+```
+### Multi Sources Support
+#### Classes declaration
+```kotlin
+@KOMMMap(
+    from = FirstSourceObject::class
+)
+@KOMMMap(
+  from = SecondSourceObject::class
+)
+data class DestinationObject(
+    @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+    @MapFrom("userId", [SecondSourceObject::class])
+    val id: Int
+) {
+    @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+    var otherId: Int = 0
+}
+
+data class FirstSourceObject(
+  val id: Int?
+)
+
+data class SecondSourceObject(
+    val userId: Int
+)
+```
+#### Generated extension functions
+```kotlin
+fun FirstSourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+    id = id ?: IntResolver(null).resolve()
+).also {
+    it.otherId = id ?: IntResolver(it).resolve()
+}
+
+fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+  id = userId
+)
 ```
