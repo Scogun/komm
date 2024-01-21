@@ -24,7 +24,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: "Build with Gradle"
-        run: ./gradlew build -x test
+        run: ./gradlew build -x jvmTest
         shell: bash
 
       - name: "Tests"
