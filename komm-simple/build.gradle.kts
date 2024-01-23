@@ -8,6 +8,10 @@ kotlin {
     jvm {
         withJava()
     }
+    js {
+        browser()
+        binaries.executable()
+    }
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -15,9 +19,11 @@ kotlin {
             }
         }
         val jvmMain by getting
+        val jsMain by getting
     }
 }
 
 dependencies {
     add("kspJvm", project(":komm-processor"))
+    add("kspJs", project(":komm-processor"))
 }

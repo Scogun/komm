@@ -5,9 +5,8 @@ import java.util.*
 
 fun main() {
     val source = SourceObject()
-    val destination = source.toDestinationObject()
+    val destination = source.toJvmDestinationObject()
     println(destination)
-    println(destination.otherCost)
     println(source.toSecondDestinationObject())
     println(source.toThirdDestinationObject())
 
