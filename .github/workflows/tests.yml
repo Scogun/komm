@@ -2,6 +2,7 @@ name: "Build and Test"
 
 on:
   workflow_dispatch:
+  workflow_call:
   pull_request:
     branches:
       - 'main'
@@ -26,7 +27,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: "Build with Gradle"
-        run: ./gradlew build -x jvmTest
+        run: ./gradlew build -x check
         shell: bash
 
       - name: "Tests"
