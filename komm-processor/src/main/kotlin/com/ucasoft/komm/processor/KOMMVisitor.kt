@@ -205,11 +205,10 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
         return null
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun associateWithFrom(item: KSAnnotation): List<ClassName> {
         val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapFrom::from.name }
         if (fromArgument != null) {
-            return (fromArgument.value as ArrayList<KSType>).map { it.toClassName() }
+            return (fromArgument.value as ArrayList<*>).filterIsInstance<KSType>().map { it.toClassName() }
         }
 
         if (item.annotationType.toString() == MapConvert::class.simpleName) {
