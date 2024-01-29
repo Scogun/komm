@@ -24,108 +24,72 @@ abstract class CompilationTests {
         properties: Map<String, PropertySpecInit> = emptyMap()
     ) = FileSpec
         .builder(packageName, "$className.kt")
-        .addImport("com.ucasoft.komm.annotations", "MapConfiguration")
-        .addImport("com.ucasoft.komm.annotations", "MapDefault")
+        .addImport("com.ucasoft.komm.annotations", "MapConfiguration", "MapDefault")
         .addImport("java.util", "Currency")
         .addType(
             TypeSpec
                 .classBuilder(className)
                 .addModifiers(KModifier.DATA)
-                .primaryConstructor(
-                    FunSpec
-                        .constructorBuilder()
-                        .apply {
-                            constructorProperties.forEach {
-                                addParameter(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
-                            }
-                        }
-                        .build())
+                .addPrimaryConstructor(constructorProperties)
                 .apply {
                     classAnnotations.forEach {
-                        addAnnotation(
-                            AnnotationSpec
-                                .builder(it.first)
-                                .apply {
-                                    for (member in it.second) {
-                                        addMember(member.key, *member.value.toTypedArray())
-                                    }
-                                }
-                                .build()
-                        )
+                        addAnnotation(buildAnnotation(it))
                     }
                     constructorProperties.forEach {
-                        addProperty(
-                            PropertySpec
-                                .builder(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
-                                .initializer(it.key)
-                                .apply {
-                                    it.value.annotations.forEach {
-                                        addAnnotation(
-                                            AnnotationSpec
-                                                .builder(it.first)
-                                                .apply {
-                                                    it.second.forEach { (format, args) ->
-                                                        addMember(format, *args.toTypedArray())
-                                                    }
-                                                }
-                                                .build()
-                                        )
-                                    }
-                                    it.value.parametrizedAnnotations.forEach {
-                                        addAnnotation(
-                                            AnnotationSpec
-                                                .builder(it.first)
-                                                .apply {
-                                                    it.second.forEach { (format, args) ->
-                                                        addMember(format, *args.toTypedArray())
-                                                    }
-                                                }
-                                                .build()
-                                        )
-                                    }
-                                }
-                                .build()
-                        )
+                        addProperty(buildProperty(it))
                     }
                     properties.forEach {
-                        addProperty(
-                            PropertySpec
-                                .builder(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
-                                .apply {
-                                    it.value.annotations.forEach {
-                                        addAnnotation(
-                                            AnnotationSpec
-                                                .builder(it.first)
-                                                .apply {
-                                                    it.second.forEach { (format, args) ->
-                                                        addMember(format, *args.toTypedArray())
-                                                    }
-                                                }
-                                                .build()
-                                        )
-                                    }
-                                    it.value.parametrizedAnnotations.forEach {
-                                        addAnnotation(
-                                            AnnotationSpec
-                                                .builder(it.first)
-                                                .apply {
-                                                    it.second.forEach { (format, args) ->
-                                                        addMember(format, *args.toTypedArray())
-                                                    }
-                                                }
-                                                .build()
-                                        )
-                                    }
-                                }
-                                .initializer(it.value.format, it.value.arg)
-                                .mutable()
-                                .build()
-                        )
+                        addProperty(buildProperty(it, false))
                     }
                 }
                 .build()
         )
         .build()
+
+    private fun TypeSpec.Builder.addPrimaryConstructor(constructorProperties: Map<String, PropertySpecInit>) = apply {
+        primaryConstructor(
+            FunSpec
+                .constructorBuilder()
+                .apply {
+                    constructorProperties.forEach {
+                        addParameter(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
+                    }
+                }
+                .build()
+        )
+    }
+
+    private fun buildProperty(property: Map.Entry<String, PropertySpecInit>, isConstructor: Boolean = true) =
+        PropertySpec
+            .builder(property.key, property.value.type.asTypeName().copy(property.value.isNullable))
+            .apply {
+                if (isConstructor) {
+                    initializer(property.key)
+                } else {
+                    initializer(property.value.format, property.value.arg)
+                    mutable()
+                }
+                property.value.annotations.forEach {
+                    addAnnotation(buildAnnotation(it))
+                }
+                property.value.parametrizedAnnotations.forEach {
+                    addAnnotation(buildParameterizedAnnotation(it))
+                }
+            }
+            .build()
+
+    private fun buildAnnotation(annotation: Pair<KClass<out Annotation>, Map<String, List<Any>>>) =
+        buildAnnotation(AnnotationSpec.builder(annotation.first), annotation.second)
+
+    private fun buildParameterizedAnnotation(annotation: Pair<ParameterizedTypeName, Map<String, List<Any>>>) =
+        buildAnnotation(AnnotationSpec.builder(annotation.first), annotation.second)
+
+    private fun buildAnnotation(builder: AnnotationSpec.Builder, members: Map<String, List<Any>>) = builder.apply {
+        members.forEach {
+            addMember(it.key, *it.value.toTypedArray())
+        }
+    }.build()
+
 
     fun generate(vararg fileSpec: FileSpec) = KotlinCompilation().apply {
         inheritClassPath = true
@@ -141,9 +105,22 @@ abstract class CompilationTests {
         fun toPropertySpecInit() = PropertySpecInit(type, if (value is String) "%S" else "%L", value)
     }
 
-    internal open class CastTestProperty(name: String, val fromType: KClass<*>, val fromValue: Any, val toType: KClass<*>, val toValue: Any) : TestProperty(name, toType, toValue)
+    internal open class CastTestProperty(
+        name: String,
+        val fromType: KClass<*>,
+        val fromValue: Any,
+        val toType: KClass<*>,
+        val toValue: Any
+    ) : TestProperty(name, toType, toValue)
 
-    internal class MapTestProperty(val fromName: String, fromType: KClass<*>, fromValue: Any, val toName: String, toType: KClass<*>, toValue: Any) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
+    internal class MapTestProperty(
+        val fromName: String,
+        fromType: KClass<*>,
+        fromValue: Any,
+        val toName: String,
+        toType: KClass<*>,
+        toValue: Any
+    ) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
 
     internal class PropertySpecInit(
         val type: KClass<*>,
