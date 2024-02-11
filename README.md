@@ -2,6 +2,13 @@
 
 The **Kotlin Object Multiplatform Mapper** provides you a possibility to generate (via [KSP](https://github.com/google/ksp)) extension function to map one object to another.
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Scogun_komm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Scogun_komm)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Scogun_komm&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Scogun_komm)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Scogun_komm&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Scogun_komm)  
+![GitHub](https://img.shields.io/github/license/Scogun/komm?color=blue)  
+![Publish workflow](https://github.com/Scogun/komm/actions/workflows/publish.yml/badge.svg)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Annotations&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-annotations)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Processor&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-processor)
 ---
 * [Features](#features)
 * [Usage](#usage)
@@ -10,6 +17,8 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
     * [Multiplatform project](#multiplatform-project)
   * [Simple mapping](#simple-mapping)
   * [Configuration](#mapping-configuration)
+    * [Disable AutoCast](#disable-autocast)
+    * [Change Convert Function Name](#change-convert-function-name)
   * [@MapFrom](#mapfrom-annotation)
   * [@MapConverter](#use-converter)
   * [@MapDefault](#use-resolver)
@@ -112,7 +121,8 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 ```
 
 ### Mapping Configuration
-### Classes declaration
+#### Disable AutoCast
+###### Classes declaration
 ```kotlin
 @KOMMMap(
     from = SourceObject::class,
@@ -127,9 +137,34 @@ data class DestinationObject(
     var intToString: String = ""
 }
 ```
-### Generation result
+###### Generation result
 ```console
 e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: AutoCast is turned off! You have to use @MapConvert annotation to cast (stringToInt: Int) from (stringToInt: String)
+```
+#### Change Convert Function Name
+###### Classes declaration
+```kotlin
+@KOMMMap(
+    from = SourceObject::class,
+    config = MapConfiguration(
+        convertFunctionName = "convertToDestination"
+    )
+)
+data class DestinationObject(
+    val id: Int,
+    val stringToInt: Int
+) {
+    var intToString: String = ""
+}
+```
+###### Generated extension function
+```kotlin
+fun SourceObject.convertToDestination(): DestinationObject = DestinationObject(
+    id = id,
+    stringToInt = stringToInt.toInt()
+).also { 
+    it.intToString = intToString.toString()
+}
 ```
 
 ### @MapFrom annotation
