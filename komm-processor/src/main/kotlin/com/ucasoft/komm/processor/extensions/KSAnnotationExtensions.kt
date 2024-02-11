@@ -9,6 +9,7 @@ internal inline fun <reified T: Any> KSAnnotation.getConfigValue(key: String) : 
 }
 
 internal inline fun <reified T : Any> castConfigValue(value: String, `class`: KClass<T>) = when(`class`) {
+    String::class -> value
     Boolean::class -> value.toBoolean()
     else -> throw Exception()
 }

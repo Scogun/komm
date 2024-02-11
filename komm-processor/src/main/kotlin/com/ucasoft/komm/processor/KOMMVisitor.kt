@@ -31,7 +31,8 @@ class KOMMVisitor(private val functions: MutableList<FunSpec>) : KSVisitorVoid()
             val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
             val config = configArgument.value as KSAnnotation
             val source = fromArgument.value as KSType
-            val fromSourceFunctionName = "to$classDeclaration"
+            val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
+            val fromSourceFunctionName = convertFunctionName.ifEmpty { "to$classDeclaration" }
             functions.add(
                 FunSpec.builder(fromSourceFunctionName)
                     .receiver(source.toTypeName())

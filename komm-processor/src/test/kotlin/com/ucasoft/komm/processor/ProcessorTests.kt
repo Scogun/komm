@@ -2,6 +2,7 @@ package com.ucasoft.komm.processor
 
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapConfiguration
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -120,6 +121,33 @@ internal class ProcessorTests : CompilationTests() {
 
         destinationInstance::class.shouldHaveMemberProperty(propertyName) {
             it.getter.call(destinationInstance).shouldBe(sourceInstance.symbol)
+        }
+    }
+
+    @Test
+    fun convertFunctionName() {
+        val convertFunctionName = "convertToDestination"
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf("id" to PropertySpecInit(Int::class)),
+                listOf(
+                    KOMMMap::class to mapOf(
+                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::convertFunctionName.name} = \"$convertFunctionName\")")
+                    )
+                )
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val `class` = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        `class`.declaredMethods.shouldBeSingleton {
+            it.name.shouldBe(convertFunctionName)
         }
     }
 
