@@ -11,10 +11,13 @@ jobs:
   tests:
     uses: ./.github/workflows/tests.yml
     secrets: inherit
+    permissions:
+      checks: write
+      pull-requests: write
 
   build-and-publish:
     needs: tests
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 

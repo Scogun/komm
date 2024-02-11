@@ -43,11 +43,13 @@ jobs:
           reporter: java-junit
 
       - name: "Run Coverage"
+        if: ${{ github.event_name == 'pull_request' }}
         run: ./gradlew :komm-processor:koverXmlReport
         shell: bash
 
       - name: "Coverage Report"
         uses: mi-kas/kover-report@v1
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           path: ./komm-processor/build/reports/kover/report.xml
           token: ${{ secrets.GITHUB_TOKEN }}
