@@ -7,8 +7,8 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Scogun_komm&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Scogun_komm)  
 ![GitHub](https://img.shields.io/github/license/Scogun/komm?color=blue)  
 ![Publish workflow](https://github.com/Scogun/komm/actions/workflows/publish.yml/badge.svg)
-[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Annotations&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-annotations)
-[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Processor&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-processor)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-annotations?label=KOMM-Annotations&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-annotations)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Processоr&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-processor)
 ---
 * [Features](#features)
 * [Usage](#usage)
