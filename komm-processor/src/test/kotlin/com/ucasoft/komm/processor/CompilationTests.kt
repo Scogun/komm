@@ -2,6 +2,7 @@ package com.ucasoft.komm.processor
 
 import KOMMProcessorProvider
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspWithCompilation
@@ -52,16 +53,18 @@ abstract class CompilationTests {
                 .constructorBuilder()
                 .apply {
                     constructorProperties.forEach {
-                        addParameter(it.key, it.value.type.asTypeName().copy(it.value.isNullable))
+                        addParameter(
+                            it.key, buildType(it)
+                        )
                     }
                 }
                 .build()
         )
     }
 
-    private fun buildProperty(property: Map.Entry<String, PropertySpecInit>, isConstructor: Boolean = true) =
-        PropertySpec
-            .builder(property.key, property.value.type.asTypeName().copy(property.value.isNullable))
+    private fun buildProperty(property: Map.Entry<String, PropertySpecInit>, isConstructor: Boolean = true): PropertySpec {
+        return PropertySpec
+            .builder(property.key, buildType(property))
             .apply {
                 if (isConstructor) {
                     initializer(property.key)
@@ -77,6 +80,14 @@ abstract class CompilationTests {
                 }
             }
             .build()
+    }
+
+    private fun buildType(property: Map.Entry<String, PropertySpecInit>) =
+        if (property.value.parametrizedType != null) {
+            property.value.type.asTypeName().parameterizedBy(property.value.parametrizedType!!.asTypeName())
+        } else {
+            property.value.type.asTypeName()
+        }.copy(property.value.isNullable)
 
     private fun buildAnnotation(annotation: Pair<KClass<out Annotation>, Map<String, List<Any>>>) =
         buildAnnotation(AnnotationSpec.builder(annotation.first), annotation.second)
@@ -128,6 +139,7 @@ abstract class CompilationTests {
         val arg: Any? = null,
         val isNullable: Boolean = false,
         val annotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
-        val parametrizedAnnotations: List<Pair<ParameterizedTypeName, Map<String, List<Any>>>> = emptyList()
+        val parametrizedAnnotations: List<Pair<ParameterizedTypeName, Map<String, List<Any>>>> = emptyList(),
+        val parametrizedType: KClass<*>? = null
     )
 }
