@@ -15,7 +15,7 @@ internal class MapDefaultTests: SatelliteTests() {
 
     @Test
     fun mapDefaultConstructorTest() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val resolver = buildResolver()
         val resolverClassName = resolver.typeSpecs.first().name!!
@@ -25,9 +25,9 @@ internal class MapDefaultTests: SatelliteTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(
-                    "id" to PropertySpecInit(Int::class),
+                    "id" to PropertySpecInit(INT),
                     "otherProperty" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapDefault::class.asTypeName()
                                 .parameterizedBy(ClassName(packageName, resolverClassName)) to mapOf(
@@ -60,7 +60,7 @@ internal class MapDefaultTests: SatelliteTests() {
 
     @Test
     fun mapDefaultNoConstructorTest() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val resolver = buildResolver()
         val resolverClassName = resolver.typeSpecs.first().name!!
@@ -69,11 +69,11 @@ internal class MapDefaultTests: SatelliteTests() {
             resolver,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
                 mapOf(
                     "otherProperty" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         "%S",
                         "I'm from destination!",
                         parametrizedAnnotations = listOf(

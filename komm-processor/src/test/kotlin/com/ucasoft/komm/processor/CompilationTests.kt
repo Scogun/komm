@@ -84,9 +84,9 @@ abstract class CompilationTests {
 
     private fun buildType(property: Map.Entry<String, PropertySpecInit>) =
         if (property.value.parametrizedType != null) {
-            property.value.type.asTypeName().parameterizedBy(property.value.parametrizedType!!.asTypeName())
+            property.value.type.parameterizedBy(property.value.parametrizedType!!.asTypeName())
         } else {
-            property.value.type.asTypeName()
+            property.value.type
         }.copy(property.value.isNullable)
 
     private fun buildAnnotation(annotation: Pair<KClass<out Annotation>, Map<String, List<Any>>>) =
@@ -113,7 +113,7 @@ abstract class CompilationTests {
 
     internal open class TestProperty(val name: String, val type: KClass<*>, val value: Any) {
 
-        fun toPropertySpecInit() = PropertySpecInit(type, if (value is String) "%S" else "%L", value)
+        fun toPropertySpecInit() = PropertySpecInit(type.asClassName(), if (value is String) "%S" else "%L", value)
     }
 
     internal open class CastTestProperty(
@@ -134,7 +134,7 @@ abstract class CompilationTests {
     ) : CastTestProperty(toName, fromType, fromValue, toType, toValue)
 
     internal class PropertySpecInit(
-        val type: KClass<*>,
+        val type: ClassName,
         val format: String = "",
         val arg: Any? = null,
         val isNullable: Boolean = false,

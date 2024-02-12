@@ -26,13 +26,13 @@ internal class NullSubstituteTests: SatelliteTests() {
 
     @Test
     fun nullAssertionFail() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class, isNullable = true)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT, isNullable = true)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -43,13 +43,13 @@ internal class NullSubstituteTests: SatelliteTests() {
 
     @Test
     fun allowNullAssertionRuntimeFail() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class, isNullable = true)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT, isNullable = true)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf(
                         "from = %L" to listOf("$sourceObjectClassName::class"),
@@ -72,7 +72,7 @@ internal class NullSubstituteTests: SatelliteTests() {
 
     @Test
     fun nullSubstituteTest() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class, isNullable = true)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT, isNullable = true)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val resolver = buildResolver()
         val resolverClassName = resolver.typeSpecs.first().name!!
@@ -83,7 +83,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "id" to PropertySpecInit(
-                        Int::class,
+                        INT,
                         annotations = listOf(
                             NullSubstitute::class to mapOf(
                                 "default = %L" to listOf("${MapDefault::class.simpleName}($resolverClassName::class)")
@@ -121,7 +121,7 @@ internal class NullSubstituteTests: SatelliteTests() {
 
     @Test
     fun nullSubstituteWithCastTest() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(String::class, isNullable = true)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(STRING, isNullable = true)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val resolver = buildResolver()
         val resolverClassName = resolver.typeSpecs.first().name!!
@@ -132,7 +132,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "id" to PropertySpecInit(
-                        Int::class,
+                        INT,
                         annotations = listOf(
                             NullSubstitute::class to mapOf(
                                 "default = %L" to listOf("${MapDefault::class.simpleName}($resolverClassName::class)")

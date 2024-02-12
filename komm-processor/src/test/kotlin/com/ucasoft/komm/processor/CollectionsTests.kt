@@ -1,5 +1,8 @@
 package com.ucasoft.komm.processor
 
+import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.MUTABLE_LIST
+import com.squareup.kotlinpoet.asClassName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -14,7 +17,7 @@ internal class CollectionsTests: CompilationTests() {
         val sourceSpec = buildFileSpec(
             "SourceObject",
             mapOf(
-                "intList" to PropertySpecInit(List::class, parametrizedType = Int::class)
+                "intList" to PropertySpecInit(LIST, parametrizedType = Int::class)
             )
         )
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
@@ -23,7 +26,7 @@ internal class CollectionsTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(
-                    "intList" to PropertySpecInit(List::class, parametrizedType = Int::class),
+                    "intList" to PropertySpecInit(LIST, parametrizedType = Int::class),
                 ),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
@@ -49,7 +52,7 @@ internal class CollectionsTests: CompilationTests() {
         val sourceSpec = buildFileSpec(
             "SourceObject",
             mapOf(
-                "intList" to PropertySpecInit(MutableList::class, parametrizedType = Int::class)
+                "intList" to PropertySpecInit(MUTABLE_LIST, parametrizedType = Int::class)
             )
         )
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
@@ -58,7 +61,7 @@ internal class CollectionsTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(
-                    "intList" to PropertySpecInit(List::class, parametrizedType = Int::class),
+                    "intList" to PropertySpecInit(LIST, parametrizedType = Int::class),
                 ),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
@@ -84,7 +87,7 @@ internal class CollectionsTests: CompilationTests() {
         val sourceSpec = buildFileSpec(
             "SourceObject",
             mapOf(
-                "intList" to PropertySpecInit(List::class, parametrizedType = Int::class)
+                "intList" to PropertySpecInit(LIST, parametrizedType = Int::class)
             )
         )
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
@@ -93,7 +96,7 @@ internal class CollectionsTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(
-                    "intList" to PropertySpecInit(MutableList::class, parametrizedType = Int::class),
+                    "intList" to PropertySpecInit(MUTABLE_LIST, parametrizedType = Int::class),
                 ),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )

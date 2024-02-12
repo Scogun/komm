@@ -19,7 +19,7 @@ internal class ConverterTests: SatelliteTests() {
 
     @Test
     fun mapConvertBadNameFail() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(INT)))
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
         val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
@@ -31,7 +31,7 @@ internal class ConverterTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "toId" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("id"),
@@ -51,7 +51,7 @@ internal class ConverterTests: SatelliteTests() {
     @Test
     fun mapConvertSameName() {
         val propertyName = "id"
-        val sourceSpec = buildFileSpec("SourceObject", mapOf(propertyName to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf(propertyName to PropertySpecInit(INT)))
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
         val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
@@ -63,7 +63,7 @@ internal class ConverterTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     propertyName to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
@@ -99,8 +99,8 @@ internal class ConverterTests: SatelliteTests() {
     fun mapConvertFromWholeSource() {
         val sourceSpec = buildFileSpec(
             "SourceObject", mapOf(
-                "name" to PropertySpecInit(String::class),
-                "surname" to PropertySpecInit(String::class)
+                "name" to PropertySpecInit(STRING),
+                "surname" to PropertySpecInit(STRING)
             )
         )
         val sourceType = sourceSpec.typeSpecs.first()
@@ -115,7 +115,7 @@ internal class ConverterTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "fullName" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(

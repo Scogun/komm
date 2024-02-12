@@ -1,5 +1,8 @@
 package com.ucasoft.komm.processor
 
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.asClassName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
@@ -24,13 +27,13 @@ internal class CastTests: CompilationTests() {
 
     @Test
     fun autoCastOffFail() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(String::class)),
+                mapOf("id" to PropertySpecInit(STRING)),
                 listOf(
                     KOMMMap::class to mapOf(
                         "from = %L" to listOf("$sourceObjectClassName::class"),
@@ -46,13 +49,13 @@ internal class CastTests: CompilationTests() {
 
     @Test
     fun runtimeCastFail() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(String::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(STRING)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))
                 )
             )
@@ -74,13 +77,13 @@ internal class CastTests: CompilationTests() {
     @ParameterizedTest
     @MethodSource("castMapArguments")
     fun checkSuccessCasting(properties: List<CastTestProperty>) {
-        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.fromType) })
+        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.fromType.asClassName()) })
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                properties.associate { it.name to PropertySpecInit(it.toType) },
+                properties.associate { it.name to PropertySpecInit(it.toType.asClassName()) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -108,7 +111,7 @@ internal class CastTests: CompilationTests() {
         val generated = generate(
             buildFileSpec(
                 "DestinationObject",
-                mapOf(propertyName to PropertySpecInit(String::class)),
+                mapOf(propertyName to PropertySpecInit(STRING)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
             )
         )

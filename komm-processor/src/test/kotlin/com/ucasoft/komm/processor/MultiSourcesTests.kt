@@ -1,6 +1,7 @@
 package com.ucasoft.komm.processor
 
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.asTypeName
@@ -19,16 +20,16 @@ class MultiSourcesTests: SatelliteTests() {
     @Test
     fun multiSourcesSimpleMap() {
         val propertyName = "id"
-        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf(propertyName to PropertySpecInit(Int::class)))
+        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf(propertyName to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
-        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf(propertyName to PropertySpecInit(Int::class)))
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf(propertyName to PropertySpecInit(INT)))
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
             secondSourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf(propertyName to PropertySpecInit(Int::class)),
+                mapOf(propertyName to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf("from = %L" to listOf("$firstSourceObjectClassName::class")),
                     KOMMMap::class to mapOf("from = %L" to listOf("$secondSourceObjectClassName::class")),
@@ -60,9 +61,9 @@ class MultiSourcesTests: SatelliteTests() {
 
     @Test
     fun multiSourcesMapFromFail() {
-        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(Int::class)))
+        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
-        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(Int::class)))
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(INT)))
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -71,7 +72,7 @@ class MultiSourcesTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "id" to PropertySpecInit(
-                        Int::class,
+                        INT,
                         annotations = listOf(
                             MapFrom::class to mapOf("name = %S" to listOf("firstId")),
                             MapFrom::class to mapOf("name = %S" to listOf("secondId"))
@@ -91,9 +92,9 @@ class MultiSourcesTests: SatelliteTests() {
 
     @Test
     fun multiSourcesMapFrom() {
-        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(Int::class)))
+        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
-        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(Int::class)))
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(INT)))
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -102,7 +103,7 @@ class MultiSourcesTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "id" to PropertySpecInit(
-                        Int::class,
+                        INT,
                         annotations = listOf(
                             MapFrom::class to mapOf("name = %S" to listOf("firstId")),
                             MapFrom::class to mapOf(
@@ -145,14 +146,14 @@ class MultiSourcesTests: SatelliteTests() {
     fun multiSourcesConvertsAndDefault() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(
-                "name" to PropertySpecInit(String::class),
-                "surname" to PropertySpecInit(String::class)
+                "name" to PropertySpecInit(STRING),
+                "surname" to PropertySpecInit(STRING)
             )
         )
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
-        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("fullName" to PropertySpecInit(String::class)))
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("fullName" to PropertySpecInit(STRING)))
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
-        val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(INT)))
         val thirdSourceObjectClassName = thirdSourceObject.typeSpecs.first().name!!
         val converter = buildConverter(
             ClassName(packageName, firstSourceObjectClassName),
@@ -173,7 +174,7 @@ class MultiSourcesTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "fullName" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(
@@ -235,14 +236,14 @@ class MultiSourcesTests: SatelliteTests() {
     fun multiSourcesDefaultFallback() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(
-                "name" to PropertySpecInit(String::class),
-                "surname" to PropertySpecInit(String::class)
+                "name" to PropertySpecInit(STRING),
+                "surname" to PropertySpecInit(STRING)
             )
         )
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
-        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("fullName" to PropertySpecInit(String::class)))
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("fullName" to PropertySpecInit(STRING)))
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
-        val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(INT)))
         val thirdSourceObjectClassName = thirdSourceObject.typeSpecs.first().name!!
         val converter = buildConverter(
             ClassName(packageName, firstSourceObjectClassName),
@@ -263,7 +264,7 @@ class MultiSourcesTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(
                     "fullName" to PropertySpecInit(
-                        String::class,
+                        STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(
