@@ -1,6 +1,9 @@
 package com.ucasoft.komm.processor
 
+import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.*
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
@@ -103,6 +106,21 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
         
         if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
             throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
+        }
+
+        val destinationDeclaration = destinationType.declaration as KSClassDeclaration
+        val sourceDeclaration = propertyType.declaration as KSClassDeclaration
+        if (destinationDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE } && sourceDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }) {
+            val destinationParam = destinationType.arguments.first()
+            val sourceParam = propertyType.arguments.first()
+            val stringBuilder = StringBuilder(propertyName)
+            if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
+                stringBuilder.append(".map{ it.to${destinationParam.type}() }")
+            }
+            if (!destinationType.isAssignableFrom(propertyType)) {
+                stringBuilder.append(".to${destinationProperty.type}()")
+            }
+            return stringBuilder.toString()
         }
 
         if (propertyType.toTypeName().isNullable) {
