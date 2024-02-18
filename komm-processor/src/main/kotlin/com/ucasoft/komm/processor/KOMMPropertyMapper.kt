@@ -103,7 +103,7 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
         if (destinationType.isAssignableFrom(propertyType)) {
             return propertyName
         }
-        
+
         if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
             throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
         }
@@ -118,9 +118,35 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
         }
 
+        val (iterableCase, result) = castIterable(
+            propertyType,
+            propertyName,
+            sourceIsNullable,
+            destinationType,
+            destinationIsNullOrNullSubstitute
+        )
+        if (iterableCase) {
+            return result!!
+        }
+
+        if (sourceIsNullable && propertyType.isAssignableFrom(destinationType)) {
+            return "$propertyName!!"
+        }
+
+        return "$propertyName${if (sourceIsNullable) "!!" else ""}.to${destinationProperty.type}()"
+    }
+
+    private fun castIterable(
+        propertyType: KSType,
+        propertyName: String,
+        sourceIsNullable: Boolean,
+        destinationType: KSType,
+        destinationIsNullOrNullSubstitute: Boolean
+    ): Pair<Boolean, String?> {
         val destinationDeclaration = destinationType.declaration as KSClassDeclaration
         val sourceDeclaration = propertyType.declaration as KSClassDeclaration
-        if (destinationDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE } && sourceDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }) {
+        if (destinationDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }
+            && sourceDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }) {
             val destinationParam = destinationType.arguments.first()
             val sourceParam = propertyType.arguments.first()
             val stringBuilder = StringBuilder(propertyName)
@@ -130,15 +156,11 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
                 fromCastDeclaration = LIST
             }
             if (fromCastDeclaration != destinationDeclaration.toClassName()) {
-                stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
+                stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationType.toClassName().simpleName}()")
             }
-            return stringBuilder.toString()
+            return true to stringBuilder.toString()
         }
 
-        if (sourceIsNullable && propertyType.isAssignableFrom(destinationType)) {
-            return "$propertyName!!"
-        }
-
-        return "$propertyName${if (sourceIsNullable) "!!" else ""}.to${destinationProperty.type}()"
+        return false to null
     }
 }
