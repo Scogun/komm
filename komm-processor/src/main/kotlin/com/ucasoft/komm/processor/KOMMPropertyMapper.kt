@@ -152,15 +152,19 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             val stringBuilder = StringBuilder(propertyName)
             var fromCastDeclaration = sourceDeclaration.toClassName()
             if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
-                stringBuilder.append("${if (sourceIsNullable) (if (destinationIsNullOrNullSubstitute) "?" else "!!") else ""}.map{ it.to${destinationParam.type}() }")
+                stringBuilder.append("${addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute))}.map{ it.to${destinationParam.type}() }")
                 fromCastDeclaration = LIST
             }
             if (fromCastDeclaration != destinationDeclaration.toClassName()) {
-                stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationType.toClassName().simpleName}()")
+                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
             }
             return true to stringBuilder.toString()
         }
 
         return false to null
     }
+
+    private fun addSafeNullCall(add: Boolean, safe: String = "?", otherwise: String = "") = if (add) safe else otherwise
+
+    private fun safeCallOrNullAssertion(safe: Boolean) = if (safe) "?" else "!!"
 }
