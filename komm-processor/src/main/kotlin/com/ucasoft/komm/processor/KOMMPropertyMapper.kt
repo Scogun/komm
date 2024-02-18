@@ -124,10 +124,14 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             val destinationParam = destinationType.arguments.first()
             val sourceParam = propertyType.arguments.first()
             val stringBuilder = StringBuilder(propertyName)
+            var fromCastDeclaration = sourceDeclaration.toClassName()
             if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
                 stringBuilder.append("${if (sourceIsNullable) (if (destinationIsNullOrNullSubstitute) "?" else "!!") else ""}.map{ it.to${destinationParam.type}() }")
+                fromCastDeclaration = LIST
             }
-            stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
+            if (fromCastDeclaration != destinationDeclaration.toClassName()) {
+                stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
+            }
             return stringBuilder.toString()
         }
 

@@ -285,6 +285,35 @@ internal class CollectionsTests: SatelliteTests() {
         }
     }
 
+    @Test
+    fun mapDifferentTypeSetToList() {
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            mapOf(
+                "someSet" to PropertySpecInit(SET, parametrizedType = String::class)
+            )
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    "someList" to PropertySpecInit(
+                        LIST,
+                        annotations = listOf(
+                            MapFrom::class to mapOf("name = %S" to listOf("someSet"))
+                        ),
+                        parametrizedType = Int::class
+                    ),
+                ),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+    }
+
     private fun buildResolver() = buildSatellite(
         "TestListResolver",
         KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), LIST.parameterizedBy(INT)),
