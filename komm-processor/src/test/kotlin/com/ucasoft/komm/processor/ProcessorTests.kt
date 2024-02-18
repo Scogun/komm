@@ -1,5 +1,8 @@
 package com.ucasoft.komm.processor
 
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.asClassName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
@@ -18,13 +21,13 @@ internal class ProcessorTests : CompilationTests() {
 
     @Test
     fun checkSuccessGeneration() {
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -40,13 +43,13 @@ internal class ProcessorTests : CompilationTests() {
     @ParameterizedTest
     @MethodSource("simpleMapArguments")
     fun checkSimpleObjectMapping(properties: List<TestProperty>) {
-        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
+        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type.asClassName()) })
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                properties.associate { it.name to PropertySpecInit(it.type) },
+                properties.associate { it.name to PropertySpecInit(it.type.asClassName()) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
             )
         )
@@ -72,13 +75,13 @@ internal class ProcessorTests : CompilationTests() {
     @MethodSource("simpleMapArguments")
     fun checkMapNotConstructorProperty(properties: List<TestProperty>) {
         val notConstructorProperty = properties.last().name
-        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type) })
+        val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.name to PropertySpecInit(it.type.asClassName()) })
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                properties.filter { it.name != notConstructorProperty }.associate { it.name to PropertySpecInit(it.type) },
+                properties.filter { it.name != notConstructorProperty }.associate { it.name to PropertySpecInit(it.type.asClassName()) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
                 properties.filter { it.name == notConstructorProperty }.associate { it.name to it.toPropertySpecInit() }
             )
@@ -107,7 +110,7 @@ internal class ProcessorTests : CompilationTests() {
         val generated = generate(
             buildFileSpec(
                 "DestinationObject",
-                mapOf(propertyName to PropertySpecInit(String::class)),
+                mapOf(propertyName to PropertySpecInit(STRING)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
             )
         )
@@ -127,13 +130,13 @@ internal class ProcessorTests : CompilationTests() {
     @Test
     fun convertFunctionName() {
         val convertFunctionName = "convertToDestination"
-        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(Int::class)))
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
             sourceSpec,
             buildFileSpec(
                 "DestinationObject",
-                mapOf("id" to PropertySpecInit(Int::class)),
+                mapOf("id" to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf(
                         "from = %L" to listOf("$sourceObjectClassName::class"),

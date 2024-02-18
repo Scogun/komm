@@ -25,12 +25,16 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [@NullSubstitute](#use-nullsubstitute)
     * [Allow Not-Null Assertion](#mapping-configuration-1)
   * [Multi Sources](#multi-sources-support)
+  * [Collections Mapping](#collections-mapping)
+    * [Allow NotNullAssertion](#allow-notnullassertion)
+    * [NullSubstitute](#nullsubstitute)
 ---
 
 ## Features
 * Supports KSP Multiplatform
 * Maps as constructor parameters as well as public properties with setter
 * Supports properties types cast
+* Support collections mapping with different types of elements
 * Supports Java objects get* functions
 * Supports multi source classes with separated configurations
 * Has next properties annotations:
@@ -48,7 +52,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.1.8"
+val kommVersion = "0.2.0"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -61,7 +65,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
-val kommVersion = "0.1.8"
+val kommVersion = "0.2.0"
 
 kotlin {
     jvm {
@@ -352,5 +356,45 @@ fun FirstSourceObject.toDestinationObject(): DestinationObject = DestinationObje
 
 fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObject(
   id = userId
+)
+```
+
+### Collections Mapping
+#### Allow NotNullAssertion
+###### Classes declaration
+```kotlin
+class SourceObject {
+    val intList: List<Int>? = listOf(1, 2, 3)
+}
+
+@KOMMMap(from = SourceObject::class, config = MapConfiguration(allowNotNullAssertion = true))
+data class DestinationObject(
+    @MapFrom("intList")
+    val stringList: MutableList<String>
+)
+```
+###### Generated extension function
+```kotlin
+public fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+	stringList = intList!!.map { it.toString() }.toMutableList()
+)
+```
+#### NullSubstitute
+###### Classes declaration
+```kotlin
+class SourceObject {
+    val intList: List<Int>? = listOf(1, 2, 3)
+}
+
+@KOMMMap(from = SourceObject::class)
+data class DestinationObject(
+    @NullSubstitute(MapDefault(StringListResolver::class), "intList")
+    val stringList: MutableList<String>
+)
+```
+###### Generated extension function
+```kotlin
+public fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+	stringList = intList?.map { it.toString() }?.toMutableList() ?: StringListResolver(null).resolve()
 )
 ```

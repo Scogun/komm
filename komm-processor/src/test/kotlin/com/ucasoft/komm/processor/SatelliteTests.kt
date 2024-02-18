@@ -11,7 +11,7 @@ open class SatelliteTests : CompilationTests() {
         sourceType: TypeName,
         overrideFunctionName: String,
         memberType: ClassName?,
-        returnType: ClassName,
+        returnType: TypeName,
         statement: String
     ) = FileSpec
         .builder(packageName, "$className.kt")
