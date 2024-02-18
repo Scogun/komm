@@ -108,32 +108,35 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
         }
 
+        val sourceIsNullable = propertyType.toTypeName().isNullable
+        val destinationIsNullable = destinationType.toTypeName().isNullable
+        val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+        val allowNotNullAssertion = config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)
+
+        if (sourceIsNullable && !destinationIsNullable && !allowNotNullAssertion && !destinationHasNullSubstitute) {
+            throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
+        }
+
         val destinationDeclaration = destinationType.declaration as KSClassDeclaration
         val sourceDeclaration = propertyType.declaration as KSClassDeclaration
         if (destinationDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE } && sourceDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }) {
             val destinationParam = destinationType.arguments.first()
             val sourceParam = propertyType.arguments.first()
             val stringBuilder = StringBuilder(propertyName)
+            if (sourceIsNullable && !destinationIsNullable) {
+                stringBuilder.append(if (destinationHasNullSubstitute) "?" else "!!")
+            }
             if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
                 stringBuilder.append(".map{ it.to${destinationParam.type}() }")
             }
-            if (!destinationType.isAssignableFrom(propertyType)) {
-                stringBuilder.append(".to${destinationProperty.type}()")
-            }
+            stringBuilder.append("${if (destinationHasNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
             return stringBuilder.toString()
         }
 
-        if (propertyType.toTypeName().isNullable) {
-            val destinationHasNullSubstitute =
-                destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-            if (!destinationHasNullSubstitute && !config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)) {
-                throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
-            }
-            if (propertyType.isAssignableFrom(destinationType)) {
-                return "$propertyName!!"
-            }
+        if (sourceIsNullable && propertyType.isAssignableFrom(destinationType)) {
+            return "$propertyName!!"
         }
 
-        return "$propertyName${if (propertyType.toTypeName().isNullable) "!!" else ""}.to${destinationProperty.type}()"
+        return "$propertyName${if (sourceIsNullable) "!!" else ""}.to${destinationProperty.type}()"
     }
 }

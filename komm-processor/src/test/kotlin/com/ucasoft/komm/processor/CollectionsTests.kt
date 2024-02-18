@@ -1,11 +1,13 @@
 package com.ucasoft.komm.processor
 
-import com.squareup.kotlinpoet.LIST
-import com.squareup.kotlinpoet.MUTABLE_LIST
-import com.squareup.kotlinpoet.SET
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
+import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapDefault
 import com.ucasoft.komm.annotations.MapFrom
+import com.ucasoft.komm.annotations.NullSubstitute
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -15,7 +17,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import java.lang.reflect.InvocationTargetException
 import kotlin.test.Test
 
-internal class CollectionsTests: CompilationTests() {
+internal class CollectionsTests: SatelliteTests() {
 
     @Test
     fun mapSimilarCollections() {
@@ -188,6 +190,38 @@ internal class CollectionsTests: CompilationTests() {
     }
 
     @Test
+    fun mapDifferentTypeNullableListToList() {
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            mapOf(
+                "someList" to PropertySpecInit(LIST, isNullable = true, parametrizedType = String::class)
+            )
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val resolver = buildResolver()
+        val resolverClassName = resolver.typeSpecs.first().name!!
+        val generated = generate(
+            sourceSpec,
+            resolver,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    "someList" to PropertySpecInit(
+                        LIST, annotations = listOf(
+                            NullSubstitute::class to mapOf(
+                                "default = %L" to listOf("${MapDefault::class.simpleName}($resolverClassName::class)")
+                            )
+                        ), parametrizedType = Int::class
+                    ),
+                ),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+    }
+
+    @Test
     fun mapSetToList() {
         val sourceSpec = buildFileSpec(
             "SourceObject",
@@ -227,4 +261,15 @@ internal class CollectionsTests: CompilationTests() {
             it.getter.call(destinationInstance).shouldBe(parameter.toList())
         }
     }
+
+    private fun buildResolver() = buildSatellite(
+        "TestListResolver",
+        KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), LIST.parameterizedBy(INT)),
+        "destination",
+        ClassName(packageName, "DestinationObject").copy(true),
+        "resolve",
+        null,
+        LIST.parameterizedBy(INT),
+        "return listOf(1, 2, 3)"
+    )
 }
