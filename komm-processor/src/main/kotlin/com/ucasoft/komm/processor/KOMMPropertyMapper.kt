@@ -111,9 +111,10 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
         val sourceIsNullable = propertyType.toTypeName().isNullable
         val destinationIsNullable = destinationType.toTypeName().isNullable
         val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute
         val allowNotNullAssertion = config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)
 
-        if (sourceIsNullable && !destinationIsNullable && !allowNotNullAssertion && !destinationHasNullSubstitute) {
+        if (sourceIsNullable && !destinationIsNullOrNullSubstitute && !allowNotNullAssertion) {
             throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
         }
 
@@ -123,13 +124,10 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             val destinationParam = destinationType.arguments.first()
             val sourceParam = propertyType.arguments.first()
             val stringBuilder = StringBuilder(propertyName)
-            if (sourceIsNullable && !destinationIsNullable) {
-                stringBuilder.append(if (destinationHasNullSubstitute) "?" else "!!")
-            }
             if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
-                stringBuilder.append(".map{ it.to${destinationParam.type}() }")
+                stringBuilder.append("${if (sourceIsNullable) (if (destinationIsNullOrNullSubstitute) "?" else "!!") else ""}.map{ it.to${destinationParam.type}() }")
             }
-            stringBuilder.append("${if (destinationHasNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
+            stringBuilder.append("${if (sourceIsNullable && destinationIsNullOrNullSubstitute) "?" else ""}.to${destinationProperty.type}()")
             return stringBuilder.toString()
         }
 

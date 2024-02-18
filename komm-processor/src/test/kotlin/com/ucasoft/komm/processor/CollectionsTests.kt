@@ -190,6 +190,29 @@ internal class CollectionsTests: SatelliteTests() {
     }
 
     @Test
+    fun mapDifferentTypeNullableLists() {
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            mapOf(
+                "someList" to PropertySpecInit(LIST, isNullable = true, parametrizedType = String::class)
+            )
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    "someList" to PropertySpecInit(LIST, isNullable = true, parametrizedType = Int::class),
+                ),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+    }
+
+    @Test
     fun mapDifferentTypeNullableListToList() {
         val sourceSpec = buildFileSpec(
             "SourceObject",
