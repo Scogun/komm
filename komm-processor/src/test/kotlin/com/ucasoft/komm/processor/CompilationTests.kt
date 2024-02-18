@@ -53,17 +53,15 @@ abstract class CompilationTests {
                 .constructorBuilder()
                 .apply {
                     constructorProperties.forEach {
-                        addParameter(
-                            it.key, buildType(it)
-                        )
+                        addParameter(it.key, buildType(it))
                     }
                 }
                 .build()
         )
     }
 
-    private fun buildProperty(property: Map.Entry<String, PropertySpecInit>, isConstructor: Boolean = true): PropertySpec {
-        return PropertySpec
+    private fun buildProperty(property: Map.Entry<String, PropertySpecInit>, isConstructor: Boolean = true) =
+        PropertySpec
             .builder(property.key, buildType(property))
             .apply {
                 if (isConstructor) {
@@ -80,7 +78,6 @@ abstract class CompilationTests {
                 }
             }
             .build()
-    }
 
     private fun buildType(property: Map.Entry<String, PropertySpecInit>) =
         if (property.value.parametrizedType != null) {
