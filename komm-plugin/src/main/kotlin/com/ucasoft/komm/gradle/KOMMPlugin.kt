@@ -5,7 +5,7 @@ import org.gradle.api.Project
 
 class KOMMPlugin: Plugin<Project> {
 
-    fun apply(project: Project) {
-        project.Extensions.create("komm", KOMMPluginExtension::class.java)
+    override fun apply(target: Project) {
+        target.extensions.create("komm", KOMMPluginExtension::class.java, target)
     }
 }
