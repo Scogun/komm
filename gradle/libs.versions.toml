@@ -9,6 +9,7 @@ kover = "0.9.1"
 mockk = "1.14.2"
 classgraph = "4.8.179"
 exposed = "0.57.0"
+gradle-publish = "1.2.1"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -22,3 +23,4 @@ exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version
 
 [plugins]
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+gradle-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-publish" }
