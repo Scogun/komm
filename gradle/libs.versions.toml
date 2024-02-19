@@ -6,6 +6,7 @@ compile-testing = "1.5.0"
 junit = "5.10.2"
 kotest = "5.8.0"
 kover = "0.7.5"
+gradle-publish = "1.2.1"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -16,3 +17,4 @@ kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", vers
 
 [plugins]
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+gradle-publish = { id = "com.gradle.plugin-publish", version.ref = "gradle-publish" }
