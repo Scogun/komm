@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.gradle.publish) apply false
     alias(libs.plugins.kotlinx.kover) apply false
 }
 
