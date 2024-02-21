@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
-    id("java-gradle-plugin")
     alias(libs.plugins.gradle.publish)
-    alias(libs.plugins.kotlinx.kover) apply false
+    id("java-gradle-plugin")
     id("com.google.devtools.ksp") apply false
+    alias(libs.plugins.kotlinx.kover) apply false
 }
