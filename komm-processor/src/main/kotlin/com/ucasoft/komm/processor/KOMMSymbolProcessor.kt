@@ -7,6 +7,8 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.writeTo
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.plugin.KOMMPlugin
+import io.github.classgraph.ClassGraph
 
 class KOMMSymbolProcessor(
     private val codeGenerator: CodeGenerator,
@@ -15,6 +17,9 @@ class KOMMSymbolProcessor(
 ) : SymbolProcessor {
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
+
+        loadPlugins()
+
         val symbols =
             resolver.getSymbolsWithAnnotation(KOMMMap::class.qualifiedName!!).filterIsInstance<KSClassDeclaration>()
 
@@ -38,4 +43,14 @@ class KOMMSymbolProcessor(
         return symbols.filterNot { it.validate() }.toList()
     }
 
+    private fun loadPlugins() {
+        val plugins = mutableListOf<KOMMPlugin>()
+        ClassGraph().enableClassInfo().scan().use {
+            it.getSubclasses(KOMMPlugin::class.java.name).loadClasses().forEach { plugins.add(it.getDeclaredConstructor().newInstance() as KOMMPlugin) }
+        }
+
+        plugins.forEach {
+            logger.error(it.process())
+        }
+    }
 }
