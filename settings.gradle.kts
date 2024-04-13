@@ -16,6 +16,8 @@ rootProject.name = "komm"
 
 include("komm-annotations")
 
+include("komm-plugins-core")
+
 include("komm-processor")
 
 include("komm-simple")

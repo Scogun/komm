@@ -1,16 +1,18 @@
 package com.ucasoft.komm.processor
 
-import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.*
+import com.ucasoft.komm.plugins.KOMMCastPlugin
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
 
-class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
+class KOMMPropertyMapper(
+    source: KSType,
+    private val config: KSAnnotation,
+    private val plugins: List<KOMMCastPlugin>
+) {
 
     private val sourceProperties = getSourceProperties(source)
 
@@ -87,14 +89,14 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
 
     private fun getSourceWithCast(
         destinationProperty: KSPropertyDeclaration,
-        sourcePropertyType: KSDeclaration?,
+        sourceProperty: KSDeclaration?,
         config: KSAnnotation
     ): String {
-        val (propertyName, propertyType) = when (sourcePropertyType) {
-            is KSFunctionDeclaration -> sourcePropertyType.toString().substring(3)
-                .lowercase() to sourcePropertyType.returnType!!.resolve()
+        val (propertyName, propertyType) = when (sourceProperty) {
+            is KSFunctionDeclaration -> sourceProperty.toString().substring(3)
+                .lowercase() to sourceProperty.returnType!!.resolve()
 
-            is KSPropertyDeclaration -> sourcePropertyType.toString() to sourcePropertyType.type.resolve()
+            is KSPropertyDeclaration -> sourceProperty.toString() to sourceProperty.type.resolve()
             else -> throw KOMMException("There is no source property for ${destinationProperty.simpleName}")
         }
 
@@ -118,15 +120,12 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
             throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
         }
 
-        val (iterableCase, result) = castIterable(
-            propertyType,
-            propertyName,
-            sourceIsNullable,
-            destinationType,
-            destinationIsNullOrNullSubstitute
-        )
-        if (iterableCase) {
-            return result!!
+        val castPlugin = plugins.filter { it.forCast(propertyType, destinationType) }
+
+        if (castPlugin.count() > 1) {
+            throw KOMMException("There are more than one plugin for casting from $propertyType to $destinationType.")
+        } else if (castPlugin.count() == 1) {
+            return castPlugin.first().cast(propertyName, propertyType, destinationProperty, destinationType)
         }
 
         if (sourceIsNullable && propertyType.isAssignableFrom(destinationType)) {
@@ -135,36 +134,4 @@ class KOMMPropertyMapper(source: KSType, private val config: KSAnnotation) {
 
         return "$propertyName${if (sourceIsNullable) "!!" else ""}.to${destinationProperty.type}()"
     }
-
-    private fun castIterable(
-        propertyType: KSType,
-        propertyName: String,
-        sourceIsNullable: Boolean,
-        destinationType: KSType,
-        destinationIsNullOrNullSubstitute: Boolean
-    ): Pair<Boolean, String?> {
-        val destinationDeclaration = destinationType.declaration as KSClassDeclaration
-        val sourceDeclaration = propertyType.declaration as KSClassDeclaration
-        if (destinationDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }
-            && sourceDeclaration.getAllSuperTypes().any { it.toClassName() == ITERABLE }) {
-            val destinationParam = destinationType.arguments.first()
-            val sourceParam = propertyType.arguments.first()
-            val stringBuilder = StringBuilder(propertyName)
-            var fromCastDeclaration = sourceDeclaration.toClassName()
-            if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
-                stringBuilder.append("${addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute))}.map{ it.to${destinationParam.type}() }")
-                fromCastDeclaration = LIST
-            }
-            if (fromCastDeclaration != destinationDeclaration.toClassName()) {
-                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
-            }
-            return true to stringBuilder.toString()
-        }
-
-        return false to null
-    }
-
-    private fun addSafeNullCall(add: Boolean, safe: String = "?", otherwise: String = "") = if (add) safe else otherwise
-
-    private fun safeCallOrNullAssertion(safe: Boolean) = if (safe) "?" else "!!"
 }
