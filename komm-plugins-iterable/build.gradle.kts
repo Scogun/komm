@@ -7,7 +7,12 @@ plugins {
 
 kotlin {
     jvm {
-        withJava()
+        tasks.withType<Test> {
+            useJUnitPlatform()
+            reports {
+                junitXml.required.set(true)
+            }
+        }
     }
     sourceSets {
         val jvmMain by getting {
@@ -17,6 +22,17 @@ kotlin {
                 implementation(libs.kotlin.poet.ksp)
             }
             kotlin.srcDir("src/main/kotlin")
+        }
+        val jvmTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation(libs.junit.jupiter)
+                implementation(libs.kotest.assertions)
+                implementation("io.mockk:mockk:1.13.10")
+                implementation(libs.kotlin.poet.ksp)
+                implementation(kotlin("reflect"))
+            }
+            kotlin.srcDir("src/test/kotlin")
         }
     }
 }
