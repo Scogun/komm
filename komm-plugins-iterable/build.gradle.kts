@@ -28,7 +28,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.junit.jupiter)
                 implementation(libs.kotest.assertions)
-                implementation("io.mockk:mockk:1.13.10")
+                implementation(libs.mockk)
                 implementation(libs.kotlin.poet.ksp)
                 implementation(kotlin("reflect"))
             }

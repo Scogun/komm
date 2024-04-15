@@ -21,7 +21,7 @@ kotlin {
                 implementation(project(":komm-plugins-core"))
                 implementation(libs.ksp.processor)
                 implementation(libs.kotlin.poet.ksp)
-                implementation("io.github.classgraph:classgraph:4.8.170")
+                implementation(libs.classgraph)
             }
             kotlin.srcDir("src/main/kotlin")
             resources.srcDir("src/main/resources")
