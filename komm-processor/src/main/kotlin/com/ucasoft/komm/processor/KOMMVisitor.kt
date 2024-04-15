@@ -44,7 +44,10 @@ class KOMMVisitor(
     }
 
     private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
-        val propertyMapper = KOMMPropertyMapper(source, config, plugins.filter { it.key == KOMMCastPlugin::class }.values.map { it.getDeclaredConstructor().newInstance() as KOMMCastPlugin })
+        val castPlugins = plugins.filter { it.key == KOMMCastPlugin::class }.values
+            .map { it.getDeclaredConstructor().newInstance() }
+            .filterIsInstance<KOMMCastPlugin>()
+        val propertyMapper = KOMMPropertyMapper(source, config, castPlugins)
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }
