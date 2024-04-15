@@ -4,6 +4,7 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.plugins.KOMMCastPlugin
+import com.ucasoft.komm.plugins.exceptions.KOMMPluginsException
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
@@ -123,7 +124,7 @@ class KOMMPropertyMapper(
         val castPlugin = plugins.filter { it.forCast(propertyType, destinationType) }
 
         if (castPlugin.count() > 1) {
-            throw KOMMException("There are more than one plugin for casting from $propertyType to $destinationType.")
+            throw KOMMPluginsException("There are more than one plugin for casting from $propertyType to $destinationType.")
         } else if (castPlugin.count() == 1) {
             return castPlugin.first().cast(propertyName, propertyType, destinationProperty, destinationType)
         }
