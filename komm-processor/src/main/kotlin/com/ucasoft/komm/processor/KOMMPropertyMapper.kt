@@ -129,7 +129,7 @@ class KOMMPropertyMapper(
             return castPlugin.first().cast(propertyName, propertyType, destinationProperty, destinationType)
         }
 
-        if (sourceIsNullable && propertyType.isAssignableFrom(destinationType)) {
+        if (sourceIsNullable && destinationType.isAssignableFrom(propertyType.makeNotNullable())) {
             return "$propertyName!!"
         }
 
