@@ -11,6 +11,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 [![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Processоr&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-processor)
 ---
 * [Features](#features)
+* [Default plugins](#default-plugins)
 * [Usage](#usage)
   * [Add](#add-with-gradle)
     * [JVM project](#jvm-project)
@@ -25,7 +26,11 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [@NullSubstitute](#use-nullsubstitute)
     * [Allow Not-Null Assertion](#mapping-configuration-1)
   * [Multi Sources](#multi-sources-support)
-  * [Collections Mapping](#collections-mapping)
+* [Plugins](#plugins)
+  * [Iterable Plugin - Collections Mapping](#iterable-plugin---collections-mapping)
+    * [Add](#add-with-gradle-1)
+      * [JVM project](#jvm-project-1)
+      * [Multiplatform project](#multiplatform-project-1)
     * [Allow NotNullAssertion](#allow-notnullassertion)
     * [NullSubstitute](#nullsubstitute)
 ---
@@ -34,7 +39,6 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 * Supports KSP Multiplatform
 * Maps as constructor parameters as well as public properties with setter
 * Supports properties types cast
-* Support collections mapping with different types of elements
 * Supports Java objects get* functions
 * Supports multi source classes with separated configurations
 * Has next properties annotations:
@@ -42,6 +46,11 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Specify a converter to map data from source unusual way
   * Specify a resolver to map default values into properties
   * Specify null substitute to map nullable properties into not-nullable
+* Support extension via plugins
+
+## Default plugins
+* Iterable Plugin:
+  * Support collections mapping with different types of elements
 
 ## Usage
 ### Add with Gradle
@@ -49,10 +58,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.2.2"
+val kommVersion = "0.3.5"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -62,10 +71,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.2.2"
+val kommVersion = "0.3.5"
 
 kotlin {
     jvm {
@@ -359,7 +368,43 @@ fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObj
 )
 ```
 
-### Collections Mapping
+## Plugins
+
+### Iterable Plugin - Collections Mapping
+#### Add with Gradle
+
+###### JVM Project
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "1.9.23-1.0.20"
+}
+
+val kommVersion = "0.3.5"
+
+depensencies {
+    implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
+    ksp("com.ucasoft.komm:komm-processor:$kommVersion")
+    ksp("com.ucasoft.komm:komm-plugins-iterable:$kommVersion")
+}
+```
+###### Multiplatform Project
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "1.9.23-1.0.20"
+}
+
+val kommVersion = "0.3.5"
+
+//...
+
+dependencies {
+    add("kspJvm", "com.ucasoft.komm:komm-plugins-iterable:$kommVersion")
+    add("kspJvm", "com.ucasoft.komm:komm-processor:$kommVersion")
+    add("kspJs", "com.ucasoft.komm:komm-plugins-iterable:$kommVersion")
+    add("kspJs", "com.ucasoft.komm:komm-processor:$kommVersion")
+    // Add other platforms like `kspAndroidNativeX64`, `kspLinuxX64`, `kspMingwX64` etc.
+}
+```
 #### Allow NotNullAssertion
 ###### Classes declaration
 ```kotlin

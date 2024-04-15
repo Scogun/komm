@@ -19,19 +19,17 @@ kotlin {
             dependencies {
                 implementation(project(":komm-annotations"))
                 implementation(project(":komm-plugins-core"))
-                implementation(libs.ksp.processor)
                 implementation(libs.kotlin.poet.ksp)
-                implementation(libs.classgraph)
             }
             kotlin.srcDir("src/main/kotlin")
-            resources.srcDir("src/main/resources")
         }
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.kotlin.compile.testing.ksp)
                 implementation(libs.junit.jupiter)
                 implementation(libs.kotest.assertions)
+                implementation(libs.mockk)
+                implementation(libs.kotlin.poet.ksp)
                 implementation(kotlin("reflect"))
             }
             kotlin.srcDir("src/test/kotlin")
@@ -40,6 +38,6 @@ kotlin {
 }
 
 libraryData {
-    name.set("KOMM Processor")
-    description.set("Kotlin Object Multiplatform Mapper Processor")
+    name.set("KOMM Plugins Iterable")
+    description.set("Plugins to map Iterable properties for Kotlin Object Multiplatform Mapper Plugins")
 }

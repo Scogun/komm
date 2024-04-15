@@ -24,6 +24,8 @@ kotlin {
 }
 
 dependencies {
+    add("kspJvm", project(":komm-plugins-iterable"))
     add("kspJvm", project(":komm-processor"))
+    add("kspJs", project(":komm-plugins-iterable"))
     add("kspJs", project(":komm-processor"))
 }
