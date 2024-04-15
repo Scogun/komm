@@ -12,7 +12,7 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.NullSubstitute
 import com.ucasoft.komm.plugins.KOMMCastPlugin
 
-class IterablePlugin: KOMMCastPlugin() {
+class IterablePlugin: KOMMCastPlugin {
 
     override fun forCast(sourceType: KSType, destinationType: KSType) =
         sourceType.isIterable() && destinationType.isIterable()
