@@ -31,7 +31,7 @@ jobs:
         shell: bash
 
       - name: "Tests"
-        run: ./gradlew cleanTest :komm-processor:allTest
+        run: ./gradlew cleanTest allTest
         shell: bash
 
       - name: "Tests Report"
@@ -44,14 +44,16 @@ jobs:
 
       - name: "Run Coverage"
         if: ${{ github.event_name == 'pull_request' }}
-        run: ./gradlew :komm-processor:koverXmlReport
+        run: ./gradlew koverXmlReport
         shell: bash
 
       - name: "Coverage Report"
         uses: mi-kas/kover-report@v1
         if: ${{ github.event_name == 'pull_request' }}
         with:
-          path: ./komm-processor/build/reports/kover/report.xml
+          path: |
+            ./komm-plugins-iterable/build/reports/kover/report.xml
+            ./komm-processor/build/reports/kover/report.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Coverage Report"
           update-comment: true
