@@ -9,6 +9,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 ![Publish workflow](https://github.com/Scogun/komm/actions/workflows/publish.yml/badge.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-annotations?label=KOMM-Annotations&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-annotations)
 [![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-processor?label=KOMM-Processоr&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-processor)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-plugins-iterable?label=KOMM-Plugins-Iterable&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-plugins-iterable)
 ---
 * [Features](#features)
 * [Default plugins](#default-plugins)
