@@ -7,9 +7,8 @@ import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.ucasoft.komm.annotations.NullSubstitute
-import com.ucasoft.komm.plugins.KOMMCastPlugin
 
-class IterablePlugin: BaseIterablePlugin(), KOMMCastPlugin {
+class IterablePlugin: BaseIterablePlugin() {
 
     override fun forCast(sourceType: KSType, destinationType: KSType) =
         sourceType.isIterable() && destinationType.isIterable()
@@ -24,10 +23,7 @@ class IterablePlugin: BaseIterablePlugin(), KOMMCastPlugin {
         val sourceParam = sourceType.arguments.first()
         val stringBuilder = StringBuilder(sourceName)
         var fromCastDeclaration = sourceType.toClassName()
-        val sourceIsNullable = sourceType.toTypeName().isNullable
-        val destinationIsNullable = destinationType.toTypeName().isNullable
-        val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute
+        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, destinationType, destinationProperty)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
             stringBuilder.append(".map{ it.to${destinationParam.type}() }")
