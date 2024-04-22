@@ -62,7 +62,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.3.5"
+val kommVersion = "0.4.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -75,7 +75,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.3.5"
+val kommVersion = "0.4.1"
 
 kotlin {
     jvm {
@@ -380,7 +380,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.3.5"
+val kommVersion = "0.4.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -394,7 +394,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.23-1.0.20"
 }
 
-val kommVersion = "0.3.5"
+val kommVersion = "0.4.1"
 
 //...
 
