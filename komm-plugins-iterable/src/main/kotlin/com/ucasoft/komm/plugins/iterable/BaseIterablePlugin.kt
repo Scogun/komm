@@ -4,6 +4,7 @@ import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ITERABLE
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -24,4 +25,7 @@ abstract class BaseIterablePlugin: KOMMCastPlugin {
         val destinationIsNullOrNullSubstitute = destinationType.toTypeName().isNullable || destinationHasNullSubstitute
         return Pair(sourceIsNullable, destinationIsNullOrNullSubstitute)
     }
+
+    protected fun ClassName.isAssignableFrom(other: ClassName) =
+        this == other || other.simpleName.endsWith(this.simpleName)
 }

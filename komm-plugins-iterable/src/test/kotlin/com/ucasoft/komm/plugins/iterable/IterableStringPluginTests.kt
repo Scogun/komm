@@ -1,6 +1,12 @@
 package com.ucasoft.komm.plugins.iterable
 
+import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSValueArgument
+import com.ucasoft.komm.plugins.iterable.annotations.KOMMIterableString
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -20,8 +26,25 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
 
     @ParameterizedTest
     @MethodSource("castResultArguments")
-    fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, result: String) {
-        plugin.cast(sourceName, buildKSType(sourceType), buildDestination(hasNullSubstitute), buildKSType(destinationType)).shouldBe(result)
+    fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, delimiter: String, result: String) {
+        var destination = buildDestination(hasNullSubstitute)
+        if (delimiter.isNotEmpty()) {
+            destination = with(mockk<KSPropertyDeclaration>()) {
+                every { annotations } returns destination.annotations.toMutableList().apply {
+                    add(with(mockk<KSAnnotation>()) {
+                        every { shortName.asString() } returns KOMMIterableString::class.simpleName.toString()
+                        every { arguments } returns listOf(with(mockk<KSValueArgument>()) {
+                            every { name?.asString() } returns KOMMIterableString::delimiter.name
+                            every { value?.toString() } returns delimiter
+                            this
+                        })
+                        this
+                    })
+                }.asSequence()
+                this
+            }
+        }
+        plugin.cast(sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
     }
 
     companion object {
@@ -36,7 +59,6 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
         private val falseTypes = arrayOf(
             typeOf<Int>(),
             typeOf<Float>(),
-            typeOf<Float>(),
             typeOf<Double>()
         )
 
@@ -45,8 +67,16 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
             *trueTypes.map {
                 Arguments.of(it, typeOf<String>(), true)
             }.toTypedArray(),
+            *trueTypes.map {
+                Arguments.of(typeOf<String>(), it, true)
+            }.toTypedArray(),
             *trueTypes.flatMap { firstType ->
                 falseTypes.map { secondType ->
+                    Arguments.of(firstType, secondType, false)
+                }
+            }.toTypedArray(),
+            *falseTypes.flatMap { firstType ->
+                trueTypes.map { secondType ->
                     Arguments.of(firstType, secondType, false)
                 }
             }.toTypedArray(),
@@ -54,9 +84,17 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
 
         @JvmStatic
         fun castResultArguments(): Stream<Arguments> = Stream.of(
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<String>(), false, "sourceIntList.joinToString()"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), false, "nullableSourceIntList!!.joinToString()"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), true, "nullableSourceIntList?.joinToString()"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<String>(), false, "", "sourceIntList.joinToString()"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<String>(), false, "-", "sourceIntList.joinToString(\"-\")"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), false, "", "nullableSourceIntList!!.joinToString()"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), true, "", "nullableSourceIntList?.joinToString()"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), true, "/*/", "nullableSourceIntList?.joinToString(\"/*/\")"),
+
+            Arguments.of("sourceString", typeOf<String>(), typeOf<List<Int>>(), false, "", "sourceString.split(\", \")"),
+            Arguments.of("sourceString", typeOf<String>(), typeOf<List<Int>>(), false, "//", "sourceString.split(\"//\")"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<List<Int>>(), false, "", "nullableSourceString!!.split(\", \")"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<Set<Int>>(), false, "", "nullableSourceString!!.split(\", \").toSet()"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<MutableList<Int>?>(), true, "", "nullableSourceString?.split(\", \")?.toMutableList()"),
         )
     }
 }

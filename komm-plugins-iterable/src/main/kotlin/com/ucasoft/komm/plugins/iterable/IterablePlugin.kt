@@ -2,11 +2,8 @@ package com.ucasoft.komm.plugins.iterable
 
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
-import com.ucasoft.komm.annotations.NullSubstitute
 
 class IterablePlugin: BaseIterablePlugin() {
 
@@ -34,7 +31,4 @@ class IterablePlugin: BaseIterablePlugin() {
         }
         return stringBuilder.toString().trimEnd('?')
     }
-
-    private fun ClassName.isAssignableFrom(other: ClassName) =
-        this == other || other.simpleName.endsWith(this.simpleName)
 }
