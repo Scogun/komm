@@ -13,8 +13,7 @@ import kotlin.reflect.KClass
 
 class KOMMVisitor(
     private val functions: MutableList<FunSpec>,
-    private val plugins: Map<KClass<out KOMMPlugin>, List<Class<*>>>,
-    private val logger: KSPLogger
+    private val plugins: Map<KClass<out KOMMPlugin>, List<Class<*>>>
 ) : KSVisitorVoid() {
 
     enum class MapTo {
