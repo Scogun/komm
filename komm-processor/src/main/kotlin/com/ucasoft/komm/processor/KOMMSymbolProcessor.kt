@@ -44,15 +44,16 @@ class KOMMSymbolProcessor(
         return symbols.filterNot { it.validate() }.toList()
     }
 
-    private fun loadPlugins(): Map<KClass<out KOMMPlugin>, Class<*>> {
+    private fun loadPlugins(): Map<KClass<out KOMMPlugin>, List<Class<*>>> {
         ClassGraph().enableClassInfo().scan().use {
-            return it.getClassesImplementing(KOMMPlugin::class.java).filter { !it.isAbstract }.associate {
-                if (it.interfaces.loadClasses().contains(KOMMCastPlugin::class.java)) {
-                    KOMMCastPlugin::class
-                } else {
-                    KOMMPlugin::class
-                } to it.loadClass()
-            }
+            return it.getClassesImplementing(KOMMPlugin::class.java).filter { !it.isAbstract }
+                .map { it.interfaces.loadClasses() to it.loadClass() }.groupBy {
+                    if (it.first.contains(KOMMCastPlugin::class.java)) {
+                        KOMMCastPlugin::class
+                    } else {
+                        KOMMPlugin::class
+                    }
+                }.mapValues { it.value.map { it.second } }
         }
     }
 }

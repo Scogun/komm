@@ -13,7 +13,8 @@ import kotlin.reflect.KClass
 
 class KOMMVisitor(
     private val functions: MutableList<FunSpec>,
-    private val plugins: Map<KClass<out KOMMPlugin>, Class<*>>
+    private val plugins: Map<KClass<out KOMMPlugin>, List<Class<*>>>,
+    private val logger: KSPLogger
 ) : KSVisitorVoid() {
 
     enum class MapTo {
@@ -44,9 +45,9 @@ class KOMMVisitor(
     }
 
     private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
-        val castPlugins = plugins.filter { it.key == KOMMCastPlugin::class }.values
-            .map { it.getDeclaredConstructor().newInstance() }
-            .filterIsInstance<KOMMCastPlugin>()
+        val castPlugins = plugins[KOMMCastPlugin::class]
+            ?.map { it.getDeclaredConstructor().newInstance() }
+            ?.filterIsInstance<KOMMCastPlugin>() ?: emptyList()
         val propertyMapper = KOMMPropertyMapper(source, config, castPlugins)
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
