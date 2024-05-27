@@ -35,6 +35,7 @@ kotlin {
                 implementation(kotlin("reflect"))
             }
             kotlin.srcDir("src/test/kotlin")
+            languageSettings.optIn("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
         }
     }
 }
