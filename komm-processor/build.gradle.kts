@@ -18,7 +18,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(project(":komm-annotations"))
-                compileOnly(project(":komm-plugins-core"))
+                implementation(project(":komm-plugins-core"))
                 implementation(libs.ksp.processor)
                 implementation(libs.kotlin.poet.ksp)
                 implementation(libs.classgraph)
