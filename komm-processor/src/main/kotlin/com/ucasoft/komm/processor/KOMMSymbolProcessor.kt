@@ -46,7 +46,7 @@ class KOMMSymbolProcessor(
 
     private fun loadPlugins(): Map<KClass<out KOMMPlugin>, List<Class<*>>> {
         ClassGraph().enableClassInfo().scan().use {
-            return it.getClassesImplementing(KOMMPlugin::class.java).filter { !it.isAbstract }
+            return it.getClassesImplementing(KOMMPlugin::class.java).filterNot { it.isAbstract }
                 .map { it.interfaces.loadClasses() to it.loadClass() }.groupBy {
                     if (it.first.contains(KOMMCastPlugin::class.java)) {
                         KOMMCastPlugin::class
