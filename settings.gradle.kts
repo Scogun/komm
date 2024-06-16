@@ -3,7 +3,7 @@ pluginManagement {
         plugins {
             val kotlinVersion = "2.0.0"
             kotlin("multiplatform") version kotlinVersion apply false
-            id("com.google.devtools.ksp") version "$kotlinVersion-1.0.21" apply false
+            id("com.google.devtools.ksp") version "$kotlinVersion-1.0.22" apply false
         }
     }
 }
