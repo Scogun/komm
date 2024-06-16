@@ -59,10 +59,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
 }
 
-val kommVersion = "0.6.2"
+val kommVersion = "0.7.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -72,10 +72,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
 }
 
-val kommVersion = "0.6.2"
+val kommVersion = "0.7.1"
 
 kotlin {
     jvm {
@@ -377,10 +377,10 @@ fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObj
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
 }
 
-val kommVersion = "0.6.2"
+val kommVersion = "0.7.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -391,10 +391,10 @@ depensencies {
 ###### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
 }
 
-val kommVersion = "0.6.2"
+val kommVersion = "0.7.1"
 
 //...
 
