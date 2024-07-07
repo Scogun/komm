@@ -126,7 +126,7 @@ class KOMMPropertyMapper(
         if (castPlugin.count() > 1) {
             throw KOMMPluginsException("There are more than one plugin for casting from $propertyType to $destinationType.")
         } else if (castPlugin.count() == 1) {
-            return castPlugin.first().cast(propertyName, propertyType, destinationProperty, destinationType)
+            return castPlugin.first().cast(sourceProperty, propertyName, propertyType, destinationProperty, destinationType)
         }
 
         if (sourceIsNullable && destinationType.isAssignableFrom(propertyType.makeNotNullable())) {
