@@ -29,14 +29,14 @@ class KOMMSymbolProcessor(
 
         val plugins = loadPlugins()
 
-        symbols.groupBy { it.packageName }.forEach { (pn, cs) ->
+        symbols.groupBy { it.packageName }.forEach { (packageName, classDeclarations) ->
             val functions = mutableListOf<FunSpec>()
 
-            cs.forEach {
+            classDeclarations.forEach {
                 it.accept(KOMMVisitor(functions, plugins), Unit)
             }
 
-            val file = FileSpec.builder(pn.asString(), "MappingExtensions").apply { functions.forEach { this.addFunction(it) } }.build()
+            val file = FileSpec.builder(packageName.asString(), "MappingExtensions").apply { functions.forEach { this.addFunction(it) } }.build()
 
             file.writeTo(codeGenerator, false)
         }
