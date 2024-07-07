@@ -34,6 +34,9 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
       * [Multiplatform project](#multiplatform-project-1)
     * [Allow NotNullAssertion](#allow-notnullassertion)
     * [NullSubstitute](#nullsubstitute)
+  * [Exposed Plugin - ResultRow Mapping](#exposed-plugin---resultrow-mapping)
+    * [Add](#add-with-gradle-2)
+    * [Usage](#usage-1)
 ---
 
 ## Features
@@ -442,5 +445,49 @@ data class DestinationObject(
 ```kotlin
 public fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 	stringList = intList?.map { it.toString() }?.toMutableList() ?: StringListResolver(null).resolve()
+)
+```
+
+### Exposed Plugin - ResultRow Mapping
+#### Add with Gradle
+
+###### JVM Project
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
+}
+
+val kommVersion = "0.7.3"
+
+depensencies {
+    implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
+    ksp("com.ucasoft.komm:komm-processor:$kommVersion")
+    ksp("com.ucasoft.komm:komm-plugins-exposed:$kommVersion")
+}
+```
+#### Usage
+###### Classes declaration
+```kotlin
+object SourceObject: Table() {
+    val id = integer("id").autoIncrement()
+    val name = varchar("name", 255)
+    val age = integer("age")
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+@KOMMMap(from = SourceObject::class)
+data class DestinationObject(
+    val id: Int,
+    val name: String,
+    val age: Int
+)
+```
+###### Generated extension function
+```kotlin
+public fun ResultRow.toDestinationObject(): DestinationObject = DestinationObject(
+    id = this[SourceObject.id],
+    name = this[SourceObject.name],
+    age = this[SourceObject.age]
 )
 ```
