@@ -12,7 +12,6 @@ import io.mockk.mockkStatic
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.decimalParam
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -32,8 +31,8 @@ internal class ExposedPluginTests {
     }
 
     @Test
-    fun typeResult() {
-        plugin.type(mockk()).shouldBe(ResultRow::class)
+    fun sourceTypeResult() {
+        plugin.sourceType(mockk()).shouldBe(ResultRow::class)
     }
 
     @ParameterizedTest

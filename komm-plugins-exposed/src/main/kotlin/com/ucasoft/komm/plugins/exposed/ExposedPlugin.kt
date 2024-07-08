@@ -17,7 +17,7 @@ class ExposedPlugin: KOMMTypePlugin {
 
     override fun forType(sourceType: KSType) = (sourceType.declaration as KSClassDeclaration).superTypes.any { it.toTypeName() == Table::class.asTypeName() }
 
-    override fun type(sourceType: KSType) = ResultRow::class
+    override fun sourceType(sourceType: KSType) = ResultRow::class
 
     override fun forCast(sourceType: KSType, destinationType: KSType) = sourceType.toClassName() == Column::class.asClassName()
 

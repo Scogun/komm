@@ -7,5 +7,5 @@ interface KOMMTypePlugin: KOMMCastPlugin {
 
     fun forType(sourceType: KSType): Boolean
 
-    fun type(sourceType: KSType): KClass<*>
+    fun sourceType(sourceType: KSType): KClass<*>
 }

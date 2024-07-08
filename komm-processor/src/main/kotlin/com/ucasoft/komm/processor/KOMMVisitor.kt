@@ -60,7 +60,7 @@ class KOMMVisitor(
         if (suitedPlugins.count() > 1) {
             throw KOMMPluginsException("There are more than one plugin for type ${source.toClassName().simpleName}")
         } else if (suitedPlugins.count() == 1) {
-            return suitedPlugins.first().type(source).asTypeName()
+            return suitedPlugins.first().sourceType(source).asTypeName()
         }
 
         return source.toTypeName()
