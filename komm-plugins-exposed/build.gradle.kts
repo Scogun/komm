@@ -18,8 +18,8 @@ kotlin {
     sourceSets {
         val jvmMain by getting {
             dependencies {
-                implementation(project(":komm-annotations"))
                 implementation(project(":komm-plugins-core"))
+                implementation(libs.exposed.core)
                 implementation(libs.kotlin.poet.ksp)
             }
             kotlin.srcDir("src/main/kotlin")
@@ -39,6 +39,6 @@ kotlin {
 }
 
 libraryData {
-    name.set("KOMM Plugins Iterable")
-    description.set("Plugins to map Iterable properties for Kotlin Object Multiplatform Mapper Plugins")
+    name.set("KOMM Plugins Exposed")
+    description.set("Plugins to map Exposed ResultRow to DTO Object for Kotlin Object Multiplatform Mapper Plugins")
 }

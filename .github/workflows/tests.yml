@@ -52,6 +52,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         with:
           path: |
+            ./komm-plugins-exposed/build/reports/kover/report.xml
             ./komm-plugins-iterable/build/reports/kover/report.xml
             ./komm-processor/build/reports/kover/report.xml
           token: ${{ secrets.GITHUB_TOKEN }}

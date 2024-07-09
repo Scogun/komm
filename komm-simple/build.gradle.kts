@@ -18,12 +18,17 @@ kotlin {
                 implementation(project(":komm-annotations"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.exposed.core)
+            }
+        }
         val jsMain by getting
     }
 }
 
 dependencies {
+    add("kspJvm", project(":komm-plugins-exposed"))
     add("kspJvm", project(":komm-plugins-iterable"))
     add("kspJvm", project(":komm-processor"))
     add("kspJs", project(":komm-plugins-iterable"))

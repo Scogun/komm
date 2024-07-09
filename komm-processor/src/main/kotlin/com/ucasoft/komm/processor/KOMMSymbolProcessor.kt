@@ -9,6 +9,7 @@ import com.squareup.kotlinpoet.ksp.writeTo
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.plugins.KOMMCastPlugin
 import com.ucasoft.komm.plugins.KOMMPlugin
+import com.ucasoft.komm.plugins.KOMMTypePlugin
 import io.github.classgraph.ClassGraph
 import kotlin.reflect.KClass
 
@@ -29,14 +30,14 @@ class KOMMSymbolProcessor(
 
         val plugins = loadPlugins()
 
-        symbols.groupBy { it.packageName }.forEach { (pn, cs) ->
+        symbols.groupBy { it.packageName }.forEach { (packageName, classDeclarations) ->
             val functions = mutableListOf<FunSpec>()
 
-            cs.forEach {
+            classDeclarations.forEach {
                 it.accept(KOMMVisitor(functions, plugins), Unit)
             }
 
-            val file = FileSpec.builder(pn.asString(), "MappingExtensions").apply { functions.forEach { this.addFunction(it) } }.build()
+            val file = FileSpec.builder(packageName.asString(), "MappingExtensions").apply { functions.forEach { this.addFunction(it) } }.build()
 
             file.writeTo(codeGenerator, false)
         }
@@ -48,7 +49,9 @@ class KOMMSymbolProcessor(
         ClassGraph().enableClassInfo().scan().use {
             return it.getClassesImplementing(KOMMPlugin::class.java).filterNot { it.isAbstract }
                 .map { it.interfaces.loadClasses() to it.loadClass() }.groupBy {
-                    if (it.first.contains(KOMMCastPlugin::class.java)) {
+                    if (it.first.contains(KOMMTypePlugin::class.java)) {
+                        KOMMTypePlugin::class
+                    } else if (it.first.contains(KOMMCastPlugin::class.java)) {
                         KOMMCastPlugin::class
                     } else {
                         KOMMPlugin::class

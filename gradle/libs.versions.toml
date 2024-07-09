@@ -1,13 +1,14 @@
 [versions]
 kotlin = "1.9.24"
 ksp = "1.9.24-1.0.20"
-kotlin-poet = "1.17.0"
+kotlin-poet = "1.18.0"
 compile-testing = "1.6.0"
-junit = "5.10.2"
+junit = "5.10.3"
 kotest = "5.9.1"
 kover = "0.8.1"
 mockk = "1.13.11"
-classgraph = "4.8.173"
+classgraph = "4.8.174"
+exposed = "0.52.0"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -17,6 +18,7 @@ junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.r
 kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref = "classgraph" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 
 [plugins]
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
