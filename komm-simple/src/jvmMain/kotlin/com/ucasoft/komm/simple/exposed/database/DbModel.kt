@@ -1,4 +1,4 @@
-package com.ucasoft.komm.simple.exposed
+package com.ucasoft.komm.simple.exposed.database
 
 import org.jetbrains.exposed.sql.Table
 

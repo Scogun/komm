@@ -17,6 +17,7 @@ import kotlin.reflect.KClass
 
 class KOMMVisitor(
     private val functions: MutableList<FunSpec>,
+    private val imports: MutableMap<String, List<String>>,
     private val plugins: Map<KClass<out KOMMPlugin>, List<Class<*>>>
 ) : KSVisitorVoid() {
 
@@ -35,11 +36,16 @@ class KOMMVisitor(
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
         val annotations =
             classDeclaration.annotations.filter { it.shortName.asString() == KOMMMap::class.simpleName }
+        val destinationPackageName = classDeclaration.toClassName().packageName
         for (annotation in annotations) {
             val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }
             val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
             val config = configArgument.value as KSAnnotation
             val source = fromArgument.value as KSType
+            val sourcePackageName = source.toClassName().packageName
+            if (sourcePackageName != destinationPackageName) {
+                imports[sourcePackageName] = imports[sourcePackageName].orEmpty() + source.toClassName().simpleName
+            }
             val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
             val fromSourceFunctionName = convertFunctionName.ifEmpty { "to$classDeclaration" }
             functions.add(
