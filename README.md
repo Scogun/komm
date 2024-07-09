@@ -522,7 +522,7 @@ public fun SourceObject.toDestinationObject(): DestinationObject = DestinationOb
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "1.9.25-1.0.20"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
 }
 
 val kommVersion = "0.10.3"

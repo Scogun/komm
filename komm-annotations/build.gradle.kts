@@ -4,9 +4,8 @@ plugins {
 }
 
 kotlin {
-    jvm {
-        jvmToolchain(8)
-    }
+    jvmToolchain(8)
+    jvm()
     js {
         nodejs()
     }
