@@ -41,9 +41,17 @@ class KOMMVisitor(
             val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
             val config = configArgument.value as KSAnnotation
             val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }.value as ArrayList<KSType>
+            val toArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::to.name }.value as ArrayList<KSType>
             fromArgument.forEach {
                 syncImports(classDeclaration.asStarProjectedType(), it, imports)
                 functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, config))
+            }
+            toArgument.forEach {
+                if (!it.isKotlinClass()) {
+                    throw KOMMException("The class ${it.toClassName().simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
+                }
+                syncImports(it, classDeclaration.asStarProjectedType(), imports)
+                functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), config))
             }
         }
     }
@@ -116,4 +124,6 @@ class KOMMVisitor(
     }
 
     private fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!
+
+    private fun KSType.isKotlinClass() = declaration.origin == Origin.KOTLIN
 }
