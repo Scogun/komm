@@ -12,6 +12,7 @@ import com.ucasoft.komm.plugins.KOMMCastPlugin
 import com.ucasoft.komm.plugins.KOMMPlugin
 import com.ucasoft.komm.plugins.KOMMTypePlugin
 import com.ucasoft.komm.plugins.exceptions.KOMMPluginsException
+import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
 import kotlin.reflect.KClass
 
@@ -36,26 +37,33 @@ class KOMMVisitor(
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
         val annotations =
             classDeclaration.annotations.filter { it.shortName.asString() == KOMMMap::class.simpleName }
-        val destinationPackageName = classDeclaration.toClassName().packageName
         for (annotation in annotations) {
-            val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }
             val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
             val config = configArgument.value as KSAnnotation
-            val source = fromArgument.value as KSType
-            val sourcePackageName = source.toClassName().packageName
-            if (sourcePackageName != destinationPackageName) {
-                imports[sourcePackageName] = imports[sourcePackageName].orEmpty() + source.toClassName().simpleName
+            val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }.value as ArrayList<KSType>
+            fromArgument.forEach {
+                syncImports(classDeclaration.asStarProjectedType(), it, imports)
+                functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, config))
             }
-            val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
-            val fromSourceFunctionName = convertFunctionName.ifEmpty { "to$classDeclaration" }
-            functions.add(
-                FunSpec.builder(fromSourceFunctionName)
-                    .receiver(getSourceName(source))
-                    .returns(classDeclaration.toClassName())
-                    .addStatement(buildStatement(source, classDeclaration, config))
-                    .build()
-            )
         }
+    }
+
+    private fun syncImports(destination: KSType, source: KSType, imports: MutableMap<String, List<String>>) {
+        val destinationPackageName = destination.toClassName().packageName
+        val sourcePackageName = source.toClassName().packageName
+        if (sourcePackageName != destinationPackageName) {
+            imports[sourcePackageName] = imports[sourcePackageName].orEmpty() + source.toClassName().simpleName
+        }
+    }
+
+    private fun buildFunction(destination: KSType, source: KSType, config: KSAnnotation) : FunSpec {
+        val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
+        val fromSourceFunctionName = convertFunctionName.ifEmpty { "to${destination.toClassName().simpleName}" }
+        return FunSpec.builder(fromSourceFunctionName)
+            .receiver(getSourceName(source))
+            .returns(destination.toClassName())
+            .addStatement(buildStatement(source, destination.declaration as KSClassDeclaration, config))
+            .build()
     }
 
     private fun getSourceName(source: KSType): TypeName {

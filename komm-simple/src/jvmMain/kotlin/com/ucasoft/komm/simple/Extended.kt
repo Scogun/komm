@@ -5,7 +5,7 @@ import com.ucasoft.komm.annotations.*
 import java.time.Instant
 import java.util.*
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class JvmDestinationObject(
     val id: Int,
     val stringToInt: Int,
@@ -28,7 +28,7 @@ class DateResolver(destination: JvmDestinationObject?) : KOMMResolver<JvmDestina
     override fun resolve(): Date = Date.from(Instant.now())
 }
 
-@KOMMMap(from = Currency::class)
+@KOMMMap(from = [Currency::class])
 data class ExCurrency(
     val symbol: String,
     val numericCode: String

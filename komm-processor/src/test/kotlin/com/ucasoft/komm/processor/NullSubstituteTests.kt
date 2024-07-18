@@ -33,7 +33,7 @@ internal class NullSubstituteTests: SatelliteTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -52,7 +52,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                 mapOf("id" to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::allowNotNullAssertion.name} = true)")
                     )
                 )
@@ -91,7 +91,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
             )
         )
 
@@ -140,7 +140,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
             )
         )
 

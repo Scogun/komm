@@ -31,8 +31,8 @@ class MultiSourcesTests: SatelliteTests() {
                 "DestinationObject",
                 mapOf(propertyName to PropertySpecInit(INT)),
                 listOf(
-                    KOMMMap::class to mapOf("from = %L" to listOf("$firstSourceObjectClassName::class")),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$secondSourceObjectClassName::class")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$firstSourceObjectClassName::class]")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$secondSourceObjectClassName::class]")),
                 )
             )
         )
@@ -80,8 +80,8 @@ class MultiSourcesTests: SatelliteTests() {
                     )
                 ),
                 listOf(
-                    KOMMMap::class to mapOf("from = %L" to listOf("$firstSourceObjectClassName::class")),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$secondSourceObjectClassName::class")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$firstSourceObjectClassName::class]")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$secondSourceObjectClassName::class]")),
                 )
             )
         )
@@ -114,8 +114,8 @@ class MultiSourcesTests: SatelliteTests() {
                     )
                 ),
                 listOf(
-                    KOMMMap::class to mapOf("from = %L" to listOf("$firstSourceObjectClassName::class")),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$secondSourceObjectClassName::class")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$firstSourceObjectClassName::class]")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$secondSourceObjectClassName::class]")),
                 )
             )
         )
@@ -193,9 +193,9 @@ class MultiSourcesTests: SatelliteTests() {
                     )
                 ),
                 listOf(
-                    KOMMMap::class to mapOf("from = %L" to listOf("$firstSourceObjectClassName::class")),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$secondSourceObjectClassName::class")),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$thirdSourceObjectClassName::class"))
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$firstSourceObjectClassName::class]")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$secondSourceObjectClassName::class]")),
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$thirdSourceObjectClassName::class]"))
                 )
             )
         )
@@ -283,14 +283,14 @@ class MultiSourcesTests: SatelliteTests() {
                 ),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$firstSourceObjectClassName::class"),
+                        "from = %L" to listOf("[$firstSourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::mapDefaultAsFallback.name} = true)")
                     ),
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$secondSourceObjectClassName::class"),
+                        "from = %L" to listOf("[$secondSourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::mapDefaultAsFallback.name} = true)")
                     ),
-                    KOMMMap::class to mapOf("from = %L" to listOf("$thirdSourceObjectClassName::class"))
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$thirdSourceObjectClassName::class]"))
                 )
             )
         )

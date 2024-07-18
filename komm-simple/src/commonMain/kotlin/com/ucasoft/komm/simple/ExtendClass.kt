@@ -4,7 +4,7 @@ import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.*
 
-@KOMMMap(from = SourceObject::class, config = MapConfiguration(allowNotNullAssertion = true, tryAutoCast = true, mapDefaultAsFallback = false, convertFunctionName = ""))
+@KOMMMap(from = [SourceObject::class], config = MapConfiguration(allowNotNullAssertion = true, tryAutoCast = true, mapDefaultAsFallback = false, convertFunctionName = ""))
 data class DestinationObject(
     val id: Int,
     val stringToInt: Int,
@@ -36,7 +36,7 @@ class StringResolver(destination: DestinationObject?): KOMMResolver<DestinationO
     override fun resolve() = "123"
 }
 
-@KOMMMap(from = SourceObject::class, config = MapConfiguration(allowNotNullAssertion = false, tryAutoCast = true, mapDefaultAsFallback = false, convertFunctionName = ""))
+@KOMMMap(from = [SourceObject::class], config = MapConfiguration(allowNotNullAssertion = false, tryAutoCast = true, mapDefaultAsFallback = false, convertFunctionName = ""))
 data class SecondDestinationObject(
     val id: Int,
     val stringToInt: Int

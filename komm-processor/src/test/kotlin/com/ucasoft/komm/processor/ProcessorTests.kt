@@ -28,7 +28,7 @@ internal class ProcessorTests : CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -50,7 +50,7 @@ internal class ProcessorTests : CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 properties.associate { it.name to PropertySpecInit(it.type.asClassName()) },
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -82,7 +82,7 @@ internal class ProcessorTests : CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 properties.filter { it.name != notConstructorProperty }.associate { it.name to PropertySpecInit(it.type.asClassName()) },
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
                 properties.filter { it.name == notConstructorProperty }.associate { it.name to it.toPropertySpecInit() }
             )
         )
@@ -111,7 +111,7 @@ internal class ProcessorTests : CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(propertyName to PropertySpecInit(STRING)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[${Currency::class.simpleName}::class]")))
             )
         )
 
@@ -139,7 +139,7 @@ internal class ProcessorTests : CompilationTests() {
                 mapOf("id" to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::convertFunctionName.name} = \"$convertFunctionName\")")
                     )
                 )

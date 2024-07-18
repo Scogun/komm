@@ -35,12 +35,12 @@ internal class ConverterTests: SatelliteTests() {
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("id"),
-                                "converter = %L" to listOf("$converterClassName::class")
+                                "converter = %L" to listOf("[$converterClassName::class]")
                             )
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -74,7 +74,7 @@ internal class ConverterTests: SatelliteTests() {
                 ),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
                     )
                 )
@@ -125,7 +125,7 @@ internal class ConverterTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 

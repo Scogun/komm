@@ -26,7 +26,7 @@ internal class MapFromTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("otherId" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -43,7 +43,7 @@ internal class MapFromTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
                 mapOf("otherId" to PropertySpecInit(INT, "%L", 10))
             )
         )
@@ -78,7 +78,7 @@ internal class MapFromTests: CompilationTests() {
                         MapFrom::class to mapOf("name = %S" to listOf(it.fromName))
                     )
                 ) },
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -113,7 +113,7 @@ internal class MapFromTests: CompilationTests() {
                         MapFrom::class to mapOf("name = %S" to listOf("id"))
                     )
                 )),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 

@@ -36,7 +36,7 @@ internal class CastTests: CompilationTests() {
                 mapOf("id" to PropertySpecInit(STRING)),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
                     )
                 )
@@ -56,7 +56,7 @@ internal class CastTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))
                 )
             )
         )
@@ -84,7 +84,7 @@ internal class CastTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 properties.associate { it.name to PropertySpecInit(it.toType.asClassName()) },
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -112,7 +112,7 @@ internal class CastTests: CompilationTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf(propertyName to PropertySpecInit(STRING)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("${Currency::class.simpleName}::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[${Currency::class.simpleName}::class]")))
             )
         )
 
