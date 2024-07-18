@@ -2,7 +2,6 @@ plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.kover)
     id("publish")
-    id("com.google.devtools.ksp") apply false
 }
 
 kotlin {
