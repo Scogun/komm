@@ -6,10 +6,12 @@ import com.squareup.kotlinpoet.asClassName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
+import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -152,6 +154,51 @@ internal class ProcessorTests : CompilationTests() {
         `class`.declaredMethods.shouldBeSingleton {
             it.name.shouldBe(convertFunctionName)
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("simpleMapArguments")
+    fun checkSimpleObjectMappingViaTo(properties: List<TestProperty>) {
+        val destinationSpec = buildFileSpec("DestinationObject", properties.associate { it.name to PropertySpecInit(it.type.asClassName()) })
+        val destinationObjectClassName = destinationSpec.typeSpecs.first().name
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            properties.associate { it.name to PropertySpecInit(it.type.asClassName()) },
+            listOf(KOMMMap::class to mapOf("to = %L" to listOf("[$destinationObjectClassName::class]"))))
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            destinationSpec)
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass("$packageName.$sourceObjectClassName")
+        val params = properties.map { it.value }
+        val sourceInstance = sourceClass.constructors.first().newInstance(*params.toTypedArray())
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+        for (property in properties) {
+            destinationInstance::class.shouldHaveMemberProperty(property.name) {
+                it.getter.call(destinationInstance).shouldBe(property.value)
+            }
+        }
+    }
+
+    @Test
+    fun toDestinationIsNotKotlinFails() {
+        val generated = generate(
+            buildFileSpec(
+                "DestinationObject",
+                mapOf("id" to PropertySpecInit(INT)),
+                listOf(KOMMMap::class to mapOf("to = %L" to listOf("[${Currency::class.simpleName}::class]")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: The class ${Currency::class.simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
     }
 
     companion object {

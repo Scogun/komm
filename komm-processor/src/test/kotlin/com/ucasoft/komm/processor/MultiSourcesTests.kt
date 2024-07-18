@@ -60,6 +60,47 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
+    fun multiSourcesSimpleMapOneAnnotation() {
+        val propertyName = "id"
+        val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf(propertyName to PropertySpecInit(INT)))
+        val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
+        val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf(propertyName to PropertySpecInit(INT)))
+        val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
+        val generated = generate(
+            firstSourceSpec,
+            secondSourceSpec,
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(propertyName to PropertySpecInit(INT)),
+                listOf(
+                    KOMMMap::class to mapOf("from = %L" to listOf("[$firstSourceObjectClassName::class, $secondSourceObjectClassName::class]"))
+                )
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val firstSourceClass = generated.classLoader.loadClass("$packageName.$firstSourceObjectClassName")
+        val secondSourceClass = generated.classLoader.loadClass("$packageName.$secondSourceObjectClassName")
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        var mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(firstSourceObjectClassName) }
+        var sourceInstance = firstSourceClass.constructors.first().newInstance(10)
+        var destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(destinationInstance).shouldBe(10)
+        }
+
+        mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(secondSourceObjectClassName) }
+        sourceInstance = secondSourceClass.constructors.first().newInstance(20)
+        destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(destinationInstance).shouldBe(20)
+        }
+    }
+
+    @Test
     fun multiSourcesMapFromFail() {
         val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
