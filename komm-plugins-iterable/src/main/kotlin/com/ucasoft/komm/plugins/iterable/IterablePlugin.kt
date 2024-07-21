@@ -1,5 +1,6 @@
 package com.ucasoft.komm.plugins.iterable
 
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
@@ -11,6 +12,16 @@ class IterablePlugin: BaseIterablePlugin() {
         sourceType.isIterable() && destinationType.isIterable()
 
     override fun cast(
+        sourceName: String,
+        sourceType: KSType,
+        destinationProperty: KSPropertyDeclaration,
+        destinationType: KSType
+    ): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun cast(
+        sourceProperty: KSDeclaration,
         sourceName: String,
         sourceType: KSType,
         destinationProperty: KSPropertyDeclaration,

@@ -27,7 +27,7 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
     @ParameterizedTest
     @MethodSource("castResultArguments")
     fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, delimiter: String, result: String) {
-        var destination = buildDestination(hasNullSubstitute)
+        var destination = buildProperty(hasNullSubstitute)
         if (delimiter.isNotEmpty()) {
             destination = with(mockk<KSPropertyDeclaration>()) {
                 every { annotations } returns destination.annotations.toMutableList().apply {
@@ -44,7 +44,7 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
                 this
             }
         }
-        plugin.cast(sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
+        plugin.cast(buildProperty(false), sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
     }
 
     companion object {

@@ -21,7 +21,7 @@ internal class IterablePluginTests : BaseIterablePluginTests() {
     @ParameterizedTest
     @MethodSource("castResultArguments")
     fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, result: String) {
-        plugin.cast(sourceName, buildKSType(sourceType), buildDestination(hasNullSubstitute), buildKSType(destinationType)).shouldBe(result)
+        plugin.cast(buildProperty(false), sourceName, buildKSType(sourceType), buildProperty(hasNullSubstitute), buildKSType(destinationType)).shouldBe(result)
     }
 
     companion object {
