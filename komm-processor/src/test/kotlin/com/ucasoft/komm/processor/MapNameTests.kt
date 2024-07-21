@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 import kotlin.test.Test
 
-internal class MapFromTests: CompilationTests() {
+internal class MapNameTests: CompilationTests() {
 
     @Test
     fun notConstructorPropertiesMapFail() {
@@ -31,7 +31,7 @@ internal class MapFromTests: CompilationTests() {
         )
 
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for otherId property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for otherId property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapName::class.simpleName} etc.).")
     }
 
     @Test
@@ -64,7 +64,7 @@ internal class MapFromTests: CompilationTests() {
     }
 
     @ParameterizedTest
-    @MethodSource("mapFromArguments")
+    @MethodSource("mapNameArguments")
     fun checkSuccessCasting(properties: List<MapTestProperty>) {
         val sourceSpec = buildFileSpec("SourceObject", properties.associate { it.fromName to PropertySpecInit(it.fromType.asClassName()) })
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
@@ -75,7 +75,7 @@ internal class MapFromTests: CompilationTests() {
                 properties.associate { it.toName to PropertySpecInit(
                     it.toType.asClassName(),
                     annotations = listOf(
-                        MapFrom::class to mapOf("name = %S" to listOf(it.fromName))
+                        MapName::class to mapOf("name = %S" to listOf(it.fromName))
                     )
                 ) },
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
@@ -100,7 +100,7 @@ internal class MapFromTests: CompilationTests() {
     }
 
     @Test
-    fun mapFromBadNameFail() {
+    fun mapNameBadNameFail() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
         val generated = generate(
@@ -110,7 +110,7 @@ internal class MapFromTests: CompilationTests() {
                 mapOf("toId" to PropertySpecInit(
                     INT,
                     annotations = listOf(
-                        MapFrom::class to mapOf("name = %S" to listOf("id"))
+                        MapName::class to mapOf("name = %S" to listOf("id"))
                     )
                 )),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
@@ -118,13 +118,13 @@ internal class MapFromTests: CompilationTests() {
         )
 
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
     }
 
     companion object {
 
         @JvmStatic
-        fun mapFromArguments(): Stream<Arguments> = Stream.of(
+        fun mapNameArguments(): Stream<Arguments> = Stream.of(
             Arguments.of(
                 listOf(
                     MapTestProperty("fromInt", Int::class, 123, "toInt", Int::class, 123),

@@ -15,9 +15,9 @@ class KOMMPropertyMapper(
     private val plugins: List<KOMMCastPlugin>
 ) {
 
-    private val sourceProperties = getSourceProperties(source)
-
     private val annotationFinder = KOMMAnnotationFinder(source)
+
+    private val sourceProperties = getSourceProperties(source)
 
     fun map(destination: KSPropertyDeclaration, mapTo: KOMMVisitor.MapTo): String? {
         val resolver = annotationFinder.findResolver(destination)
@@ -25,7 +25,7 @@ class KOMMPropertyMapper(
             return "$destination = ${mapResolver(resolver, mapTo)}"
         }
 
-        val sourceName = getSourceName(destination)
+        val sourceName = getMapName(destination)
         if (!sourceProperties.containsKey(sourceName)) {
             return handleNoSourceProperty(resolver, destination, sourceName, mapTo)
         }
@@ -46,11 +46,11 @@ class KOMMPropertyMapper(
     private fun mapResolver(resolver: String, mapTo: KOMMVisitor.MapTo) =
         "$resolver(${if (mapTo == KOMMVisitor.MapTo.Constructor) "null" else "it"}).resolve()"
 
-    private fun getSourceName(member: KSPropertyDeclaration): String {
+    private fun getMapName(member: KSPropertyDeclaration): String {
         val mapFrom = annotationFinder.getSuitedNamedAnnotation(member)
 
         if (mapFrom != null) {
-            val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
+            val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapName::name.name }
             val name = nameArgument.value.toString()
             if (name.isNotEmpty()) {
                 return name
@@ -70,9 +70,9 @@ class KOMMPropertyMapper(
         mapTo == KOMMVisitor.MapTo.Constructor -> {
             val destinationName = destination.simpleName.asString()
             if (destinationName == sourceName) {
-                throw KOMMException("There is no mapping for $destinationName property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+                throw KOMMException("There is no mapping for $destinationName property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapName::class.simpleName} etc.).")
             } else {
-                throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
+                throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
             }
         }
 

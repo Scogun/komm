@@ -115,8 +115,8 @@ class MultiSourcesTests: SatelliteTests() {
                     "id" to PropertySpecInit(
                         INT,
                         annotations = listOf(
-                            MapFrom::class to mapOf("name = %S" to listOf("firstId")),
-                            MapFrom::class to mapOf("name = %S" to listOf("secondId"))
+                            MapName::class to mapOf("name = %S" to listOf("firstId")),
+                            MapName::class to mapOf("name = %S" to listOf("secondId"))
                         )
                     )
                 ),
@@ -128,7 +128,7 @@ class MultiSourcesTests: SatelliteTests() {
         )
 
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        generated.messages.shouldContain("${KOMMException::class.simpleName}: There are too many @${MapFrom::class.simpleName} annotations for id property could be applied for $firstSourceObjectClassName")
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There are too many @${MapName::class.simpleName} annotations for id property could be applied for $firstSourceObjectClassName")
     }
 
     @Test
@@ -146,8 +146,8 @@ class MultiSourcesTests: SatelliteTests() {
                     "id" to PropertySpecInit(
                         INT,
                         annotations = listOf(
-                            MapFrom::class to mapOf("name = %S" to listOf("firstId")),
-                            MapFrom::class to mapOf(
+                            MapName::class to mapOf("name = %S" to listOf("firstId")),
+                            MapName::class to mapOf(
                                 "name = %S" to listOf("secondId"),
                                 "from = %L" to listOf("[SecondSourceObject::class]")
                             )

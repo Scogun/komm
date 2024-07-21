@@ -5,16 +5,13 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.ucasoft.komm.annotations.MapConvert
-import com.ucasoft.komm.annotations.MapDefault
-import com.ucasoft.komm.annotations.MapFrom
-import com.ucasoft.komm.annotations.NullSubstitute
+import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 
 class KOMMAnnotationFinder(private val source: KSType) {
 
     private val namedAnnotations =
-        listOf(MapFrom::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
+        listOf(MapFrom::class.simpleName, MapName::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
 
     fun findResolver(member: KSPropertyDeclaration) = findMapAnnotation(
         source.toClassName(),
@@ -73,7 +70,7 @@ class KOMMAnnotationFinder(private val source: KSType) {
     }
 
     private fun associateWithFrom(item: KSAnnotation): List<ClassName> {
-        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapFrom::from.name }
+        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::from.name }
         if (fromArgument != null) {
             return (fromArgument.value as ArrayList<*>).filterIsInstance<KSType>().map { it.toClassName() }
         }

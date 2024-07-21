@@ -9,7 +9,7 @@ import java.util.*
 data class JvmDestinationObject(
     val id: Int,
     val stringToInt: Int,
-    @MapFrom("userName")
+    @MapName("userName")
     val name: String,
     @MapConvert<SourceObject, CostConverter>(converter = CostConverter::class)
     val cost: String,
@@ -17,7 +17,7 @@ data class JvmDestinationObject(
     val activeDate: Date,
     @NullSubstitute(MapDefault(StringResolver::class), "nullable")
     val notNullable: String,
-    @MapFrom("iAmInt")
+    @MapName("iAmInt")
     val iAmNullable: Int?
 ) {
     @MapDefault<DateResolver>(DateResolver::class)

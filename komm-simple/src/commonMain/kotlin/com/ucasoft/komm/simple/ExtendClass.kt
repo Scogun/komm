@@ -8,21 +8,21 @@ import com.ucasoft.komm.annotations.*
 data class DestinationObject(
     val id: Int,
     val stringToInt: Int,
-    @MapFrom("userName", [])
+    @MapName("userName", [])
     val name: String,
     @MapConvert<SourceObject, CostConverter>(converter = CostConverter::class, "")
     val cost: String,
     @NullSubstitute(MapDefault(StringResolver::class), "nullable", [])
     val notNullable: String,
-    @MapFrom("iAmInt", [])
-    val iAmNullable: Int?
+    @MapName("iAmInt", [])
+    val iAmNullable: Int?,
 ) {
     var intToString: String = ""
 
     @MapConvert<SourceObject, CostConverter>(name = "cost", converter = CostConverter::class)
     var otherCost: String = ""
 
-    @MapFrom("nullable", [])
+    @MapName("nullable", [])
     var otherNullable: Int? = 1
 }
 
