@@ -121,6 +121,42 @@ internal class MapNameTests: CompilationTests() {
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
     }
 
+    @ParameterizedTest
+    @MethodSource("mapNameArguments")
+    fun mapNameWithMapTo(properties: List<MapTestProperty>) {
+        val destinationSpec = buildFileSpec("DestinationObject", properties.associate { it.name to PropertySpecInit(it.type.asClassName()) })
+        val destinationObjectClassName = destinationSpec.typeSpecs.first().name
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            properties.associate { it.fromName to PropertySpecInit(
+                it.toType.asClassName(),
+                annotations = listOf(
+                    MapName::class to mapOf("name = %S" to listOf(it.toName))
+                )
+            ) },
+            listOf(KOMMMap::class to mapOf("to = %L" to listOf("[$destinationObjectClassName::class]"))))
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            destinationSpec)
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass("$packageName.$sourceObjectClassName")
+        val params = properties.map { it.value }
+        val sourceInstance = sourceClass.constructors.first().newInstance(*params.toTypedArray())
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+        for (property in properties) {
+            destinationInstance::class.shouldHaveMemberProperty(property.name) {
+                it.getter.call(destinationInstance).shouldBe(property.value)
+            }
+        }
+    }
+
     companion object {
 
         @JvmStatic

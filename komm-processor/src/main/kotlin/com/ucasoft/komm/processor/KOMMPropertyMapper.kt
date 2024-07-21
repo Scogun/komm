@@ -81,7 +81,7 @@ class KOMMPropertyMapper(
 
     private fun getSourceProperties(source: KSType): Map<String, KSDeclaration> {
         val sourceClass = source.declaration as KSClassDeclaration
-        return sourceClass.getAllProperties().associate { it.toString() to it as KSDeclaration }.toMutableMap().apply {
+        return sourceClass.getAllProperties().associate { getMapName(it) to it as KSDeclaration }.toMutableMap().apply {
             putAll(
                 sourceClass.getAllFunctions().filter { it.parameters.isEmpty() }
                     .associateBy { it.toString().substring(3).lowercase() })
