@@ -21,7 +21,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [Configuration](#mapping-configuration)
     * [Disable AutoCast](#disable-autocast)
     * [Change Convert Function Name](#change-convert-function-name)
-  * [@MapFrom](#mapfrom-annotation)
+  * [@MapName](#mapname-annotation)
   * [@MapConverter](#use-converter)
   * [@MapDefault](#use-resolver)
   * [@NullSubstitute](#use-nullsubstitute)
@@ -119,7 +119,26 @@ class SourceObject {
     val stringToInt = "250"
 }
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
+data class DestinationObject(
+    val id: Int,
+    val stringToInt: Int
+) {
+    var intToString: String = ""
+}
+```
+or
+```kotlin
+@KOMMMap(to = [DestinationObject::class])
+class SourceObject {
+
+    val id = 150
+
+    val intToString = 300
+
+    val stringToInt = "250"
+}
+
 data class DestinationObject(
     val id: Int,
     val stringToInt: Int
@@ -142,7 +161,7 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 ###### Classes declaration
 ```kotlin
 @KOMMMap(
-    from = SourceObject::class,
+    from = [SourceObject::class],
     config = MapConfiguration(
         tryAutoCast = false
     )
@@ -162,7 +181,7 @@ e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: AutoCast is tu
 ###### Classes declaration
 ```kotlin
 @KOMMMap(
-    from = SourceObject::class,
+    from = [SourceObject::class],
     config = MapConfiguration(
         convertFunctionName = "convertToDestination"
     )
@@ -184,7 +203,7 @@ fun SourceObject.convertToDestination(): DestinationObject = DestinationObject(
 }
 ```
 
-### @MapFrom annotation
+### @MapName annotation
 #### Classes declaration
 ```kotlin
 class SourceObject {
@@ -192,10 +211,26 @@ class SourceObject {
     val userName = "user"
 }
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class DestinationObject(
     //...
-    @MapFrom("userName")
+    @MapName("userName")
+    val name: String
+) {
+    var intToString: String = ""
+}
+```
+or
+```kotlin
+@KOMMMap(from = [DestinationObject::class])
+class SourceObject {
+    //...
+    @MapName("name")
+    val userName = "user"
+}
+
+data class DestinationObject(
+    //...
     val name: String
 ) {
     var intToString: String = ""
@@ -226,7 +261,7 @@ class SourceObject {
     val cost = 499.99
 }
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class DestinationObject(
     //...
     @MapConvert<SourceObject, CostConverter>(CostConverter::class)
@@ -257,7 +292,7 @@ class DateResolver(destination: DestinationObject?) : KOMMResolver<DestinationOb
 ```
 #### Classes declaration
 ```kotlin
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class DestinationObject(
     //...
     @MapDefault<DateResolver>(DateResolver::class)
@@ -283,7 +318,7 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 ###### Classes declaration
 ```kotlin
 @KOMMMap(
-    from = SourceObject::class,
+    from = [SourceObject::class],
     config = MapConfiguration(
       allowNotNullAssertion = true
     )
@@ -315,7 +350,7 @@ class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObje
 #### Classes declaration
 ```kotlin
 @KOMMMap(
-    from = SourceObject::class
+    from = [SourceObject::class]
 )
 data class DestinationObject(
     @NullSubatitute(MapDefault(IntResolver::class))
@@ -337,14 +372,11 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 #### Classes declaration
 ```kotlin
 @KOMMMap(
-    from = FirstSourceObject::class
-)
-@KOMMMap(
-  from = SecondSourceObject::class
+    from = [FirstSourceObject::class, SecondSourceObject::class]
 )
 data class DestinationObject(
     @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
-    @MapFrom("userId", [SecondSourceObject::class])
+    @MapName("userId", [SecondSourceObject::class])
     val id: Int
 ) {
     @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
@@ -358,6 +390,26 @@ data class FirstSourceObject(
 data class SecondSourceObject(
     val userId: Int
 )
+```
+in case, different sources should be configured different:
+```kotlin
+@KOMMMap(
+    from = [FirstSourceObject::class],
+    config = MapConfiguration(
+        allowNotNullAssertion = true
+    )
+)
+@KOMMMap(
+    from = [SecondSourceObject::class]
+)
+data class DestinationObject(
+  @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+  @MapName("userId", [SecondSourceObject::class])
+  val id: Int
+) {
+  @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+  var otherId: Int = 0
+}
 ```
 #### Generated extension functions
 ```kotlin
@@ -416,9 +468,9 @@ class SourceObject {
     val intList: List<Int>? = listOf(1, 2, 3)
 }
 
-@KOMMMap(from = SourceObject::class, config = MapConfiguration(allowNotNullAssertion = true))
+@KOMMMap(from = [SourceObject::class], config = MapConfiguration(allowNotNullAssertion = true))
 data class DestinationObject(
-    @MapFrom("intList")
+    @MapName("intList")
     val stringList: MutableList<String>
 )
 ```
@@ -435,7 +487,7 @@ class SourceObject {
     val intList: List<Int>? = listOf(1, 2, 3)
 }
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class DestinationObject(
     @NullSubstitute(MapDefault(StringListResolver::class), "intList")
     val stringList: MutableList<String>
@@ -476,7 +528,7 @@ object SourceObject: Table() {
     override val primaryKey = PrimaryKey(id)
 }
 
-@KOMMMap(from = SourceObject::class)
+@KOMMMap(from = [SourceObject::class])
 data class DestinationObject(
     val id: Int,
     val name: String,
