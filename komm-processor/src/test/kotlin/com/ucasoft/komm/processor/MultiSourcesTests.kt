@@ -132,7 +132,7 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
-    fun multiSourcesMapFrom() {
+    fun multiSourcesMapName() {
         val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
         val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(INT)))
@@ -149,7 +149,7 @@ class MultiSourcesTests: SatelliteTests() {
                             MapName::class to mapOf("name = %S" to listOf("firstId")),
                             MapName::class to mapOf(
                                 "name = %S" to listOf("secondId"),
-                                "from = %L" to listOf("[SecondSourceObject::class]")
+                                "`for` = %L" to listOf("[SecondSourceObject::class]")
                             )
                         )
                     )
@@ -228,7 +228,7 @@ class MultiSourcesTests: SatelliteTests() {
                             MapDefault::class.asTypeName()
                                 .parameterizedBy(ClassName(packageName, resolverClassName)) to mapOf(
                                     "resolver = %L" to listOf("$resolverClassName::class"),
-                                    "from = %L" to listOf("[$thirdSourceObjectClassName::class]")
+                                    "`for` = %L" to listOf("[$thirdSourceObjectClassName::class]")
                             )
                         )
                     )

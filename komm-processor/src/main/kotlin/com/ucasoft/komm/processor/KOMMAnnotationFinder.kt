@@ -63,14 +63,14 @@ class KOMMAnnotationFinder(private val source: KSType) {
     }
 
     fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) : KSAnnotation? {
-        val mapFroms = member.annotations.filter { it.shortName.asString() in namedAnnotations }
+        val mapsFor = member.annotations.filter { it.shortName.asString() in namedAnnotations }
             .associateWith(::associateWithFrom)
 
-        return filterAnnotationsBySource(source.toClassName(), mapFroms, member)
+        return filterAnnotationsBySource(source.toClassName(), mapsFor, member)
     }
 
     private fun associateWithFrom(item: KSAnnotation): List<ClassName> {
-        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::from.name }
+        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::`for`.name }
         if (fromArgument != null) {
             return (fromArgument.value as ArrayList<*>).filterIsInstance<KSType>().map { it.toClassName() }
         }
