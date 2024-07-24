@@ -34,6 +34,13 @@ class KOMMVisitor(
         Also
     }
 
+    enum class Direction {
+
+            From,
+
+            To
+    }
+
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
         val annotations =
             classDeclaration.annotations.filter { it.shortName.asString() == KOMMMap::class.simpleName }
@@ -44,14 +51,14 @@ class KOMMVisitor(
             val toArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::to.name }.value as ArrayList<KSType>
             fromArgument.forEach {
                 syncImports(classDeclaration.asStarProjectedType(), it, imports)
-                functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, config))
+                functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, Direction.From, config))
             }
             toArgument.forEach {
                 if (!it.isKotlinClass()) {
                     throw KOMMException("The class ${it.toClassName().simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
                 }
                 syncImports(it, classDeclaration.asStarProjectedType(), imports)
-                functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), config))
+                functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), Direction.To, config))
             }
         }
     }
@@ -64,13 +71,13 @@ class KOMMVisitor(
         }
     }
 
-    private fun buildFunction(destination: KSType, source: KSType, config: KSAnnotation) : FunSpec {
+    private fun buildFunction(destination: KSType, source: KSType, direction: Direction, config: KSAnnotation) : FunSpec {
         val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
         val fromSourceFunctionName = convertFunctionName.ifEmpty { "to${destination.toClassName().simpleName}" }
         return FunSpec.builder(fromSourceFunctionName)
             .receiver(getSourceName(source))
             .returns(destination.toClassName())
-            .addStatement(buildStatement(source, destination.declaration as KSClassDeclaration, config))
+            .addStatement(buildStatement(source, destination.declaration as KSClassDeclaration, direction, config))
             .build()
     }
 
@@ -88,13 +95,13 @@ class KOMMVisitor(
         return source.toTypeName()
     }
 
-    private fun buildStatement(source: KSType, destination: KSClassDeclaration, config: KSAnnotation): String {
+    private fun buildStatement(source: KSType, destination: KSClassDeclaration, direction: Direction, config: KSAnnotation): String {
         val castPlugins = typePlugins.toMutableList().apply {
                 addAll(plugins[KOMMCastPlugin::class]
                     ?.map { it.getDeclaredConstructor().newInstance() } ?: emptyList())
             }.filterIsInstance<KOMMCastPlugin>()
 
-        val propertyMapper = KOMMPropertyMapper(source, config, castPlugins)
+        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins)
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }

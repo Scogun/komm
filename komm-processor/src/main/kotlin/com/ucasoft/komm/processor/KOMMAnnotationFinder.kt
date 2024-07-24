@@ -8,13 +8,13 @@ import com.squareup.kotlinpoet.ksp.toClassName
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 
-class KOMMAnnotationFinder(private val source: KSType) {
+class KOMMAnnotationFinder(private val forClass: KSType) {
 
     private val namedAnnotations =
         listOf(MapFrom::class.simpleName, MapName::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
 
     fun findResolver(member: KSPropertyDeclaration) = findMapAnnotation(
-        source.toClassName(),
+        forClass.toClassName(),
         member,
         MapDefault::class.simpleName,
         MapDefault<*>::resolver.name
@@ -22,7 +22,7 @@ class KOMMAnnotationFinder(private val source: KSType) {
 
     fun findConverter(member: KSPropertyDeclaration) =
         findMapAnnotation(
-            source.toClassName(),
+            forClass.toClassName(),
             member,
             MapConvert::class.simpleName,
             MapConvert<*, *>::converter.name
@@ -30,9 +30,9 @@ class KOMMAnnotationFinder(private val source: KSType) {
 
     fun findSubstituteResolver(member: KSPropertyDeclaration): String? {
         val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }
-            .associateWith(::associateWithFrom)
+            .associateWith(::associateWithFor)
 
-        val annotation = filterAnnotationsBySource(source.toClassName(), annotations, member)
+        val annotation = filterAnnotationsByClass(forClass.toClassName(), annotations, member)
 
         if (annotation != null) {
             val resolverArgument =
@@ -44,15 +44,15 @@ class KOMMAnnotationFinder(private val source: KSType) {
     }
 
     private fun findMapAnnotation(
-        source: ClassName,
+        forClass: ClassName,
         member: KSPropertyDeclaration,
         annotationName: String?,
         argumentName: String
     ): String? {
         val annotations =
-            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith(::associateWithFrom)
+            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith(::associateWithFor)
 
-        val annotation = filterAnnotationsBySource(source, annotations, member)
+        val annotation = filterAnnotationsByClass(forClass, annotations, member)
 
         if (annotation != null) {
             val resolverArgument = annotation.arguments.first { it.name?.asString() == argumentName }
@@ -64,15 +64,15 @@ class KOMMAnnotationFinder(private val source: KSType) {
 
     fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) : KSAnnotation? {
         val mapsFor = member.annotations.filter { it.shortName.asString() in namedAnnotations }
-            .associateWith(::associateWithFrom)
+            .associateWith(::associateWithFor)
 
-        return filterAnnotationsBySource(source.toClassName(), mapsFor, member)
+        return filterAnnotationsByClass(forClass.toClassName(), mapsFor, member)
     }
 
-    private fun associateWithFrom(item: KSAnnotation): List<ClassName> {
-        val fromArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::`for`.name }
-        if (fromArgument != null) {
-            return (fromArgument.value as ArrayList<*>).filterIsInstance<KSType>().map { it.toClassName() }
+    private fun associateWithFor(item: KSAnnotation): List<ClassName> {
+        val forArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::`for`.name }
+        if (forArgument != null) {
+            return (forArgument.value as ArrayList<*>).filterIsInstance<KSType>().map { it.toClassName() }
         }
 
         if (item.annotationType.toString() == MapConvert::class.simpleName) {
@@ -82,18 +82,18 @@ class KOMMAnnotationFinder(private val source: KSType) {
         return emptyList()
     }
 
-    private fun filterAnnotationsBySource(
-        source: ClassName,
+    private fun filterAnnotationsByClass(
+        forClass: ClassName,
         annotationMap: Map<KSAnnotation, List<ClassName>>,
         member: KSPropertyDeclaration
     ): KSAnnotation? {
-        var annotations = annotationMap.filter { it.value.contains(source) }
+        var annotations = annotationMap.filter { it.value.contains(forClass) }
         if (annotations.isEmpty()) {
             annotations = annotationMap.filter { it.value.isEmpty() }
         }
         if (annotations.count() > 1) {
             val annotation = annotations.keys.first()
-            throw KOMMException("There are too many @${annotation.shortName.asString()} annotations for ${member.simpleName.asString()} property could be applied for ${source.simpleName}")
+            throw KOMMException("There are too many @${annotation.shortName.asString()} annotations for ${member.simpleName.asString()} property could be applied for ${forClass.simpleName}")
         }
 
         return annotations.keys.firstOrNull()

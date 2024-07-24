@@ -11,11 +11,16 @@ import com.ucasoft.komm.processor.extensions.getConfigValue
 
 class KOMMPropertyMapper(
     source: KSType,
+    destination: KSType,
+    private val direction: KOMMVisitor.Direction,
     private val config: KSAnnotation,
     private val plugins: List<KOMMCastPlugin>
 ) {
 
-    private val annotationFinder = KOMMAnnotationFinder(source)
+    private val annotationFinder = KOMMAnnotationFinder(when (direction) {
+        KOMMVisitor.Direction.From -> source
+        KOMMVisitor.Direction.To -> destination
+    })
 
     private val sourceProperties = getSourceProperties(source)
 
@@ -29,17 +34,21 @@ class KOMMPropertyMapper(
         if (!sourceProperties.containsKey(sourceName)) {
             return handleNoSourceProperty(resolver, destination, sourceName, mapTo)
         }
+        val source = sourceProperties[sourceName]
 
         val converter = annotationFinder.findConverter(destination)
-        val nullSubstituteResolver = annotationFinder.findSubstituteResolver(destination)
+        val nullSubstituteResolver = when (direction) {
+            KOMMVisitor.Direction.From -> annotationFinder.findSubstituteResolver(destination)
+            KOMMVisitor.Direction.To -> annotationFinder.findSubstituteResolver(source as KSPropertyDeclaration)
+        }
         return if (converter != null) {
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
             "$destination = ${
-                getSourceWithCast(destination, sourceProperties[sourceName], config).trimEnd('!').replace("!!", "?")
+                getSourceWithCast(destination, source, config).trimEnd('!').replace("!!", "?")
             } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
-            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName], config)}"
+            "$destination = ${getSourceWithCast(destination, source, config)}"
         }
     }
 
@@ -114,7 +123,8 @@ class KOMMPropertyMapper(
         val sourceIsNullable = propertyType.toTypeName().isNullable
         val destinationIsNullable = destinationType.toTypeName().isNullable
         val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute
+        val sourceHasNullSubstitute = sourceProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute || sourceHasNullSubstitute
         val allowNotNullAssertion = config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)
 
         if (sourceIsNullable && !destinationIsNullOrNullSubstitute && !allowNotNullAssertion) {

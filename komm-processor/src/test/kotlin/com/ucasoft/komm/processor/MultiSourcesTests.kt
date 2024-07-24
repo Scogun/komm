@@ -132,7 +132,38 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
-    fun multiSourcesMapName() {
+    fun multiSourcesMapToFail() {
+        val firstDestinationSpec = buildFileSpec("FirstDestinationObject", mapOf("firstId" to PropertySpecInit(INT)))
+        val firstDestinationObjectClassName = firstDestinationSpec.typeSpecs.first().name!!
+        val secondDestinationSpec = buildFileSpec("SecondDestinationObject", mapOf("secondId" to PropertySpecInit(INT)))
+        val secondDestinationObjectClassName = secondDestinationSpec.typeSpecs.first().name!!
+        val generated = generate(
+            firstDestinationSpec,
+            secondDestinationSpec,
+            buildFileSpec(
+                "SourceObject",
+                mapOf(
+                    "id" to PropertySpecInit(
+                        INT,
+                        annotations = listOf(
+                            MapName::class to mapOf("name = %S" to listOf("firstId")),
+                            MapName::class to mapOf("name = %S" to listOf("secondId"))
+                        )
+                    )
+                ),
+                listOf(
+                    KOMMMap::class to mapOf("to = %L" to listOf("[$firstDestinationObjectClassName::class]")),
+                    KOMMMap::class to mapOf("to = %L" to listOf("[$secondDestinationObjectClassName::class]")),
+                )
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There are too many @${MapName::class.simpleName} annotations for id property could be applied for $firstDestinationObjectClassName")
+    }
+
+    @Test
+    fun multiSourcesMapNameFrom() {
         val firstSourceSpec = buildFileSpec("FirstSourceObject", mapOf("firstId" to PropertySpecInit(INT)))
         val firstSourceObjectClassName = firstSourceSpec.typeSpecs.first().name!!
         val secondSourceSpec = buildFileSpec("SecondSourceObject", mapOf("secondId" to PropertySpecInit(INT)))
@@ -180,6 +211,59 @@ class MultiSourcesTests: SatelliteTests() {
 
         destinationInstance::class.shouldHaveMemberProperty("id") {
             it.getter.call(destinationInstance).shouldBe(20)
+        }
+    }
+
+    @Test
+    fun multiSourcesMapNameTo() {
+        val firstDestinationSpec = buildFileSpec("FirstDestinationObject", mapOf("firstId" to PropertySpecInit(INT)))
+        val firstDestinationObjectClassName = firstDestinationSpec.typeSpecs.first().name!!
+        val secondDestinationSpec = buildFileSpec("SecondDestinationObject", mapOf("secondId" to PropertySpecInit(INT)))
+        val secondDestinationObjectClassName = secondDestinationSpec.typeSpecs.first().name!!
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            mapOf(
+                "id" to PropertySpecInit(
+                    INT,
+                    annotations = listOf(
+                        MapName::class to mapOf("name = %S" to listOf("firstId")),
+                        MapName::class to mapOf(
+                            "name = %S" to listOf("secondId"),
+                            "`for` = %L" to listOf("[$secondDestinationObjectClassName::class]")
+                        )
+                    )
+                )
+            ),
+            listOf(
+                KOMMMap::class to mapOf("to = %L" to listOf("[$firstDestinationObjectClassName::class]")),
+                KOMMMap::class to mapOf("to = %L" to listOf("[$secondDestinationObjectClassName::class]")),
+            )
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name!!
+        val generated = generate(
+            firstDestinationSpec,
+            secondDestinationSpec,
+            sourceSpec
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val sourceClass = generated.classLoader.loadClass("$packageName.$sourceObjectClassName")
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        var mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(firstDestinationObjectClassName) }
+        var sourceInstance = sourceClass.constructors.first().newInstance(10)
+        val firstDestinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        firstDestinationInstance::class.shouldHaveMemberProperty("firstId") {
+            it.getter.call(firstDestinationInstance).shouldBe(10)
+        }
+
+        mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(secondDestinationObjectClassName) }
+        sourceInstance = sourceClass.constructors.first().newInstance(20)
+        val secondDestinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        secondDestinationInstance::class.shouldHaveMemberProperty("secondId") {
+            it.getter.call(secondDestinationInstance).shouldBe(20)
         }
     }
 
