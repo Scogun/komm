@@ -65,7 +65,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.5"
+val kommVersion = "0.9.7"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -78,7 +78,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.5"
+val kommVersion = "0.9.7"
 
 kotlin {
     jvm {
@@ -347,7 +347,7 @@ class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObje
     override fun resolve() = 1
 }
 ```
-#### Classes declaration
+#### Classes declaration Map From
 ```kotlin
 @KOMMMap(
     from = [SourceObject::class]
@@ -360,13 +360,29 @@ data class DestinationObject(
     var otherId: Int = 0
 }
 ```
-#### Generated extension function
+#### Generated extension function for Map From
 ```kotlin
 fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     id = id ?: IntResolver(null).resolve()
 ).also {
     it.otherId = id ?: IntResolver(it).resolve()
 }
+```
+#### Classes declaration Map To
+```kotlin
+@KOMMMap(
+    to = [DestinationObject::class]
+)
+data class SourceObject(
+    @NullSubatitute(MapDefault(IntResolver::class))
+    val id: Int?
+) 
+```
+#### Generated extension function for Map To
+```kotlin
+fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+    id = id ?: IntResolver(null).resolve()
+)
 ```
 ### Multi Sources Support
 #### Classes declaration
@@ -435,7 +451,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.5"
+val kommVersion = "0.9.7"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -449,7 +465,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.5"
+val kommVersion = "0.9.7"
 
 //...
 
@@ -509,7 +525,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.5"
+val kommVersion = "0.9.7"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
