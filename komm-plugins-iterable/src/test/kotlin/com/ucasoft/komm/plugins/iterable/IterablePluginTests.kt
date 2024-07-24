@@ -20,8 +20,14 @@ internal class IterablePluginTests : BaseIterablePluginTests() {
 
     @ParameterizedTest
     @MethodSource("castResultArguments")
-    fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, result: String) {
-        plugin.cast(buildProperty(false), sourceName, buildKSType(sourceType), buildProperty(hasNullSubstitute), buildKSType(destinationType)).shouldBe(result)
+    fun castResult(sourceName: String, sourceType: KType, sourceHasNullSubstitute: Boolean, destinationType: KType, destinationHasNullSubstitute: Boolean, result: String) {
+        plugin.cast(
+            buildProperty(sourceHasNullSubstitute),
+            sourceName,
+            buildKSType(sourceType),
+            buildProperty(destinationHasNullSubstitute),
+            buildKSType(destinationType)
+        ).shouldBe(result)
     }
 
     companion object {
@@ -61,20 +67,22 @@ internal class IterablePluginTests : BaseIterablePluginTests() {
 
         @JvmStatic
         fun castResultArguments(): Stream<Arguments> = Stream.of(
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<List<Int>>(), false, "sourceIntList"),
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<MutableList<Int>>(), false, "sourceIntList.toMutableList()"),
-            Arguments.of("mutableSourceIntList", typeOf<MutableList<Int>>(), typeOf<List<Int>>(), false, "mutableSourceIntList"),
-            Arguments.of("mutableSourceIntList", typeOf<MutableList<Int>>(), typeOf<MutableList<Int>>(), false, "mutableSourceIntList"),
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<List<String>>(), false, "sourceIntList.map{ it.toString() }"),
-            Arguments.of("sourceStringList", typeOf<List<String>>(), typeOf<List<Int>>(), false, "sourceStringList.map{ it.toInt() }"),
-            Arguments.of("sourceStringList", typeOf<List<String>>(), typeOf<Set<Int>>(), false, "sourceStringList.map{ it.toInt() }.toSet()"),
-            Arguments.of("sourceStringList", typeOf<List<String>>(), typeOf<MutableList<Int>>(), false, "sourceStringList.map{ it.toInt() }.toMutableList()"),
-            Arguments.of("nullableSourceIntList", typeOf<MutableList<Int>?>(), typeOf<List<Int>>(), false, "nullableSourceIntList!!"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<List<Int>>(), true, "nullableSourceIntList"),
-            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), typeOf<List<Int>>(), false, "nullableSourceStringList!!.map{ it.toInt() }"),
-            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), typeOf<List<Int>>(), true, "nullableSourceStringList?.map{ it.toInt() }"),
-            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), typeOf<Set<Int>>(), false, "nullableSourceStringList!!.map{ it.toInt() }.toSet()"),
-            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), typeOf<Set<Int>>(), true, "nullableSourceStringList?.map{ it.toInt() }?.toSet()"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), false, typeOf<List<Int>>(), false, "sourceIntList"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), false, typeOf<MutableList<Int>>(), false, "sourceIntList.toMutableList()"),
+            Arguments.of("mutableSourceIntList", typeOf<MutableList<Int>>(), false, typeOf<List<Int>>(), false, "mutableSourceIntList"),
+            Arguments.of("mutableSourceIntList", typeOf<MutableList<Int>>(), false, typeOf<MutableList<Int>>(), false, "mutableSourceIntList"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), false, typeOf<List<String>>(), false, "sourceIntList.map{ it.toString() }"),
+            Arguments.of("sourceStringList", typeOf<List<String>>(), false, typeOf<List<Int>>(), false, "sourceStringList.map{ it.toInt() }"),
+            Arguments.of("sourceStringList", typeOf<List<String>>(), false, typeOf<Set<Int>>(), false, "sourceStringList.map{ it.toInt() }.toSet()"),
+            Arguments.of("sourceStringList", typeOf<List<String>>(), false, typeOf<MutableList<Int>>(), false, "sourceStringList.map{ it.toInt() }.toMutableList()"),
+            Arguments.of("nullableSourceIntList", typeOf<MutableList<Int>?>(), false, typeOf<List<Int>>(), false, "nullableSourceIntList!!"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), false, typeOf<List<Int>>(), true, "nullableSourceIntList"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), false, typeOf<List<Int>>(), false, "nullableSourceStringList!!.map{ it.toInt() }"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), false, typeOf<List<Int>>(), true, "nullableSourceStringList?.map{ it.toInt() }"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), true, typeOf<List<Int>>(), false, "nullableSourceStringList?.map{ it.toInt() }"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), false, typeOf<Set<Int>>(), false, "nullableSourceStringList!!.map{ it.toInt() }.toSet()"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), false, typeOf<Set<Int>>(), true, "nullableSourceStringList?.map{ it.toInt() }?.toSet()"),
+            Arguments.of("nullableSourceStringList", typeOf<List<String>?>(), true, typeOf<Set<Int>>(), false, "nullableSourceStringList?.map{ it.toInt() }?.toSet()"),
         )
     }
 }

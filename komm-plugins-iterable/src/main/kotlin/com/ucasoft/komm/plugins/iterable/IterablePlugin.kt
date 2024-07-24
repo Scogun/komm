@@ -1,5 +1,6 @@
 package com.ucasoft.komm.plugins.iterable
 
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -31,7 +32,7 @@ class IterablePlugin: BaseIterablePlugin() {
         val sourceParam = sourceType.arguments.first()
         val stringBuilder = StringBuilder(sourceName)
         var fromCastDeclaration = sourceType.toClassName()
-        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, destinationType, destinationProperty)
+        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
             stringBuilder.append(".map{ it.to${destinationParam.type}() }")

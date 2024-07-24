@@ -2,6 +2,7 @@ package com.ucasoft.komm.plugins.iterable
 
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
@@ -19,10 +20,11 @@ abstract class BaseIterablePlugin: KOMMCastPlugin {
 
     protected fun safeCallOrNullAssertion(safe: Boolean) = if (safe) "?" else "!!"
 
-    protected fun parseMappingData(sourceType: KSType, destinationType: KSType, destinationProperty: KSPropertyDeclaration): Pair<Boolean, Boolean>{
+    protected fun parseMappingData(sourceType: KSType, sourceProperty: KSDeclaration, destinationType: KSType, destinationProperty: KSPropertyDeclaration): Pair<Boolean, Boolean>{
         val sourceIsNullable = sourceType.toTypeName().isNullable
         val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-        val destinationIsNullOrNullSubstitute = destinationType.toTypeName().isNullable || destinationHasNullSubstitute
+        val sourceHasNullSubstitute = sourceProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+        val destinationIsNullOrNullSubstitute = destinationType.toTypeName().isNullable || destinationHasNullSubstitute || sourceHasNullSubstitute
         return Pair(sourceIsNullable, destinationIsNullOrNullSubstitute)
     }
 

@@ -30,7 +30,7 @@ class IterableStringPlugin: BaseIterablePlugin() {
         destinationProperty: KSPropertyDeclaration,
         destinationType: KSType
     ): String {
-        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, destinationType, destinationProperty)
+        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         val stringBuilder = StringBuilder(sourceName)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         val pluginAnnotation = destinationProperty.annotations.firstOrNull { it.shortName.asString() == KOMMIterableString::class.simpleName }
