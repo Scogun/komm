@@ -1,5 +1,7 @@
 package com.ucasoft.komm.plugins.iterable
 
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
@@ -16,11 +18,21 @@ class IterablePlugin: BaseIterablePlugin() {
         destinationProperty: KSPropertyDeclaration,
         destinationType: KSType
     ): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun cast(
+        sourceProperty: KSDeclaration,
+        sourceName: String,
+        sourceType: KSType,
+        destinationProperty: KSPropertyDeclaration,
+        destinationType: KSType
+    ): String {
         val destinationParam = destinationType.arguments.first()
         val sourceParam = sourceType.arguments.first()
         val stringBuilder = StringBuilder(sourceName)
         var fromCastDeclaration = sourceType.toClassName()
-        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, destinationType, destinationProperty)
+        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
             stringBuilder.append(".map{ it.to${destinationParam.type}() }")

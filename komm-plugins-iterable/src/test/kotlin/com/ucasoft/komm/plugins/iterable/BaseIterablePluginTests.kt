@@ -59,7 +59,7 @@ open class BaseIterablePluginTests {
         this
     }
 
-    protected fun buildDestination(hasNullSubstitute: Boolean): KSPropertyDeclaration {
+    protected fun buildProperty(hasNullSubstitute: Boolean): KSPropertyDeclaration {
         val destinationProperty = with(mockk<KSPropertyDeclaration>()) {
             every { annotations } returns if (hasNullSubstitute) listOf(with(mockk<KSAnnotation>()) {
                 every { shortName.asString() } returns NullSubstitute::class.simpleName.toString()

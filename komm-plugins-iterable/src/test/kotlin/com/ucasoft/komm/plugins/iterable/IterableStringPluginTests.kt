@@ -26,8 +26,8 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
 
     @ParameterizedTest
     @MethodSource("castResultArguments")
-    fun castResult(sourceName: String, sourceType: KType, destinationType: KType, hasNullSubstitute: Boolean, delimiter: String, result: String) {
-        var destination = buildDestination(hasNullSubstitute)
+    fun castResult(sourceName: String, sourceType: KType, sourceHasNullSubstitute: Boolean, destinationType: KType, destinationHasNullSubstitute: Boolean, delimiter: String, result: String) {
+        var destination = buildProperty(destinationHasNullSubstitute)
         if (delimiter.isNotEmpty()) {
             destination = with(mockk<KSPropertyDeclaration>()) {
                 every { annotations } returns destination.annotations.toMutableList().apply {
@@ -44,7 +44,7 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
                 this
             }
         }
-        plugin.cast(sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
+        plugin.cast(buildProperty(sourceHasNullSubstitute), sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
     }
 
     companion object {
@@ -84,17 +84,19 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
 
         @JvmStatic
         fun castResultArguments(): Stream<Arguments> = Stream.of(
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<String>(), false, "", "sourceIntList.joinToString()"),
-            Arguments.of("sourceIntList", typeOf<List<Int>>(), typeOf<String>(), false, "-", "sourceIntList.joinToString(\"-\")"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), false, "", "nullableSourceIntList!!.joinToString()"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), true, "", "nullableSourceIntList?.joinToString()"),
-            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), typeOf<String>(), true, "/*/", "nullableSourceIntList?.joinToString(\"/*/\")"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), false, typeOf<String>(), false, "", "sourceIntList.joinToString()"),
+            Arguments.of("sourceIntList", typeOf<List<Int>>(), false, typeOf<String>(), false, "-", "sourceIntList.joinToString(\"-\")"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), false, typeOf<String>(), false, "", "nullableSourceIntList!!.joinToString()"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), false, typeOf<String>(), true, "", "nullableSourceIntList?.joinToString()"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), true, typeOf<String>(), false, "", "nullableSourceIntList?.joinToString()"),
+            Arguments.of("nullableSourceIntList", typeOf<List<Int>?>(), false, typeOf<String>(), true, "/*/", "nullableSourceIntList?.joinToString(\"/*/\")"),
 
-            Arguments.of("sourceString", typeOf<String>(), typeOf<List<Int>>(), false, "", "sourceString.split(\", \")"),
-            Arguments.of("sourceString", typeOf<String>(), typeOf<List<Int>>(), false, "//", "sourceString.split(\"//\")"),
-            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<List<Int>>(), false, "", "nullableSourceString!!.split(\", \")"),
-            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<Set<Int>>(), false, "", "nullableSourceString!!.split(\", \").toSet()"),
-            Arguments.of("nullableSourceString", typeOf<String?>(), typeOf<MutableList<Int>?>(), true, "", "nullableSourceString?.split(\", \")?.toMutableList()"),
+            Arguments.of("sourceString", typeOf<String>(), false, typeOf<List<Int>>(), false, "", "sourceString.split(\", \")"),
+            Arguments.of("sourceString", typeOf<String>(), false, typeOf<List<Int>>(), false, "//", "sourceString.split(\"//\")"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), false, typeOf<List<Int>>(), false, "", "nullableSourceString!!.split(\", \")"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), false, typeOf<Set<Int>>(), false, "", "nullableSourceString!!.split(\", \").toSet()"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), false, typeOf<MutableList<Int>?>(), true, "", "nullableSourceString?.split(\", \")?.toMutableList()"),
+            Arguments.of("nullableSourceString", typeOf<String?>(), true, typeOf<MutableList<Int>?>(), false, "", "nullableSourceString?.split(\", \")?.toMutableList()"),
         )
     }
 }

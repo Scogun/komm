@@ -36,7 +36,7 @@ internal class MapDefaultTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
             )
         )
 
@@ -70,7 +70,7 @@ internal class MapDefaultTests: SatelliteTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
                 mapOf(
                     "otherProperty" to PropertySpecInit(
                         STRING,

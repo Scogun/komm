@@ -33,7 +33,7 @@ internal class NullSubstituteTests: SatelliteTests() {
             buildFileSpec(
                 "DestinationObject",
                 mapOf("id" to PropertySpecInit(INT)),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
@@ -52,7 +52,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                 mapOf("id" to PropertySpecInit(INT)),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::allowNotNullAssertion.name} = true)")
                     )
                 )
@@ -91,8 +91,60 @@ internal class NullSubstituteTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
             )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass("$packageName.$sourceObjectClassName")
+        var sourceInstance = sourceClass.constructors.first().newInstance(null)
+        var destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+
+        destinationInstance::class.shouldHaveMemberProperty("id") {
+            it.getter.call(destinationInstance).shouldBe(25)
+        }
+
+        sourceInstance = sourceClass.constructors.first().newInstance(10)
+        destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+
+        destinationInstance::class.shouldHaveMemberProperty("id") {
+            it.getter.call(destinationInstance).shouldBe(10)
+        }
+    }
+
+    @Test
+    fun nullSubstituteWithMapToTest() {
+        val destinationSpec = buildFileSpec(
+            "DestinationObject",
+            mapOf("id" to PropertySpecInit(INT))
+        )
+        val destinationClassName = destinationSpec.typeSpecs.first().name
+        val resolver = buildResolver()
+        val resolverClassName = resolver.typeSpecs.first().name!!
+        val sourceSpec = buildFileSpec(
+            "SourceObject", mapOf(
+                "id" to PropertySpecInit(
+                    INT, annotations = listOf(
+                        NullSubstitute::class to mapOf(
+                            "default = %L" to listOf("${MapDefault::class.simpleName}($resolverClassName::class)")
+                        )
+                    ), isNullable = true
+                )
+            ),
+            listOf(KOMMMap::class to mapOf("to = %L" to listOf("[$destinationClassName::class]")))
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            resolver,
+            destinationSpec
         )
 
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
@@ -140,7 +192,7 @@ internal class NullSubstituteTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class"))),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
             )
         )
 

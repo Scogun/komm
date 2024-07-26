@@ -4,10 +4,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.abstractions.KOMMConverter
-import com.ucasoft.komm.annotations.KOMMMap
-import com.ucasoft.komm.annotations.MapConfiguration
-import com.ucasoft.komm.annotations.MapConvert
-import com.ucasoft.komm.annotations.MapFrom
+import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -35,17 +32,17 @@ internal class ConverterTests: SatelliteTests() {
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
                                 "name = %S" to listOf("id"),
-                                "converter = %L" to listOf("$converterClassName::class")
+                                "converter = %L" to listOf("[$converterClassName::class]")
                             )
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 
         generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
-        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
     }
 
     @Test
@@ -74,7 +71,7 @@ internal class ConverterTests: SatelliteTests() {
                 ),
                 listOf(
                     KOMMMap::class to mapOf(
-                        "from = %L" to listOf("$sourceObjectClassName::class"),
+                        "from = %L" to listOf("[$sourceObjectClassName::class]"),
                         "config = %L" to listOf("${MapConfiguration::class.simpleName}(${MapConfiguration::tryAutoCast.name} = false)")
                     )
                 )
@@ -125,7 +122,7 @@ internal class ConverterTests: SatelliteTests() {
                         )
                     )
                 ),
-                listOf(KOMMMap::class to mapOf("from = %L" to listOf("$sourceObjectClassName::class")))
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]")))
             )
         )
 

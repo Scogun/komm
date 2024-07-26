@@ -1,5 +1,6 @@
 package com.ucasoft.komm.plugins.iterable
 
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
@@ -19,7 +20,17 @@ class IterableStringPlugin: BaseIterablePlugin() {
         destinationProperty: KSPropertyDeclaration,
         destinationType: KSType
     ): String {
-        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, destinationType, destinationProperty)
+        TODO("Not yet implemented")
+    }
+
+    override fun cast(
+        sourceProperty: KSDeclaration,
+        sourceName: String,
+        sourceType: KSType,
+        destinationProperty: KSPropertyDeclaration,
+        destinationType: KSType
+    ): String {
+        val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         val stringBuilder = StringBuilder(sourceName)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         val pluginAnnotation = destinationProperty.annotations.firstOrNull { it.shortName.asString() == KOMMIterableString::class.simpleName }

@@ -11,13 +11,18 @@ import com.ucasoft.komm.processor.extensions.getConfigValue
 
 class KOMMPropertyMapper(
     source: KSType,
+    destination: KSType,
+    private val direction: KOMMVisitor.Direction,
     private val config: KSAnnotation,
     private val plugins: List<KOMMCastPlugin>
 ) {
 
-    private val sourceProperties = getSourceProperties(source)
+    private val annotationFinder = KOMMAnnotationFinder(when (direction) {
+        KOMMVisitor.Direction.From -> source
+        KOMMVisitor.Direction.To -> destination
+    })
 
-    private val annotationFinder = KOMMAnnotationFinder(source)
+    private val sourceProperties = getSourceProperties(source)
 
     fun map(destination: KSPropertyDeclaration, mapTo: KOMMVisitor.MapTo): String? {
         val resolver = annotationFinder.findResolver(destination)
@@ -25,32 +30,46 @@ class KOMMPropertyMapper(
             return "$destination = ${mapResolver(resolver, mapTo)}"
         }
 
-        val sourceName = getSourceName(destination)
+        val sourceName = getMapName(destination)
         if (!sourceProperties.containsKey(sourceName)) {
             return handleNoSourceProperty(resolver, destination, sourceName, mapTo)
         }
+        val source = sourceProperties[sourceName]
 
         val converter = annotationFinder.findConverter(destination)
-        val nullSubstituteResolver = annotationFinder.findSubstituteResolver(destination)
+        val nullSubstituteResolver = when (direction) {
+            KOMMVisitor.Direction.From -> annotationFinder.findSubstituteResolver(destination)
+            KOMMVisitor.Direction.To -> annotationFinder.findSubstituteResolver(source as KSPropertyDeclaration)
+        }
         return if (converter != null) {
             "$destination = $converter(this).convert($sourceName)"
         } else if (nullSubstituteResolver != null) {
             "$destination = ${
-                getSourceWithCast(destination, sourceProperties[sourceName], config).trimEnd('!').replace("!!", "?")
+                getSourceWithCast(destination, source, config).trimEnd('!').replace("!!", "?")
             } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
-            "$destination = ${getSourceWithCast(destination, sourceProperties[sourceName], config)}"
+            "$destination = ${getSourceWithCast(destination, source, config)}"
         }
     }
 
     private fun mapResolver(resolver: String, mapTo: KOMMVisitor.MapTo) =
         "$resolver(${if (mapTo == KOMMVisitor.MapTo.Constructor) "null" else "it"}).resolve()"
 
-    private fun getSourceName(member: KSPropertyDeclaration): String {
+    private fun getMapNames(member: KSPropertyDeclaration): List<String> {
+        val mapsFor = annotationFinder.getSuitedNamedAnnotations(member)
+        val result = mutableListOf(member.toString()).apply {
+            addAll(mapsFor.map { it.arguments.first { it.name?.asString() == MapName::name.name }.value.toString() }
+                .filter { it.isNotEmpty() }.toMutableList())
+        }
+
+        return result
+    }
+
+    private fun getMapName(member: KSPropertyDeclaration): String {
         val mapFrom = annotationFinder.getSuitedNamedAnnotation(member)
 
         if (mapFrom != null) {
-            val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapFrom::name.name }
+            val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapName::name.name }
             val name = nameArgument.value.toString()
             if (name.isNotEmpty()) {
                 return name
@@ -70,9 +89,9 @@ class KOMMPropertyMapper(
         mapTo == KOMMVisitor.MapTo.Constructor -> {
             val destinationName = destination.simpleName.asString()
             if (destinationName == sourceName) {
-                throw KOMMException("There is no mapping for $destinationName property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapFrom::class.simpleName} etc.).")
+                throw KOMMException("There is no mapping for $destinationName property! You can use @${MapDefault::class.simpleName} or name support annotations (e.g. @${MapName::class.simpleName} etc.).")
             } else {
-                throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapFrom::class.simpleName} etc.).")
+                throw KOMMException("There is no mapping for $destinationName property! It seems you specify bad name ($sourceName) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
             }
         }
 
@@ -81,7 +100,17 @@ class KOMMPropertyMapper(
 
     private fun getSourceProperties(source: KSType): Map<String, KSDeclaration> {
         val sourceClass = source.declaration as KSClassDeclaration
-        return sourceClass.getAllProperties().associate { it.toString() to it as KSDeclaration }.toMutableMap().apply {
+        val properties = sourceClass.getAllProperties().flatMap {
+            getMapNames(it).map { name -> name to it as KSDeclaration }
+        }
+        val result = mutableMapOf<String, KSDeclaration>()
+        properties.forEach {
+            if (result.containsKey(it.first)) {
+                throw KOMMException("There are more than one property with the same name ${it.first} from source ${sourceClass.simpleName.asString()}.")
+            }
+            result[it.first] = it.second
+        }
+        return result.apply {
             putAll(
                 sourceClass.getAllFunctions().filter { it.parameters.isEmpty() }
                     .associateBy { it.toString().substring(3).lowercase() })
@@ -114,7 +143,8 @@ class KOMMPropertyMapper(
         val sourceIsNullable = propertyType.toTypeName().isNullable
         val destinationIsNullable = destinationType.toTypeName().isNullable
         val destinationHasNullSubstitute = destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute
+        val sourceHasNullSubstitute = sourceProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+        val destinationIsNullOrNullSubstitute = destinationIsNullable || destinationHasNullSubstitute || sourceHasNullSubstitute
         val allowNotNullAssertion = config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)
 
         if (sourceIsNullable && !destinationIsNullOrNullSubstitute && !allowNotNullAssertion) {
