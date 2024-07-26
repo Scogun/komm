@@ -55,6 +55,16 @@ class KOMMPropertyMapper(
     private fun mapResolver(resolver: String, mapTo: KOMMVisitor.MapTo) =
         "$resolver(${if (mapTo == KOMMVisitor.MapTo.Constructor) "null" else "it"}).resolve()"
 
+    private fun getMapNames(member: KSPropertyDeclaration): List<String> {
+        val mapsFor = annotationFinder.getSuitedNamedAnnotations(member)
+        val result = mutableListOf(member.toString()).apply {
+            addAll(mapsFor.map { it.arguments.first { it.name?.asString() == MapName::name.name }.value.toString() }
+                .filter { it.isNotEmpty() }.toMutableList())
+        }
+
+        return result
+    }
+
     private fun getMapName(member: KSPropertyDeclaration): String {
         val mapFrom = annotationFinder.getSuitedNamedAnnotation(member)
 
@@ -90,7 +100,17 @@ class KOMMPropertyMapper(
 
     private fun getSourceProperties(source: KSType): Map<String, KSDeclaration> {
         val sourceClass = source.declaration as KSClassDeclaration
-        return sourceClass.getAllProperties().associate { getMapName(it) to it as KSDeclaration }.toMutableMap().apply {
+        val properties = sourceClass.getAllProperties().flatMap {
+            getMapNames(it).map { name -> name to it as KSDeclaration }
+        }
+        val result = mutableMapOf<String, KSDeclaration>()
+        properties.forEach {
+            if (result.containsKey(it.first)) {
+                throw KOMMException("There are more than one property with the same name ${it.first} from source ${sourceClass.simpleName.asString()}.")
+            }
+            result[it.first] = it.second
+        }
+        return result.apply {
             putAll(
                 sourceClass.getAllFunctions().filter { it.parameters.isEmpty() }
                     .associateBy { it.toString().substring(3).lowercase() })

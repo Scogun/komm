@@ -157,6 +157,39 @@ internal class MapNameTests: CompilationTests() {
         }
     }
 
+    @Test
+    fun mapNameWithMapToFail() {
+        val destinationSpec = buildFileSpec("DestinationObject", mapOf("id" to PropertySpecInit(INT)))
+        val destinationObjectClassName = destinationSpec.typeSpecs.first().name
+        val toPropertyName = "id"
+        val sourceSpec = buildFileSpec(
+            "SourceObject",
+            mapOf(
+                "firstId" to PropertySpecInit(
+                    INT,
+                    annotations = listOf(
+                        MapName::class to mapOf("name = %S" to listOf(toPropertyName))
+                    )
+                ),
+                "secondId" to PropertySpecInit(
+                    INT,
+                    annotations = listOf(
+                        MapName::class to mapOf("name = %S" to listOf(toPropertyName))
+                    )
+                )
+            ),
+            listOf(KOMMMap::class to mapOf("to = %L" to listOf("[$destinationObjectClassName::class]")))
+        )
+        val sourceObjectClassName = sourceSpec.typeSpecs.first().name
+        val generated = generate(
+            sourceSpec,
+            destinationSpec
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.messages.shouldContain("${KOMMException::class.simpleName}: There are more than one property with the same name $toPropertyName from source $sourceObjectClassName.")
+    }
+
     companion object {
 
         @JvmStatic

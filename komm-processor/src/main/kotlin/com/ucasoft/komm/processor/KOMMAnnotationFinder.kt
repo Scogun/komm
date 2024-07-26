@@ -11,7 +11,12 @@ import com.ucasoft.komm.processor.exceptions.KOMMException
 class KOMMAnnotationFinder(private val forClass: KSType) {
 
     private val namedAnnotations =
-        listOf(MapFrom::class.simpleName, MapName::class.simpleName, MapConvert::class.simpleName, NullSubstitute::class.simpleName)
+        listOf(
+            MapFrom::class.simpleName,
+            MapName::class.simpleName,
+            MapConvert::class.simpleName,
+            NullSubstitute::class.simpleName
+        )
 
     fun findResolver(member: KSPropertyDeclaration) = findMapAnnotation(
         forClass.toClassName(),
@@ -62,12 +67,15 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         return null
     }
 
-    fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) : KSAnnotation? {
-        val mapsFor = member.annotations.filter { it.shortName.asString() in namedAnnotations }
-            .associateWith(::associateWithFor)
+    fun getSuitedNamedAnnotations(member: KSPropertyDeclaration) =
+        getSuitedNamedAnnotationsForClass(member).keys.toList()
 
-        return filterAnnotationsByClass(forClass.toClassName(), mapsFor, member)
-    }
+    fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) =
+        filterAnnotationsByClass(forClass.toClassName(), getSuitedNamedAnnotationsForClass(member), member)
+
+    private fun getSuitedNamedAnnotationsForClass(member: KSPropertyDeclaration) =
+        member.annotations.filter { it.shortName.asString() in namedAnnotations }
+            .associateWith(::associateWithFor)
 
     private fun associateWithFor(item: KSAnnotation): List<ClassName> {
         val forArgument = item.arguments.firstOrNull { it.name?.asString() == MapName::`for`.name }
