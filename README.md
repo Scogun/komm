@@ -222,7 +222,7 @@ data class DestinationObject(
 ```
 or
 ```kotlin
-@KOMMMap(from = [DestinationObject::class])
+@KOMMMap(to = [DestinationObject::class])
 class SourceObject {
     //...
     @MapName("name")
