@@ -32,6 +32,7 @@ kotlin {
                 implementation(libs.kotlin.compile.testing.ksp)
                 implementation(libs.junit.jupiter)
                 implementation(libs.kotest.assertions)
+                implementation(kotlin("reflect"))
             }
             kotlin.srcDir("src/test/kotlin")
             languageSettings.optIn("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")

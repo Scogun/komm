@@ -65,7 +65,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.10"
+val kommVersion = "0.10.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -78,7 +78,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.10"
+val kommVersion = "0.10.3"
 
 kotlin {
     jvm {
@@ -222,7 +222,7 @@ data class DestinationObject(
 ```
 or
 ```kotlin
-@KOMMMap(from = [DestinationObject::class])
+@KOMMMap(to = [DestinationObject::class])
 class SourceObject {
     //...
     @MapName("name")
@@ -451,7 +451,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.10"
+val kommVersion = "0.10.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -465,7 +465,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.10"
+val kommVersion = "0.10.3"
 
 //...
 
@@ -525,7 +525,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20"
 }
 
-val kommVersion = "0.9.10"
+val kommVersion = "0.10.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")

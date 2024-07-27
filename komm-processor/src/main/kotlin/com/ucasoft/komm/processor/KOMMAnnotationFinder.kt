@@ -12,7 +12,6 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
 
     private val namedAnnotations =
         listOf(
-            MapFrom::class.simpleName,
             MapName::class.simpleName,
             MapConvert::class.simpleName,
             NullSubstitute::class.simpleName
