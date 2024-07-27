@@ -13,15 +13,6 @@ class IterablePlugin: BaseIterablePlugin() {
         sourceType.isIterable() && destinationType.isIterable()
 
     override fun cast(
-        sourceName: String,
-        sourceType: KSType,
-        destinationProperty: KSPropertyDeclaration,
-        destinationType: KSType
-    ): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun cast(
         sourceProperty: KSDeclaration,
         sourceName: String,
         sourceType: KSType,

@@ -22,15 +22,6 @@ class ExposedPlugin: KOMMTypePlugin {
     override fun forCast(sourceType: KSType, destinationType: KSType) = sourceType.toClassName() == Column::class.asClassName()
 
     override fun cast(
-        sourceName: String,
-        sourceType: KSType,
-        destinationProperty: KSPropertyDeclaration,
-        destinationType: KSType
-    ): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun cast(
         sourceProperty: KSDeclaration,
         sourceName: String,
         sourceType: KSType,

@@ -8,14 +8,6 @@ interface KOMMCastPlugin: KOMMPlugin {
 
     fun forCast(sourceType: KSType, destinationType: KSType): Boolean
 
-    @Deprecated("Use cast(sourceProperty, sourceName, sourceType, destinationProperty, destinationType) instead", level = DeprecationLevel.ERROR)
-    fun cast(
-        sourceName: String,
-        sourceType: KSType,
-        destinationProperty: KSPropertyDeclaration,
-        destinationType: KSType
-    ): String
-
     fun cast(
         sourceProperty: KSDeclaration,
         sourceName: String,
