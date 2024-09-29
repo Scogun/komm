@@ -4,8 +4,8 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(8)
     jvm {
-        jvmToolchain(8)
         withJava()
     }
     sourceSets {

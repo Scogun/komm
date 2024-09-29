@@ -5,8 +5,8 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(8)
     jvm {
-        jvmToolchain(8)
         tasks.withType<Test> {
             useJUnitPlatform()
             reports {
