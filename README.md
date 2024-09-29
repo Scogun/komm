@@ -62,10 +62,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
 }
 
-val kommVersion = "0.10.3"
+val kommVersion = "0.20.2"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -75,10 +75,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
 }
 
-val kommVersion = "0.10.3"
+val kommVersion = "0.20.2"
 
 kotlin {
     jvm {
@@ -448,10 +448,10 @@ fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObj
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
 }
 
-val kommVersion = "0.10.3"
+val kommVersion = "0.20.2"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -462,10 +462,10 @@ depensencies {
 ###### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
 }
 
-val kommVersion = "0.10.3"
+val kommVersion = "0.20.2"
 
 //...
 
@@ -522,10 +522,10 @@ public fun SourceObject.toDestinationObject(): DestinationObject = DestinationOb
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.0-1.0.22"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
 }
 
-val kommVersion = "0.10.3"
+val kommVersion = "0.20.2"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
