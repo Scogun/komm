@@ -9,7 +9,7 @@ kover = "0.9.1"
 mockk = "1.14.2"
 classgraph = "4.8.179"
 exposed = "0.57.0"
-gradle-publish = "1.2.1"
+gradle-publish = "1.3.0"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }

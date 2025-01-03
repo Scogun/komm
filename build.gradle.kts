@@ -1,4 +1,5 @@
 plugins {
+    kotlin("jvm") apply false
     kotlin("multiplatform") apply false
     id("com.google.devtools.ksp") apply false
     alias(libs.plugins.kotlinx.kover) apply false
