@@ -30,7 +30,7 @@ internal class KOMMPluginTests {
     fun `test plugin is applied`() {
         buildFile.appendText("""
             plugins {
-                kotlin("jvm") version "1.9.22"
+                kotlin("jvm") version "2.0.20"
                 id("com.ucasoft.komm")
             }          
         """)
