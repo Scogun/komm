@@ -1,14 +1,14 @@
 [versions]
 kotlin = "2.1.0"
-ksp = "2.0.20-1.0.25"
-kotlin-poet = "1.18.1"
+ksp = "2.1.0-1.0.29"
+kotlin-poet = "2.0.0"
 compile-testing = "1.6.0"
-junit = "5.11.1"
+junit = "5.11.4"
 kotest = "5.9.1"
 kover = "0.9.1"
-mockk = "1.13.12"
-classgraph = "4.8.176"
-exposed = "0.55.0"
+mockk = "1.13.16"
+classgraph = "4.8.179"
+exposed = "0.58.0"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
