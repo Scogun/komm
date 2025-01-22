@@ -353,10 +353,10 @@ class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObje
     from = [SourceObject::class]
 )
 data class DestinationObject(
-    @NullSubatitute(MapDefault(IntResolver::class))
+    @NullSubstitute(MapDefault(IntResolver::class))
     val id: Int
 ) {
-    @NullSubatitute(MapDefault(IntResolver::class), "id")
+    @NullSubstitute(MapDefault(IntResolver::class), "id")
     var otherId: Int = 0
 }
 ```
@@ -374,7 +374,7 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     to = [DestinationObject::class]
 )
 data class SourceObject(
-    @NullSubatitute(MapDefault(IntResolver::class))
+    @NullSubstitute(MapDefault(IntResolver::class))
     val id: Int?
 ) 
 ```
@@ -391,11 +391,11 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     from = [FirstSourceObject::class, SecondSourceObject::class]
 )
 data class DestinationObject(
-    @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+    @NullSubstitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
     @MapName("userId", [SecondSourceObject::class])
     val id: Int
 ) {
-    @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+    @NullSubstitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
     var otherId: Int = 0
 }
 
@@ -419,11 +419,11 @@ in case, different sources should be configured different:
     from = [SecondSourceObject::class]
 )
 data class DestinationObject(
-  @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+  @NullSubstitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
   @MapName("userId", [SecondSourceObject::class])
   val id: Int
 ) {
-  @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+  @NullSubstitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
   var otherId: Int = 0
 }
 ```
