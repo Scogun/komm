@@ -55,6 +55,8 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 ## Default plugins
 * Iterable Plugin:
   * Support collections mapping with different types of elements
+* Exposed Plugin:
+  * Support mapping from Exposed Table Object (ResultRow)
 
 ## Usage
 ### Add with Gradle
