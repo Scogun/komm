@@ -1,7 +1,7 @@
 pluginManagement {
     resolutionStrategy {
         plugins {
-            val kotlinVersion = "2.0.20"
+            val kotlinVersion = "2.1.0"
             kotlin("multiplatform") version kotlinVersion apply false
             id("com.google.devtools.ksp") version "$kotlinVersion-1.0.25" apply false
         }
