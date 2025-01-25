@@ -12,6 +12,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 [![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-plugins-iterable?label=KOMM-Plugins-Iterable&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-plugins-iterable)
 ---
 * [Features](#features)
+* [Supported targets](#supported-targets)
 * [Default plugins](#default-plugins)
 * [Usage](#usage)
   * [Add](#add-with-gradle)
@@ -52,9 +53,19 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Specify null substitute to map nullable properties into not-nullable
 * Support extension via plugins
 
+## Supported targets
+* JVM
+* JavaScript
+* Linux
+* Windows (mingwX64)
+* macOS
+* iOS
+
 ## Default plugins
 * Iterable Plugin:
   * Support collections mapping with different types of elements
+* Exposed Plugin:
+  * Support mapping from Exposed Table Object (ResultRow)
 
 ## Usage
 ### Add with Gradle
@@ -62,10 +73,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
-val kommVersion = "0.20.2"
+val kommVersion = "0.22.8"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -75,10 +86,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
-val kommVersion = "0.20.2"
+val kommVersion = "0.22.8"
 
 kotlin {
     jvm {
@@ -353,10 +364,10 @@ class IntResolver(destination: DestinationObject?): KOMMResolver<DestinationObje
     from = [SourceObject::class]
 )
 data class DestinationObject(
-    @NullSubatitute(MapDefault(IntResolver::class))
+    @NullSubstitute(MapDefault(IntResolver::class))
     val id: Int
 ) {
-    @NullSubatitute(MapDefault(IntResolver::class), "id")
+    @NullSubstitute(MapDefault(IntResolver::class), "id")
     var otherId: Int = 0
 }
 ```
@@ -374,7 +385,7 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     to = [DestinationObject::class]
 )
 data class SourceObject(
-    @NullSubatitute(MapDefault(IntResolver::class))
+    @NullSubstitute(MapDefault(IntResolver::class))
     val id: Int?
 ) 
 ```
@@ -391,11 +402,11 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     from = [FirstSourceObject::class, SecondSourceObject::class]
 )
 data class DestinationObject(
-    @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+    @NullSubstitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
     @MapName("userId", [SecondSourceObject::class])
     val id: Int
 ) {
-    @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+    @NullSubstitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
     var otherId: Int = 0
 }
 
@@ -419,11 +430,11 @@ in case, different sources should be configured different:
     from = [SecondSourceObject::class]
 )
 data class DestinationObject(
-  @NullSubatitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
+  @NullSubstitute(MapDefault(IntResolver::class), [FirstSourceObject::class])
   @MapName("userId", [SecondSourceObject::class])
   val id: Int
 ) {
-  @NullSubatitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
+  @NullSubstitute(MapDefault(IntResolver::class), "id", [FirstSourceObject::class])
   var otherId: Int = 0
 }
 ```
@@ -448,10 +459,10 @@ fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObj
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
-val kommVersion = "0.20.2"
+val kommVersion = "0.22.8"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -462,10 +473,10 @@ depensencies {
 ###### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
-val kommVersion = "0.20.2"
+val kommVersion = "0.22.8"
 
 //...
 
@@ -522,10 +533,10 @@ public fun SourceObject.toDestinationObject(): DestinationObject = DestinationOb
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
 }
 
-val kommVersion = "0.20.2"
+val kommVersion = "0.22.8"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")

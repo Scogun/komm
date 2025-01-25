@@ -1,15 +1,15 @@
 pluginManagement {
     resolutionStrategy {
         plugins {
-            val kotlinVersion = "2.0.20"
+            val kotlinVersion = "2.0.21"
             kotlin("multiplatform") version kotlinVersion apply false
-            id("com.google.devtools.ksp") version "$kotlinVersion-1.0.25" apply false
+            id("com.google.devtools.ksp") version "$kotlinVersion-1.0.28" apply false
         }
     }
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
 rootProject.name = "komm"
