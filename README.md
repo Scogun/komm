@@ -12,6 +12,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 [![Maven Central](https://img.shields.io/maven-central/v/com.ucasoft.komm/komm-plugins-iterable?label=KOMM-Plugins-Iterable&color=blue)](https://search.maven.org/artifact/com.ucasoft.komm/komm-plugins-iterable)
 ---
 * [Features](#features)
+* [Supported targets](#supported-targets)
 * [Default plugins](#default-plugins)
 * [Usage](#usage)
   * [Add](#add-with-gradle)
@@ -51,6 +52,14 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Specify a resolver to map default values into properties
   * Specify null substitute to map nullable properties into not-nullable
 * Support extension via plugins
+
+## Supported targets
+* JVM
+* JavaScript
+* Linux
+* Windows (mingwX64)
+* macOS
+* iOS
 
 ## Default plugins
 * Iterable Plugin:
