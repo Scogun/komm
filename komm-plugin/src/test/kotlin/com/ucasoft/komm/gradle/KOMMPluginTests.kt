@@ -27,12 +27,32 @@ internal class KOMMPluginTests {
     }
 
     @Test
-    fun `test plugin is applied`() {
+    fun `test plugin is applied for jvm`() {
         buildFile.appendText("""
             plugins {
                 kotlin("jvm") version "2.0.20"
                 id("com.ucasoft.komm")
             }          
+        """)
+
+        val result = runTask(":tasks")
+
+        result.output.shouldNotBeEmpty()
+    }
+
+    @Test
+    fun `test plugin is applied for multiplatform`() {
+        buildFile.appendText("""
+            plugins {
+                kotlin("multiplatform") version "2.0.20"
+                id("com.ucasoft.komm")
+            } 
+            kotlin {
+                jvm()
+                js(IR) {
+                    browser()
+                }
+            }
         """)
 
         val result = runTask(":tasks")
