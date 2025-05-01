@@ -6,7 +6,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.asTypeName
 import com.tschuchort.compiletesting.KotlinCompilation
-import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -307,7 +306,7 @@ class MultiSourcesTests: SatelliteTests() {
             "return \"\${source.name} \${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
-        val resolver = buildResolver()
+        val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -400,7 +399,7 @@ class MultiSourcesTests: SatelliteTests() {
             "return \"\${source.name} \${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
-        val resolver = buildResolver()
+        val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -417,6 +416,7 @@ class MultiSourcesTests: SatelliteTests() {
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(
                                     ClassName(packageName, firstSourceObjectClassName),
+                                    destinationObjectClassName,
                                     ClassName(packageName, converterClassName)
                                 ) to mapOf(
                                 "name = %S" to listOf("name"),
@@ -474,15 +474,4 @@ class MultiSourcesTests: SatelliteTests() {
             it.getter.call(destinationInstance).shouldBe("John Doe")
         }
     }
-
-    private fun buildResolver() = buildSatellite(
-        "TestResolver",
-        KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), STRING),
-        "destination",
-        ClassName(packageName, "DestinationObject").copy(true),
-        "resolve",
-        null,
-        STRING,
-        "return \"John Doe\""
-    )
 }

@@ -3,9 +3,20 @@ package com.ucasoft.komm.processor
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.ucasoft.komm.abstractions.KOMMConverter
+import com.ucasoft.komm.abstractions.KOMMResolver
 
 open class SatelliteTests : CompilationTests() {
 
+    protected fun buildResolver(destinationType: ClassName, destType: ClassName, statement: String) = buildSatellite(
+        "TestResolver",
+        KOMMResolver::class.asTypeName().parameterizedBy(destinationType, destType),
+        "destination",
+        destinationType.copy(true),
+        "resolve",
+        null,
+        destType,
+        statement
+    )
 
     protected fun buildConverter(
         sourceType: ClassName,
@@ -24,6 +35,7 @@ open class SatelliteTests : CompilationTests() {
             destType,
             statement
         )
+
     protected fun buildSatellite(
         className: String,
         supperClass: ParameterizedTypeName,

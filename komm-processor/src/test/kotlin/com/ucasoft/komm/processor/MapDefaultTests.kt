@@ -3,7 +3,6 @@ package com.ucasoft.komm.processor
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
-import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapDefault
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -17,13 +16,15 @@ internal class MapDefaultTests: SatelliteTests() {
     fun mapDefaultConstructorTest() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
-        val resolver = buildResolver()
+        val destinationTypeClassName = ClassName(packageName, "DestinationObject")
+        val resolver =
+            buildResolver(destinationTypeClassName, STRING, "return \"I'm default! Destination is \${destination}.\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             resolver,
             buildFileSpec(
-                "DestinationObject",
+                destinationTypeClassName.simpleName,
                 mapOf(
                     "id" to PropertySpecInit(INT),
                     "otherProperty" to PropertySpecInit(
@@ -62,13 +63,15 @@ internal class MapDefaultTests: SatelliteTests() {
     fun mapDefaultNoConstructorTest() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
         val sourceObjectClassName = sourceSpec.typeSpecs.first().name
-        val resolver = buildResolver()
+        val destinationTypeClassName = ClassName(packageName, "DestinationObject")
+        val resolver =
+            buildResolver(destinationTypeClassName, STRING, "return \"I'm default! Destination is \${destination}.\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             resolver,
             buildFileSpec(
-                "DestinationObject",
+                destinationTypeClassName.simpleName,
                 mapOf("id" to PropertySpecInit(INT)),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourceObjectClassName::class]"))),
                 mapOf(
@@ -104,15 +107,4 @@ internal class MapDefaultTests: SatelliteTests() {
             it.getter.call(destinationInstance).shouldBe("I'm default! Destination is DestinationObject(id=5).")
         }
     }
-
-    private fun buildResolver() = buildSatellite(
-        "TestResolver",
-        KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), STRING),
-        "destination",
-        ClassName(packageName, "DestinationObject").copy(true),
-        "resolve",
-        null,
-        STRING,
-        "return \"I'm default! Destination is \${destination}.\""
-    )
 }
