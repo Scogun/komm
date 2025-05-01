@@ -3,7 +3,6 @@ package com.ucasoft.komm.processor
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
-import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -19,18 +18,29 @@ internal class ConverterTests: SatelliteTests() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf("fromId" to PropertySpecInit(INT)))
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
-        val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
+        val converterSpec = buildConverter(
+            sourceObjectClassName,
+            INT,
+            destinationObjectClassName,
+            STRING,
+            "return sourceMember.toString()"
+        )
         val converterClassName = converterSpec.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             converterSpec,
             buildFileSpec(
-                "DestinationObject",
+                destinationObjectClassName.simpleName,
                 mapOf(
                     "toId" to PropertySpecInit(
                         STRING,
                         parametrizedAnnotations = listOf(
-                            MapConvert::class.asTypeName().parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
+                            MapConvert::class.asTypeName().parameterizedBy(
+                                sourceObjectClassName,
+                                destinationObjectClassName,
+                                ClassName(packageName, converterClassName)
+                            ) to mapOf(
                                 "name = %S" to listOf("id"),
                                 "converter = %L" to listOf("[$converterClassName::class]")
                             )
@@ -51,19 +61,30 @@ internal class ConverterTests: SatelliteTests() {
         val sourceSpec = buildFileSpec("SourceObject", mapOf(propertyName to PropertySpecInit(INT)))
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
-        val converterSpec = buildConverter(sourceObjectClassName, INT, STRING, "return sourceMember.toString()")
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
+        val converterSpec = buildConverter(
+            sourceObjectClassName,
+            INT,
+            destinationObjectClassName,
+            STRING,
+            "return sourceMember.toString()"
+        )
         val converterClassName = converterSpec.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             converterSpec,
             buildFileSpec(
-                "DestinationObject",
+                destinationObjectClassName.simpleName,
                 mapOf(
                     propertyName to PropertySpecInit(
                         STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
-                                .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
+                                .parameterizedBy(
+                                    sourceObjectClassName,
+                                    destinationObjectClassName,
+                                    ClassName(packageName, converterClassName)
+                                ) to mapOf(
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
                         )
@@ -102,20 +123,31 @@ internal class ConverterTests: SatelliteTests() {
         )
         val sourceType = sourceSpec.typeSpecs.first()
         val sourceObjectClassName = ClassName(packageName, sourceType.name!!)
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
         val converterSpec =
-            buildConverter(sourceObjectClassName, STRING, STRING, "return \"\${source.name} \${source.surname}\"")
+            buildConverter(
+                sourceObjectClassName,
+                STRING,
+                destinationObjectClassName,
+                STRING,
+                "return \"\${source.name} \${source.surname}\""
+            )
         val converterClassName = converterSpec.typeSpecs.first().name!!
         val generated = generate(
             sourceSpec,
             converterSpec,
             buildFileSpec(
-                "DestinationObject",
+                destinationObjectClassName.simpleName,
                 mapOf(
                     "fullName" to PropertySpecInit(
                         STRING,
                         parametrizedAnnotations = listOf(
                             MapConvert::class.asTypeName()
-                                .parameterizedBy(sourceObjectClassName, ClassName(packageName, converterClassName)) to mapOf(
+                                .parameterizedBy(
+                                    sourceObjectClassName,
+                                    destinationObjectClassName,
+                                    ClassName(packageName, converterClassName)
+                                ) to mapOf(
                                 "name = %S" to listOf("name"),
                                 "converter = %L" to listOf("$converterClassName::class")
                             )
@@ -140,15 +172,58 @@ internal class ConverterTests: SatelliteTests() {
         }
     }
 
-    private fun buildConverter(sourceType: ClassName, srcType: ClassName, destType: ClassName, statement: String) =
-        buildSatellite(
-            "TestConverter",
-            KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destType),
-            "source",
-            sourceType,
-            "convert",
-            srcType,
-            destType,
-            statement
+    @Test
+    fun mapConvertTo() {
+        val sourceObjectClassName = ClassName(packageName, "SourceObject")
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
+        val converterSpec =
+            buildConverter(
+                sourceObjectClassName,
+                DOUBLE,
+                destinationObjectClassName,
+                INT,
+                "return sourceMember.roundToInt()"
+            )
+        val converterClassName = converterSpec.typeSpecs.first().name!!
+        val generated = generate(
+            buildFileSpec(
+                sourceObjectClassName.simpleName,
+                mapOf(
+                    "name" to PropertySpecInit(STRING),
+                    "age" to PropertySpecInit(
+                        DOUBLE,
+                        parametrizedAnnotations = listOf(
+                            MapConvert::class.asTypeName()
+                                .parameterizedBy(
+                                    sourceObjectClassName,
+                                    destinationObjectClassName,
+                                    ClassName(packageName, converterClassName)
+                                ) to mapOf(
+                                "converter = %L" to listOf("$converterClassName::class")
+                            )
+                        )
+                    )
+                ),
+                listOf(KOMMMap::class to mapOf("to = %L" to listOf("[$destinationObjectClassName::class]")))
+            ),
+            converterSpec,
+            buildFileSpec(
+                destinationObjectClassName.simpleName, mapOf(
+                    "name" to PropertySpecInit(STRING),
+                    "age" to PropertySpecInit(INT)
+                )
+            )
         )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceObjectClassName.canonicalName)
+        val sourceInstance = sourceClass.constructors.first().newInstance("John", 2.6)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+        destinationInstance::class.shouldHaveMemberProperty("age") {
+            it.getter.call(destinationInstance).shouldBe(3)
+        }
+    }
 }

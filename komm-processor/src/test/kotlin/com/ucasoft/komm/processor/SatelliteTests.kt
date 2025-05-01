@@ -1,8 +1,40 @@
 package com.ucasoft.komm.processor
 
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.ucasoft.komm.abstractions.KOMMConverter
+import com.ucasoft.komm.abstractions.KOMMResolver
 
 open class SatelliteTests : CompilationTests() {
+
+    protected fun buildResolver(destinationType: ClassName, destType: ClassName, statement: String) = buildSatellite(
+        "TestResolver",
+        KOMMResolver::class.asTypeName().parameterizedBy(destinationType, destType),
+        "destination",
+        destinationType.copy(true),
+        "resolve",
+        null,
+        destType,
+        statement
+    )
+
+    protected fun buildConverter(
+        sourceType: ClassName,
+        srcType: ClassName,
+        destinationType: ClassName,
+        destType: ClassName,
+        statement: String
+    ) =
+        buildSatellite(
+            "TestConverter",
+            KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destinationType, destType),
+            "source",
+            sourceType,
+            "convert",
+            srcType,
+            destType,
+            statement
+        )
 
     protected fun buildSatellite(
         className: String,
@@ -15,6 +47,7 @@ open class SatelliteTests : CompilationTests() {
         statement: String
     ) = FileSpec
         .builder(packageName, "$className.kt")
+        .addImport("kotlin.math", "roundToInt")
         .addType(
             TypeSpec
                 .classBuilder(className)

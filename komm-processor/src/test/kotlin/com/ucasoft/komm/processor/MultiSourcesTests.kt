@@ -6,8 +6,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.asTypeName
 import com.tschuchort.compiletesting.KotlinCompilation
-import com.ucasoft.komm.abstractions.KOMMConverter
-import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -214,7 +212,8 @@ class MultiSourcesTests: SatelliteTests() {
 
         val sourceClass = generated.classLoader.loadClass("$packageName.SourceObject")
         val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
-        var mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(firstDestinationObjectClassName) }
+        var mappingMethod =
+            mappingClass.declaredMethods.first { it.toString().contains(firstDestinationObjectClassName) }
         var sourceInstance = sourceClass.constructors.first().newInstance(10)
         val firstDestinationInstance = mappingMethod.invoke(null, sourceInstance)
 
@@ -267,7 +266,8 @@ class MultiSourcesTests: SatelliteTests() {
 
         val sourceClass = generated.classLoader.loadClass("$packageName.$sourceObjectClassName")
         val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
-        var mappingMethod = mappingClass.declaredMethods.first { it.toString().contains(firstDestinationObjectClassName) }
+        var mappingMethod =
+            mappingClass.declaredMethods.first { it.toString().contains(firstDestinationObjectClassName) }
         var sourceInstance = sourceClass.constructors.first().newInstance(10)
         val firstDestinationInstance = mappingMethod.invoke(null, sourceInstance)
 
@@ -297,14 +297,16 @@ class MultiSourcesTests: SatelliteTests() {
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
         val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(INT)))
         val thirdSourceObjectClassName = thirdSourceObject.typeSpecs.first().name!!
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
         val converter = buildConverter(
             ClassName(packageName, firstSourceObjectClassName),
             STRING,
+            destinationObjectClassName,
             STRING,
             "return \"\${source.name} \${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
-        val resolver = buildResolver()
+        val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -313,7 +315,7 @@ class MultiSourcesTests: SatelliteTests() {
             converter,
             resolver,
             buildFileSpec(
-                "DestinationObject",
+                destinationObjectClassName.simpleName,
                 mapOf(
                     "fullName" to PropertySpecInit(
                         STRING,
@@ -321,6 +323,7 @@ class MultiSourcesTests: SatelliteTests() {
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(
                                     ClassName(packageName, firstSourceObjectClassName),
+                                    destinationObjectClassName,
                                     ClassName(packageName, converterClassName)
                                 ) to mapOf(
                                 "name = %S" to listOf("name"),
@@ -328,8 +331,8 @@ class MultiSourcesTests: SatelliteTests() {
                             ),
                             MapDefault::class.asTypeName()
                                 .parameterizedBy(ClassName(packageName, resolverClassName)) to mapOf(
-                                    "resolver = %L" to listOf("$resolverClassName::class"),
-                                    "`for` = %L" to listOf("[$thirdSourceObjectClassName::class]")
+                                "resolver = %L" to listOf("$resolverClassName::class"),
+                                "`for` = %L" to listOf("[$thirdSourceObjectClassName::class]")
                             )
                         )
                     )
@@ -387,14 +390,16 @@ class MultiSourcesTests: SatelliteTests() {
         val secondSourceObjectClassName = secondSourceSpec.typeSpecs.first().name!!
         val thirdSourceObject = buildFileSpec("ThirdSourceObject", mapOf("id" to PropertySpecInit(INT)))
         val thirdSourceObjectClassName = thirdSourceObject.typeSpecs.first().name!!
+        val destinationObjectClassName = ClassName(packageName, "DestinationObject")
         val converter = buildConverter(
             ClassName(packageName, firstSourceObjectClassName),
             STRING,
+            destinationObjectClassName,
             STRING,
             "return \"\${source.name} \${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
-        val resolver = buildResolver()
+        val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
         val resolverClassName = resolver.typeSpecs.first().name!!
         val generated = generate(
             firstSourceSpec,
@@ -403,7 +408,7 @@ class MultiSourcesTests: SatelliteTests() {
             converter,
             resolver,
             buildFileSpec(
-                "DestinationObject",
+                destinationObjectClassName.simpleName,
                 mapOf(
                     "fullName" to PropertySpecInit(
                         STRING,
@@ -411,6 +416,7 @@ class MultiSourcesTests: SatelliteTests() {
                             MapConvert::class.asTypeName()
                                 .parameterizedBy(
                                     ClassName(packageName, firstSourceObjectClassName),
+                                    destinationObjectClassName,
                                     ClassName(packageName, converterClassName)
                                 ) to mapOf(
                                 "name = %S" to listOf("name"),
@@ -468,27 +474,4 @@ class MultiSourcesTests: SatelliteTests() {
             it.getter.call(destinationInstance).shouldBe("John Doe")
         }
     }
-
-    private fun buildConverter(sourceType: ClassName, srcType: ClassName, destType: ClassName, statement: String) =
-        buildSatellite(
-            "TestConverter",
-            KOMMConverter::class.asTypeName().parameterizedBy(sourceType, srcType, destType),
-            "source",
-            sourceType,
-            "convert",
-            srcType,
-            destType,
-            statement
-        )
-
-    private fun buildResolver() = buildSatellite(
-        "TestResolver",
-        KOMMResolver::class.asTypeName().parameterizedBy(ClassName(packageName, "DestinationObject"), STRING),
-        "destination",
-        ClassName(packageName, "DestinationObject").copy(true),
-        "resolve",
-        null,
-        STRING,
-        "return \"John Doe\""
-    )
 }

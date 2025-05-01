@@ -36,7 +36,10 @@ class KOMMPropertyMapper(
         }
         val source = sourceProperties[sourceName]
 
-        val converter = annotationFinder.findConverter(destination)
+        val converter = when (direction) {
+            KOMMVisitor.Direction.From -> annotationFinder.findConverter(destination)
+            KOMMVisitor.Direction.To -> annotationFinder.findConverter(source as KSPropertyDeclaration)
+        }
         val nullSubstituteResolver = when (direction) {
             KOMMVisitor.Direction.From -> annotationFinder.findSubstituteResolver(destination)
             KOMMVisitor.Direction.To -> annotationFinder.findSubstituteResolver(source as KSPropertyDeclaration)

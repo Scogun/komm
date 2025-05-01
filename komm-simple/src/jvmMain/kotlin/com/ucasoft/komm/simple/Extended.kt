@@ -11,7 +11,7 @@ data class JvmDestinationObject(
     val stringToInt: Int,
     @MapName("userName")
     val name: String,
-    @MapConvert<SourceObject, CostConverter>(converter = CostConverter::class)
+    @MapConvert<SourceObject, JvmDestinationObject, JvmDestinationCostConverter>(converter = JvmDestinationCostConverter::class)
     val cost: String,
     @MapDefault<DateResolver>(DateResolver::class)
     val activeDate: Date,
@@ -23,6 +23,8 @@ data class JvmDestinationObject(
     @MapDefault<DateResolver>(DateResolver::class)
     var otherDate: Date = Date.from(Instant.now())
 }
+
+class JvmDestinationCostConverter(source: SourceObject): CostConverter<JvmDestinationObject>(source)
 
 class DateResolver(destination: JvmDestinationObject?) : KOMMResolver<JvmDestinationObject, Date>(destination) {
     override fun resolve(): Date = Date.from(Instant.now())
