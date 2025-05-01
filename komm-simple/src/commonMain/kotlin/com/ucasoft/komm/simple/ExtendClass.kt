@@ -10,23 +10,25 @@ data class DestinationObject(
     val stringToInt: Int,
     @MapName("userName", [])
     val name: String,
-    @MapConvert<SourceObject, CostConverter>(converter = CostConverter::class, "")
+    @MapConvert<SourceObject, DestinationObject, DestinationCostConverter>(converter = DestinationCostConverter::class, "")
     val cost: String,
     @NullSubstitute(MapDefault(StringResolver::class), "nullable", [])
     val notNullable: String,
     @MapName("iAmInt", [])
-    val iAmNullable: Int?,
+    val iAmNullable: Int?
 ) {
     var intToString: String = ""
 
-    @MapConvert<SourceObject, CostConverter>(name = "cost", converter = CostConverter::class)
+    @MapConvert<SourceObject, DestinationObject, DestinationCostConverter>(name = "cost", converter = DestinationCostConverter::class)
     var otherCost: String = ""
 
     @MapName("nullable", [])
     var otherNullable: Int? = 1
 }
 
-class CostConverter(source: SourceObject) : KOMMConverter<SourceObject, Double, String>(source) {
+class DestinationCostConverter(source: SourceObject) : CostConverter<DestinationObject>(source)
+
+open class CostConverter<T>(source: SourceObject) : KOMMConverter<SourceObject, Double, T, String>(source) {
 
     override fun convert(sourceMember: Double) = "$sourceMember ${source.currency}"
 }
