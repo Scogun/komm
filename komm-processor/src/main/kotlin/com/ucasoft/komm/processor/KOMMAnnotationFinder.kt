@@ -29,7 +29,7 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
             forClass.toClassName(),
             member,
             MapConvert::class.simpleName,
-            MapConvert<*, *>::converter.name
+            MapConvert<*, *, *>::converter.name
         )
 
     fun findSubstituteResolver(member: KSPropertyDeclaration): String? {
@@ -83,7 +83,7 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         }
 
         if (item.annotationType.toString() == MapConvert::class.simpleName) {
-            return listOf(item.annotationType.element!!.typeArguments.first().type!!.resolve().toClassName())
+            return item.annotationType.element!!.typeArguments.take(2).map {  it.type!!.resolve().toClassName() }
         }
 
         return emptyList()
