@@ -6,6 +6,7 @@ import com.google.devtools.ksp.symbol.KSType
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -21,9 +22,17 @@ internal class EnumPluginTests {
         plugin.forCast(buildKSType(sourceKind), buildKSType(destinationKind)).shouldBe(result)
     }
 
-    private fun buildKSType(kind: ClassKind) = with(mockk<KSType>()) {
+    @Test
+    fun forCastResultIsFalseForTheSameEnum() {
+        plugin.forCast(buildKSType(ClassKind.ENUM_CLASS), buildKSType(ClassKind.ENUM_CLASS, true)).shouldBe(false)
+    }
+
+    private fun buildKSType(kind: ClassKind, isAssignableFrom: Boolean = false) = with(mockk<KSType>()) {
+        val type = this
         every { declaration } returns with(mockk<KSClassDeclaration>()) {
             every { classKind } returns kind
+            every { isAssignableFrom(any()) } returns isAssignableFrom
+            every { makeNotNullable() } returns type
             this
         }
         this

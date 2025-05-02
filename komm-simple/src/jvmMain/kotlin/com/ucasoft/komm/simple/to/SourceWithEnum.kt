@@ -2,6 +2,7 @@ package com.ucasoft.komm.simple.to
 
 import com.ucasoft.komm.abstractions.KOMMResolver
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapConfiguration
 import com.ucasoft.komm.annotations.MapDefault
 import com.ucasoft.komm.annotations.NullSubstitute
 import com.ucasoft.komm.plugins.enum.annotations.KOMMEnum
@@ -13,7 +14,8 @@ data class SourceWithEnum(
     val play: SourceEnum,
     @NullSubstitute(MapDefault(DirectionResolver::class))
     @KOMMEnum("OTHER")
-    val direction: OtherSourceEnum?
+    val direction: OtherSourceEnum?,
+    val sharedEnum: SharedEnum
 ) {
     enum class SourceEnum {
         PING,
@@ -32,7 +34,8 @@ data class DestinationWithEnum(
     val name: String,
     val age: Int,
     val play: DestinationEnum,
-    val direction: OtherDestinationEnum
+    val direction: OtherDestinationEnum,
+    val sharedEnum: SharedEnum?
 ) {
     enum class DestinationEnum {
         PING,
@@ -44,6 +47,11 @@ enum class OtherDestinationEnum {
     UP,
     DOWN,
     OTHER
+}
+
+enum class SharedEnum {
+    HERE,
+    THERE
 }
 
 class DirectionResolver(destination: DestinationWithEnum?) : KOMMResolver<DestinationWithEnum, OtherDestinationEnum>(destination) {
