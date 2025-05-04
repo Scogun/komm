@@ -38,14 +38,19 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [Exposed Plugin - ResultRow Mapping](#exposed-plugin---resultrow-mapping)
     * [Add](#add-with-gradle-2)
     * [Usage](#usage-1)
+  * [Enum Plugin](#enum-plugin)
+    * [Add](#add-with-gradle-3)
+      * [JVM project](#jvm-project-3)
+      * [Multiplatform project](#multiplatform-project-2)
+    * [Usage](#usage-2)
 ---
 
 ## Features
 * Supports KSP Multiplatform
 * Maps as constructor parameters as well as public properties with setter
-* Supports properties types cast
+* Supports properties' types cast
 * Supports Java objects get* functions
-* Supports multi source classes with separated configurations
+* Supports multi-source classes with separated configurations
 * Has next properties annotations:
   * Specify mapping from property with different name
   * Specify a converter to map data from source unusual way
@@ -66,6 +71,8 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Support collections mapping with different types of elements
 * Exposed Plugin:
   * Support mapping from Exposed Table Object (ResultRow)
+* Enum Plugin:
+  * Support Enum mapping with default value annotation
 
 ## Usage
 ### Add with Gradle
@@ -568,5 +575,130 @@ public fun ResultRow.toDestinationObject(): DestinationObject = DestinationObjec
     id = this[SourceObject.id],
     name = this[SourceObject.name],
     age = this[SourceObject.age]
+)
+```
+
+### Enum Plugin
+#### Add with Gradle
+
+###### JVM Project
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+}
+
+val kommVersion = "0.25.0"
+
+depensencies {
+    implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
+    ksp("com.ucasoft.komm:komm-processor:$kommVersion")
+    ksp("com.ucasoft.komm:komm-plugins-enum:$kommVersion")
+}
+```
+###### Multiplatform Project
+```kotlin
+plugins {
+    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+}
+
+val kommVersion = "0.25.0"
+
+//...
+
+dependencies {
+    add("kspJvm", "com.ucasoft.komm:komm-plugins-enum:$kommVersion")
+    add("kspJvm", "com.ucasoft.komm:komm-processor:$kommVersion")
+    add("kspJs", "com.ucasoft.komm:komm-plugins-enum:$kommVersion")
+    add("kspJs", "com.ucasoft.komm:komm-processor:$kommVersion")
+    // Add other platforms like `kspAndroidNativeX64`, `kspLinuxX64`, `kspMingwX64` etc.
+}
+```
+
+#### Usage
+##### Default
+###### Classes declaration
+```kotlin
+enum class SourceEnum {
+    UP, 
+    DOWN,
+    LEFT,
+    RIGHT
+}
+
+data class SourceObject(
+    val direction: SourceEnum
+)
+
+@KOMMMap(from = [SourceObject::class])
+data class DestinationObject(
+    val direction: DestinationObject.DestinationEnum
+) {
+    enum class DestinationEnum {
+        UP,
+        DOWN,
+        OTHER
+    }
+}
+```
+
+###### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(): toDestinationObject = toDestinationObject(
+	direction = DestinationObject.DestinationEnum.valueOf(direction.name)
+)
+```
+
+##### NullSubstitute
+###### Classes declaration
+```kotlin
+data class SourceObject(
+    val direction: SourceEnum?
+)
+
+@KOMMMap(from = [SourceObject::class])
+data class DestinationObject(
+    @NullSubstitute(MapDefault(DirectionResolver::class))
+    val direction: DestinationObject.DestinationEnum
+)
+
+class DirectionResolver(destination: DestinationEnum?) : KOMMResolver<DestinationEnum, DestinationObject.DestinationEnum>(destination) {
+  override fun resolve() = DestinationObject.DestinationEnum.OTHER
+}
+```
+
+###### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(): toDestinationObject = toDestinationObject(
+	direction = (if (direction != null) DestinationObject.DestinationEnum.valueOf(direction.name) else null)
+	  ?: DirectionResolver(null).resolve()
+)
+```
+
+
+##### Default Value
+###### Classes declaration
+```kotlin
+data class SourceObject(
+    val direction: SourceEnum?
+)
+
+@KOMMMap(from = [SourceObject::class])
+data class DestinationObject(
+    @NullSubstitute(MapDefault(DirectionResolver::class))
+    @KOMMEnum("OTHER")
+    val direction: DestinationObject.DestinationEnum
+)
+
+class DirectionResolver(destination: DestinationEnum?) : KOMMResolver<DestinationEnum, DestinationObject.DestinationEnum>(destination) {
+  override fun resolve() = DestinationObject.DestinationEnum.OTHER
+}
+```
+
+###### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(): toDestinationObject = toDestinationObject(
+	direction = (if (direction != null) DestinationObject.DestinationEnum.valueOf(if
+    (DestinationObject.DestinationEnum.entries.any { it.name == direction.name }) direction.name else "OTHER")
+    else null) ?: DirectionResolver(null).resolve()
 )
 ```
