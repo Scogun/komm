@@ -18,6 +18,8 @@ include("komm-annotations")
 
 include("komm-plugins-core")
 
+include("komm-plugins-enum")
+
 include("komm-plugins-exposed")
 
 include("komm-plugins-iterable")

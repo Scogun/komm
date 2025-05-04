@@ -15,6 +15,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":komm-annotations"))
+                implementation(project(":komm-plugins-enum"))
             }
         }
         val jvmMain by getting {
@@ -27,6 +28,7 @@ kotlin {
 }
 
 dependencies {
+    add("kspJvm", project(":komm-plugins-enum"))
     add("kspJvm", project(":komm-plugins-exposed"))
     add("kspJvm", project(":komm-plugins-iterable"))
     add("kspJvm", project(":komm-processor"))
