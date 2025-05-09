@@ -17,3 +17,5 @@ include("komm-plugins-iterable")
 include("komm-processor")
 
 include("komm-sample")
+
+includeBuild("komm-website")
