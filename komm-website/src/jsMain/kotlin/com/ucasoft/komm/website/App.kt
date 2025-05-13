@@ -1,122 +1,116 @@
 package com.ucasoft.komm.website
 
-import com.ucasoft.wrappers.lucide.GitHub
-import com.ucasoft.wrappers.lucide.Library
-import com.ucasoft.wrappers.lucide.X
-import com.ucasoft.wrappers.lucide.Menu
-import mui.material.*
-import mui.material.styles.TypographyVariant
+import js.objects.unsafeJso
+import mui.material.Box
+import mui.material.CssBaseline
+import mui.material.styles.ThemeProvider
+import mui.material.styles.createTheme
+import mui.system.responsive
 import mui.system.sx
 import react.FC
-import react.ReactNode
-import react.dom.html.ReactHTML
-import react.dom.html.ReactHTML.div
-import react.useState
-import web.cssom.AlignItems
 import web.cssom.Display
-import web.cssom.JustifyContent
+import web.cssom.FlexDirection
+import web.cssom.number
+import web.cssom.px
+import web.cssom.rem
+import web.cssom.rgb
 import web.cssom.vh
 
-val App = FC {
-
-    var activeTab by useState(0)
-    var mobileMenuOpen by useState(false)
-
-    Box {
-        sx {
-            minHeight = 100.vh
+val appTheme = createTheme(
+    unsafeJso {
+        palette = unsafeJso {
+            primary = unsafeJso {
+                main = rgb(127, 82, 255)
+                light = rgb(157, 122, 255)
+                dark = rgb(104, 66, 208)
+                contrastText = rgb(255, 255, 255)
+            }
+            secondary = unsafeJso {
+                main = rgb(30, 136, 229)
+                light = rgb(74, 163, 243)
+                dark = rgb(22, 103, 180)
+                contrastText = rgb(255, 255, 255)
+            }
+            background = unsafeJso {
+                default = "#f8f9fa"
+                paper = "#ffffff"
+            }
         }
-        AppBar {
-            position = AppBarPosition.static
-            color = AppBarColor.primary
-            elevation = 4
-            Container {
-                Toolbar {
-                    sx {
-                        display = Display.flex
-                        justifyContent = JustifyContent.spaceBetween
-                    }
-                    Box {
-                        sx {
-                            display = Display.flex
-                            alignItems = AlignItems.center
-                        }
-                        Library {
-                            size = 28
-                        }
-                        Typography {
-                            variant = TypographyVariant.h6
-                            component = div
-                            sx {
-                                maxLines = 1.asDynamic()
-                                fontWeight = 700.asDynamic()
-                            }
-                            +"KOMM"
-                        }
-                        Typography {
-                            variant = TypographyVariant.body2
-                            sx {
-                                maxLines = 1.asDynamic()
-                                display = js("{ xs: 'none', sm: 'block' }")
-                            }
-                            +"Kotlin Object Multiplatform Mapper"
-                        }
-                    }
-
-                    Box {
-                        sx {
-                            display = Display.flex
-                        }
-                        Tabs {
-                            value = activeTab
-                            onChange = { _, newIndex -> activeTab = newIndex as Int }
-                            textColor = TabsTextColor.inherit
-                            indicatorColor = TabsIndicatorColor.secondary
-                            listOf("Home", "Documentation", "Examples", "Plugins").forEachIndexed { index, label ->
-                                Tab {
-                                    value = index
-                                    this.label = ReactNode(label)
-                                }
-                            }
-                        }
-                    }
-
-                    Box {
-                        sx {
-                            display = Display.flex
-                            alignItems = AlignItems.center
-                        }
-                        IconButton {
-                            color = IconButtonColor.inherit
-                            component = ReactHTML.a
-                            asDynamic().href = "https://github.com/Scogun/KOMM"
-                            asDynamic().target = "_blank"
-                            ariaLabel = "GitHub repository"
-                            GitHub {
-                                size = 20
-                            }
-                        }
-                        IconButton {
-                            color = IconButtonColor.inherit
-                            onClick = {
-                                mobileMenuOpen = !mobileMenuOpen
-                            }
-                            sx {
-                                display = js("{md: 'none'}")
-                            }
-                            ariaLabel = "Menu"
-                            if (mobileMenuOpen) {
-                                X {
-                                    size = 24
-                                }
-                            } else {
-                                Menu {
-                                    size = 24
-                                }
-                            }
-                        }
+        typography = unsafeJso {
+            fontFamily = arrayOf("Inter",
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "Segoe UI",
+                "Roboto",
+                "Helvetica Neue",
+                "Arial",
+                "sans-serif").joinToString(",")
+            h1 = unsafeJso {
+                fontSize = unsafeJso {
+                    xs = 2.5.rem
+                    md = 3.rem
+                }
+                fontWeight = 800
+            }
+            h2 = unsafeJso {
+                fontSize = 2.5.rem
+                fontWeight = 700
+                marginBottom = 16.px
+            }
+            h3 = unsafeJso {
+                fontSize = 1.5.rem
+                fontWeight = 600
+            }
+            button = unsafeJso {
+                fontWeight = 600
+                textTransform = "none"
+            }
+        }
+        components = unsafeJso {
+            MuiButton = unsafeJso {
+                styleOverrides = unsafeJso {
+                    root = unsafeJso {
+                        borderRadius = 0.px
+                        padding = "10px 20px"
                     }
                 }
+            }
+            MuiCard = unsafeJso {
+                styleOverrides = unsafeJso {
+                    root = unsafeJso {
+                        borderRadius = 8.px
+                        boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.05)"
+                    }
+                }
+            }
+            MuiPaper = unsafeJso {
+                styleOverrides = unsafeJso {
+                    root = unsafeJso {
+                        borderRadius = 8.px
+                    }
+                }
+            }
+        }
+    }
+)
+
+val App = FC {
+    ThemeProvider {
+        theme = appTheme
+        CssBaseline
+        Box {
+            sx {
+                display = Display.flex
+                flexDirection = FlexDirection.column
+                minHeight = 100.vh
+            }
+            NavBar {}
+            Box {
+                asDynamic().component = "main"
+                sx {
+                    flexGrow = number(1.0)
+                }
+                Hero {}
             }
         }
     }
