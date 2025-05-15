@@ -111,6 +111,8 @@ val App = FC {
                     flexGrow = number(1.0)
                 }
                 Hero {}
+                Features {}
+                Code {}
             }
         }
     }
