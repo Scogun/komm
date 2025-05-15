@@ -2,42 +2,17 @@ package com.ucasoft.komm.website
 
 import com.ucasoft.wrappers.lucide.GitHub
 import com.ucasoft.wrappers.lucide.Menu
-import js.objects.unsafeJso
-import mui.material.AppBar
-import mui.material.AppBarColor
-import mui.material.AppBarPosition
-import mui.material.Toolbar
-import mui.material.Typography
-import mui.material.styles.TypographyVariant
-import mui.material.Box
-import mui.material.Button
-import mui.material.ButtonColor
-import mui.material.ButtonVariant
-import mui.material.Container
-import mui.material.IconButton
-import mui.material.IconButtonColor
-import mui.material.IconButtonEdge
-import mui.material.Stack
+import mui.material.*
 import mui.material.StackDirection.Companion.row
 import mui.material.styles.Theme
 import mui.system.Breakpoint
-import mui.system.Breakpoints
-import mui.system.createBreakpoints
 import mui.system.responsive
 import mui.system.sx
 import mui.system.useMediaQuery
 import react.FC
 import react.create
-import react.dom.html.ReactHTML.i
 import react.useState
-import web.cssom.ClassName
-import web.cssom.Color
-import web.cssom.HtmlAttributes.Companion.target
 import web.cssom.JustifyContent
-import web.cssom.Visibility
-import web.cssom.integer
-import web.cssom.number
-import web.cssom.px
 
 val NavBar = FC {
     val isMobile = useMediaQuery<Theme>({
