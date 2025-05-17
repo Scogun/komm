@@ -5,7 +5,6 @@ import mui.material.Box
 import mui.material.CssBaseline
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
-import mui.system.responsive
 import mui.system.sx
 import react.FC
 import web.cssom.Display
@@ -70,7 +69,7 @@ val appTheme = createTheme(
             MuiButton = unsafeJso {
                 styleOverrides = unsafeJso {
                     root = unsafeJso {
-                        borderRadius = 0.px
+                        borderRadius = 8.px
                         padding = "10px 20px"
                     }
                 }
@@ -97,7 +96,7 @@ val appTheme = createTheme(
 val App = FC {
     ThemeProvider {
         theme = appTheme
-        CssBaseline
+        CssBaseline {}
         Box {
             sx {
                 display = Display.flex
@@ -112,7 +111,11 @@ val App = FC {
                 }
                 Hero {}
                 Features {}
-                Code {}
+                CodeExamples {}
+                Targets {}
+                Plugins {}
+                Installation {}
+                Footer {}
             }
         }
     }
