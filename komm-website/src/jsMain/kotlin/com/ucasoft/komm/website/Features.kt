@@ -15,28 +15,33 @@ import mui.system.responsive
 import mui.system.sx
 import react.FC
 import react.create
+import web.cssom.Auto
 import web.cssom.Color
+import web.cssom.Margin
+import web.cssom.Padding
 import web.cssom.TextAlign
 import web.cssom.px
 
 val Features = FC {
     Box {
         sx {
-            padding = 10.px
+            padding = Padding(10.px, 0.px)
         }
         Container {
             Box {
                 sx {
                     textAlign = TextAlign.center
+                    marginBottom = 6.px
                 }
                 Typography {
                     variant = TypographyVariant.h2
                     +"Powerful Features"
                 }
                 Typography {
-                    asDynamic().color = Color("primary.main")
                     sx {
+                        color = Color("text.secondary")
                         maxWidth = 700.px
+                        margin = Margin(0.px, Auto.auto)
                     }
                     +"KOMM provides a versatile and flexible mapping solution for Kotlin Multiplatform projects."
                 }

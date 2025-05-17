@@ -11,12 +11,16 @@ import react.dom.html.ReactHTML.div
 import react.dom.html.ReactHTML.span
 import react.dom.svg.ReactSVG.path
 import react.dom.svg.ReactSVG.svg
+import web.cssom.AlignItems
+import web.cssom.Color
 import web.cssom.integer
 import web.cssom.number
 
 val Logo = FC {
     Stack {
         direction = responsive(row)
+        spacing = responsive(1)
+        asDynamic().alignItems = AlignItems.center
         svg {
             width = 40.0
             height = 40.0
@@ -38,8 +42,8 @@ val Logo = FC {
             sx {
                 flexGrow = number(1.0)
                 fontWeight = integer(800)
+                color = Color("primary.main")
             }
-            asDynamic().color = "primary.main"
             span {
                +"KOMM"
             }

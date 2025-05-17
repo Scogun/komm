@@ -8,17 +8,21 @@ import mui.material.styles.TypographyVariant
 import mui.system.sx
 import react.FC
 import react.Props
-import react.ReactNode
 import web.cssom.AlignItems
+import web.cssom.BoxShadow
 import web.cssom.Color
 import web.cssom.Display
 import web.cssom.JustifyContent
-import web.cssom.atrule.color
-import web.cssom.number
+import web.cssom.TextAlign
+import web.cssom.pct
 import web.cssom.px
 
-val Feature = FC<FeatureProps> {
+val Target = FC<TargetProps> {
     Card {
+        sx {
+            textAlign = TextAlign.center
+            backgroundColor = Color("background.default")
+        }
         CardContent {
             sx {
                 padding = 3.px
@@ -28,18 +32,12 @@ val Feature = FC<FeatureProps> {
                     display = Display.inlineFlex
                     alignItems = AlignItems.center
                     justifyContent = JustifyContent.center
-                    width = 60.px
-                    height = 60.px
-                    borderRadius = 2.px
-                    backgroundColor = Color("primary.light")
-                    opacity = number(0.1)
+                    width = 80.px
+                    height = 80.px
+                    borderRadius = 50.pct
+                    background = Color("background.paper")
+                    boxShadow = BoxShadow(1.px, 1.px, Color.currentcolor)
                     marginBottom = 2.px
-                }
-                Box {
-                    sx {
-                        color = Color("primary.main")
-                    }
-                    +it.icon
                 }
             }
             Typography {
@@ -48,15 +46,16 @@ val Feature = FC<FeatureProps> {
                 +it.title
             }
             Typography {
-                asDynamic().color = Color("primary.secondary")
+                sx {
+                    color = Color("text.secondary")
+                }
                 +it.description
             }
         }
     }
 }
 
-external interface FeatureProps : Props {
-    var description: String
-    var icon: ReactNode
+external interface TargetProps: Props {
     var title: String
+    var description: String
 }
