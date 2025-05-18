@@ -20,57 +20,61 @@ val appTheme = createTheme(
         palette = unsafeJso {
             primary = unsafeJso {
                 main = rgb(127, 82, 255)
-                light = rgb(157, 122, 255)
                 dark = rgb(104, 66, 208)
                 contrastText = rgb(255, 255, 255)
             }
             secondary = unsafeJso {
                 main = rgb(30, 136, 229)
-                light = rgb(74, 163, 243)
-                dark = rgb(22, 103, 180)
-                contrastText = rgb(255, 255, 255)
             }
             background = unsafeJso {
                 default = "#f8f9fa"
                 paper = "#ffffff"
             }
+            text = unsafeJso {
+                primary = rgb(12, 12, 12)
+                secondary = rgb(108, 117, 125)
+            }
         }
         typography = unsafeJso {
-            fontFamily = arrayOf("Inter",
+            fontFamily = arrayOf("\"Inter\"",
                 "-apple-system",
                 "BlinkMacSystemFont",
-                "Segoe UI",
+                "\"Segoe UI\"",
                 "Roboto",
-                "Helvetica Neue",
-                "Arial",
+                "Oxygen",
+                "Ubuntu",
+                "Cantarell",
+                "\"Open Sans\"",
+                "\"Helvetica Neue\"",
                 "sans-serif").joinToString(",")
             h1 = unsafeJso {
-                fontSize = unsafeJso {
-                    xs = 2.5.rem
-                    md = 3.rem
-                }
+                fontSize = 3.5.rem
                 fontWeight = 800
             }
             h2 = unsafeJso {
                 fontSize = 2.5.rem
                 fontWeight = 700
-                marginBottom = 16.px
+                marginBottom = 1.rem
             }
             h3 = unsafeJso {
                 fontSize = 1.5.rem
                 fontWeight = 600
+                marginBottom = 1.rem
             }
-            button = unsafeJso {
-                fontWeight = 600
-                textTransform = "none"
+            body1 = unsafeJso {
+                fontSize = 1.2.rem
             }
         }
         components = unsafeJso {
             MuiButton = unsafeJso {
                 styleOverrides = unsafeJso {
                     root = unsafeJso {
-                        borderRadius = 8.px
+                        borderRadius = 6.px
+                        fontWeight = 600
                         padding = "10px 20px"
+                        textTransform = "none"
+                        transition = "all 0.3s"
+                        boxShadow = "none"
                     }
                 }
             }
@@ -78,14 +82,7 @@ val appTheme = createTheme(
                 styleOverrides = unsafeJso {
                     root = unsafeJso {
                         borderRadius = 8.px
-                        boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.05)"
-                    }
-                }
-            }
-            MuiPaper = unsafeJso {
-                styleOverrides = unsafeJso {
-                    root = unsafeJso {
-                        borderRadius = 8.px
+                        transition = "transform 0.3s, box-shadow 0.3s"
                     }
                 }
             }

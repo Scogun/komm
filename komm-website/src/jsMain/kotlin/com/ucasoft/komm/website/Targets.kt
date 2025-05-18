@@ -1,5 +1,6 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.wrappers.lucide.Computer
 import mui.material.Box
 import mui.material.Grid
 import mui.material.Typography
@@ -8,6 +9,7 @@ import mui.system.Container
 import mui.system.responsive
 import mui.system.sx
 import react.FC
+import react.create
 import web.cssom.Auto
 import web.cssom.Color
 import web.cssom.Margin
@@ -59,6 +61,9 @@ val Targets = FC {
                         asDynamic().sm = responsive(6)
                         asDynamic().md = responsive(4)
                         Target {
+                            icon = Computer.create {
+                                size = 24
+                            }
                             title = it.key
                             description = it.value
                         }
