@@ -116,7 +116,7 @@ val Footer = FC {
                 sx {
                     color = rgb(255, 255, 255, 0.5)
                 }
-                +"© ${Date().getFullYear()} KOMM. Released under the MIT License."
+                +"© ${Date().getFullYear()} KOMM. Released under the Apache License."
             }
         }
     }
