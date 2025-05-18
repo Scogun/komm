@@ -7,6 +7,9 @@ import react.FC
 @JsName("AlignJustify")
 external val AlignJustify: FC<LucideProps>
 
+@JsName("Computer")
+external val Computer: FC<LucideProps>
+
 @JsName("Database")
 external val Database: FC<LucideProps>
 

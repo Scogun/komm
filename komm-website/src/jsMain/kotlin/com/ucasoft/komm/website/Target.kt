@@ -1,6 +1,6 @@
 package com.ucasoft.komm.website
 
-import mui.material.Box
+import mui.material.Avatar
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -8,37 +8,24 @@ import mui.material.styles.TypographyVariant
 import mui.system.sx
 import react.FC
 import react.Props
-import web.cssom.AlignItems
-import web.cssom.BoxShadow
-import web.cssom.Color
-import web.cssom.Display
-import web.cssom.JustifyContent
-import web.cssom.TextAlign
-import web.cssom.pct
-import web.cssom.px
+import react.ReactNode
+import web.cssom.*
 
 val Target = FC<TargetProps> {
     Card {
-        sx {
-            textAlign = TextAlign.center
-            backgroundColor = Color("background.default")
-        }
         CardContent {
             sx {
-                padding = 3.px
+                textAlign = TextAlign.center
             }
-            Box {
+            Avatar {
                 sx {
-                    display = Display.inlineFlex
-                    alignItems = AlignItems.center
-                    justifyContent = JustifyContent.center
+                    backgroundColor = Color("background.paper")
                     width = 80.px
                     height = 80.px
-                    borderRadius = 50.pct
-                    background = Color("background.paper")
-                    boxShadow = BoxShadow(1.px, 1.px, Color.currentcolor)
-                    marginBottom = 2.px
+                    margin = Margin(0.px, Auto.auto, 2.px)
+                    boxShadow = BoxShadow(0.px, 4.px, 10.px, rgb(0, 0, 0, 0.1))
                 }
+                +it.icon
             }
             Typography {
                 variant = TypographyVariant.h3
@@ -56,6 +43,7 @@ val Target = FC<TargetProps> {
 }
 
 external interface TargetProps: Props {
+    var icon: ReactNode
     var title: String
     var description: String
 }
