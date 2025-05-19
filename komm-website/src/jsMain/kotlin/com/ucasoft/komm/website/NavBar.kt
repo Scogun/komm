@@ -9,36 +9,53 @@ import mui.system.Breakpoint
 import mui.system.responsive
 import mui.system.sx
 import mui.system.useMediaQuery
-import react.FC
-import react.create
-import react.useState
-import web.cssom.JustifyContent
+import react.*
+import react.dom.html.ReactHTML.button
+import web.cssom.*
+import web.html.HTMLDivElement
 
-val NavBar = FC {
+val NavBar = FC<NavBarProps> {
     val isMobile = useMediaQuery<Theme>({
         it.breakpoints.down(Breakpoint.md)
     })
     var isMobileOpen by useState(false)
-    val menuItems = listOf("Features", "Examples", "Targets", "Plugins", "Installation")
     AppBar {
-        position = AppBarPosition.sticky
-        color = AppBarColor.default
-        elevation = 1
+        position = AppBarPosition.fixed
+        elevation = 2
+        sx {
+            backgroundColor = rgb(255, 255, 255, 0.85)
+            backdropFilter = blur(10.px)
+            boxShadow = "sm".unsafeCast<BoxShadow>()
+        }
         Container {
+            maxWidth = "lg"
             Toolbar {
+                disableGutters = true
                 sx {
                     justifyContent = JustifyContent.spaceBetween
                 }
                 Logo {}
                 if (!isMobile) {
-                    Stack {
-                        direction = responsive(row)
-                        spacing = responsive(3)
-                        menuItems.map {
-                            Button {
-                                color = ButtonColor.inherit
-                                onClick = {}
-                                +it
+                    Box {
+                        sx {
+                            display = js("{ xs: 'none', md: 'flex' }")
+                            alignItems = AlignItems.center
+                            gap = 2.px
+                        }
+                        it.menu.map { item ->
+                            Link {
+                                component = button
+                                variant = "body1"
+                                onClick = {
+                                    if (item.ref.current != null) {
+                                        item.ref.current!!.scrollIntoView(js("{ behavior: 'smooth', block: 'start' }"))
+                                    }
+                                }
+                                sx {
+                                    color = Color("text.primary")
+                                    asDynamic().`&:hover` = js("{ color: 'primary.main' }")
+                                }
+                                +item.title
                             }
                         }
                     }
@@ -58,15 +75,6 @@ val NavBar = FC {
                         }
                         +"GitHub"
                     }
-                    Button {
-                        color = ButtonColor.primary
-                        variant = ButtonVariant.contained
-                        onClick = {}
-                        sx {
-                            display = js("{ xs: 'none', sm: 'flex' }")
-                        }
-                        +"Get Started"
-                    }
                     if (isMobile) {
                         IconButton {
                             color = IconButtonColor.inherit
@@ -81,3 +89,9 @@ val NavBar = FC {
         }
     }
 }
+
+external interface NavBarProps : Props {
+    var menu: List<NavBarMenu>
+}
+
+data class NavBarMenu(val title: String, val ref: RefObject<HTMLDivElement>)

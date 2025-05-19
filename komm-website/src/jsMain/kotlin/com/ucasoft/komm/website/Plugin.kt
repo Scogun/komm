@@ -1,5 +1,6 @@
 package com.ucasoft.komm.website
 
+import mui.material.Box
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -8,39 +9,47 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.ReactNode
+import react.dom.html.ReactHTML.h3
 import web.cssom.AlignItems
 import web.cssom.Color
 import web.cssom.Display
+import web.cssom.JustifyContent
+import web.cssom.TextAlign
 import web.cssom.number
+import web.cssom.pct
 import web.cssom.px
 
 val Plugin = FC<PluginProps> {
     Card {
         sx {
-            marginBottom = 2.px
+            textAlign = TextAlign.center
+            padding = 3.px
+            height = 100.pct
         }
-        CardContent {
+        Box {
             sx {
-                padding = 3.px
+                display = Display.flex
+                justifyContent = JustifyContent.center
+                marginBottom = 2.px
+                color = Color("primary.main")
             }
-            Typography {
-                variant = TypographyVariant.h3
-                sx {
-                    color = Color("primary.main")
-                    display = Display.flex
-                    alignItems = AlignItems.center
-                    gap = 1.5.px
-                    marginBottom = 2.px
-                }
-                +it.icon
-                +it.title
+            +it.icon
+        }
+        Typography {
+            variant = TypographyVariant.h5
+            component = h3
+            gutterBottom = true
+            sx {
+                color = Color("text.primary")
             }
-            Typography {
-                sx {
-                    color = Color("text.secondary")
-                }
-                +it.description
+            +it.title
+        }
+        Typography {
+            variant = TypographyVariant.body1
+            sx {
+                color = Color("text.secondary")
             }
+            +it.description
         }
     }
 }

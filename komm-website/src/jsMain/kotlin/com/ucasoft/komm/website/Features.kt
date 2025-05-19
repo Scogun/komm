@@ -1,11 +1,6 @@
 package com.ucasoft.komm.website
 
-import com.ucasoft.wrappers.lucide.Database
-import com.ucasoft.wrappers.lucide.Layers
-import com.ucasoft.wrappers.lucide.Shield
-import com.ucasoft.wrappers.lucide.SlidersVertical
-import com.ucasoft.wrappers.lucide.SquareTerminal
-import com.ucasoft.wrappers.lucide.Zap
+import com.ucasoft.wrappers.lucide.*
 import mui.material.Box
 import mui.material.Container
 import mui.material.Grid
@@ -14,117 +9,53 @@ import mui.material.styles.TypographyVariant
 import mui.system.responsive
 import mui.system.sx
 import react.FC
+import react.PropsWithRef
 import react.create
-import web.cssom.Auto
-import web.cssom.Color
-import web.cssom.Margin
-import web.cssom.Padding
-import web.cssom.TextAlign
-import web.cssom.px
+import web.cssom.*
+import web.html.HTMLDivElement
 
-val Features = FC {
+val features = listOf(
+    IconItem(Cpu.create { size = 36 }, "KSP Multiplatform Support", description = "Utilizes Kotlin Symbol Processing (KSP) for efficient, multiplatform code generation."),
+    IconItem(Settings.create { size = 36 }, "Constructor & Property Mapping", "Maps to constructor parameters and public properties with setters for maximum flexibility."),
+    IconItem(Zap.create { size = 36 }, "Property Type Casting", "Supports automatic casting of property types during mapping operations."),
+    IconItem(FileJson.create { size = 36 }, "Java `get*` Function Support", "Seamlessly maps from Java objects using their `get*` accessor methods."),
+    IconItem(Layers.create { size = 36 }, "Multi-Source Class Mapping", "Map data from multiple source classes with distinct configurations for each."),
+    IconItem(Tag.create { size = 36 }, "Advanced Annotations", "Fine-tune mappings with annotations for different names, converters, resolvers, and null substitutes.")
+)
+
+val Features = FC<PropsWithRef<HTMLDivElement>> {
     Box {
+        ref = it.ref
         sx {
-            padding = Padding(10.px, 0.px)
+            padding = Padding(12.px, 0.px)
+            scrollMarginTop = 50.px
         }
         Container {
-            Box {
+            maxWidth = "lg"
+            Typography {
+                variant = TypographyVariant.h3
                 sx {
+                    fontWeight = FontWeight.bold
                     textAlign = TextAlign.center
-                    marginBottom = 6.px
+                    marginBottom = 8.px
+                    color = Color("text.primary")
                 }
-                Typography {
-                    variant = TypographyVariant.h2
-                    +"Powerful Features"
-                }
-                Typography {
-                    sx {
-                        color = Color("text.secondary")
-                        maxWidth = 700.px
-                        margin = Margin(0.px, Auto.auto)
-                    }
-                    +"KOMM provides a versatile and flexible mapping solution for Kotlin Multiplatform projects."
-                }
+                +"Powerful Features"
             }
             Grid {
                 container = true
                 spacing = responsive(3)
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = Shield.create {
-                            size = 32
+                features.map {
+                    Grid {
+                        item = true
+                        asDynamic().xs = responsive(12)
+                        asDynamic().sm = responsive(6)
+                        asDynamic().md = responsive(4)
+                        Feature {
+                            icon = it.icon
+                            title = it.title
+                            description = it.description
                         }
-                        title = "KSP Multiplatform Support"
-                        description = "Efficiently generate mapping code with Kotlin Symbol Processing across all supported platforms."
-                    }
-                }
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = SquareTerminal.create {
-                            size = 32
-                        }
-                        title = "Flexible Mapping"
-                        description = "Maps both constructor parameters and public properties with setters for maximum flexibility."
-                    }
-                }
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = Database.create {
-                            size = 32
-                        }
-                        title = "Type Casting Support"
-                        description = "Automatically handles type conversions between compatible property types."
-                    }
-                }
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = Layers.create {
-                            size = 32
-                        }
-                        title = "Java Compatibility"
-                        description = "Full support for Java objects with get* functions for seamless integration."
-                    }
-                }
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = Zap.create {
-                            size = 32
-                        }
-                        title = "Multi-Source Support"
-                        description = "Map from multiple source classes with separated configurations for complex scenarios."
-                    }
-                }
-                Grid {
-                    item = true
-                    asDynamic().xs = responsive(12)
-                    asDynamic().sm = responsive(6)
-                    asDynamic().md = responsive(4)
-                    Feature {
-                        icon = SlidersVertical.create {
-                            size = 32
-                        }
-                        title = "Customizable via Annotations"
-                        description = "Powerful property annotations for controlling mapping behavior and handling edge cases."
                     }
                 }
             }

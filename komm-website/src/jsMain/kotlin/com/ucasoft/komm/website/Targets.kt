@@ -1,6 +1,6 @@
 package com.ucasoft.komm.website
 
-import com.ucasoft.wrappers.lucide.Computer
+import com.ucasoft.wrappers.lucide.*
 import mui.material.Box
 import mui.material.Grid
 import mui.material.Typography
@@ -9,63 +9,60 @@ import mui.system.Container
 import mui.system.responsive
 import mui.system.sx
 import react.FC
+import react.PropsWithRef
 import react.create
-import web.cssom.Auto
-import web.cssom.Color
-import web.cssom.Margin
-import web.cssom.Padding
-import web.cssom.TextAlign
-import web.cssom.px
+import react.dom.html.ReactHTML.h2
+import web.cssom.*
+import web.html.HTMLDivElement
 
-val targetList = mapOf(
-    "JVM" to "Full support for Java Virtual Machine platforms.",
-    "JavaScript" to "Seamless integration with JavaScript environments.",
-    "Linux" to "Native support for Linux platforms.",
-    "Windows" to "Native support for Windows (mingwX64).",
-    "macOS" to "Native support for macOS platforms.",
-    "iOS" to "Native support for iOS development."
+val targetList = listOf(
+    IconItem(Cpu.create { size = 40 },"JVM", "Full support for Java Virtual Machine platforms."),
+    IconItem(FileJson.create { size = 40 },"JavaScript", "Seamless integration with JavaScript environments."),
+    IconItem(Terminal.create { size = 40 }, "Linux", "Native support for Linux platforms."),
+    IconItem(Monitor.create { size = 40 },"Windows", "Native support for Windows (mingwX64)."),
+    IconItem(Apple.create { size = 40 },"macOS", "Native support for macOS platforms."),
+    IconItem(Smartphone.create { size = 40 },"iOS", "Native support for iOS development.")
 )
 
-val Targets = FC {
+val Targets = FC<PropsWithRef<HTMLDivElement>> {
     Box {
+        ref = it.ref
         sx {
-            padding = Padding(10.px, 0.px)
-            backgroundColor = Color("background.paper")
+            padding = Padding(12.px, 0.px)
+            backgroundColor = rgb(71, 88, 163)
+            color = Color("white")
+            scrollMarginTop = 50.px
         }
         Container {
-            Box {
+            Typography {
+                variant = TypographyVariant.h3
+                component = h2
                 sx {
                     textAlign = TextAlign.center
-                    marginBottom = 6.px
+                    fontWeight = FontWeight.bold
+                    marginBottom = 8.px
                 }
-                Typography {
-                    variant = TypographyVariant.h2
-                    +"Multiplatform Support"
-                }
-                Typography {
-                    sx {
-                        color = Color("text.secondary")
-                        maxWidth = 700.px
-                        margin = Margin(0.px, Auto.auto)
-                    }
-                    +"KOMM works seamlessly across all major Kotlin Multiplatform targets."
-                }
+                +"Supported Targets"
             }
             Grid {
                 container = true
                 spacing = responsive(3)
+                sx {
+                    justifyContent = JustifyContent.center
+                }
                 targetList.map {
                     Grid {
                         item = true
-                        asDynamic().xs = responsive(12)
-                        asDynamic().sm = responsive(6)
-                        asDynamic().md = responsive(4)
+                        asDynamic().xs = responsive(6)
+                        asDynamic().sm = responsive(4)
+                        asDynamic().md = responsive(2)
+                        sx {
+                            textAlign = TextAlign.center
+                        }
                         Target {
-                            icon = Computer.create {
-                                size = 24
-                            }
-                            title = it.key
-                            description = it.value
+                            icon = it.icon
+                            title = it.title
+                            description = it.description
                         }
                     }
                 }

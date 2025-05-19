@@ -6,43 +6,48 @@ import mui.material.Typography
 import mui.material.styles.TypographyVariant
 import mui.system.sx
 import react.FC
-import react.dom.html.ReactHTML.span
-import web.cssom.Auto
-import web.cssom.Margin
-import web.cssom.Padding
-import web.cssom.TextAlign
-import web.cssom.px
-import web.cssom.rem
-import web.cssom.rgb
+import react.PropsWithRef
+import react.dom.html.ReactHTML.p
+import web.cssom.*
 
-val Hero = FC {
+val Hero = FC<PropsWithRef<*>> {
     Box {
         sx {
-            backgroundColor = rgb(127, 82, 255, 0.05)
-            padding = Padding(12.px, 0.px)
+            background = linearGradient(135.deg, stop(Color("#667eea"), 0.pct), stop(Color("#764ba2"), 100.pct))
+            padding = Padding(80.px, 0.px, 14.px)
+            color = Color("white")
             textAlign = TextAlign.center
         }
         Container {
+            maxWidth = "md"
             Typography {
                 variant = TypographyVariant.h1
                 gutterBottom = true
-                +"Kotlin Object "
-                Typography {
-                    component = span
-                    variant = TypographyVariant.h1
-                    asDynamic().color = "primary.main"
-                    +"Multiplatform Mapper"
+                sx {
+                    fontSize = 4.rem
                 }
+                +"KOMM"
+            }
+            Typography {
+                variant = TypographyVariant.h5
+                component = p
+                gutterBottom = true
+                sx {
+                    marginBottom = 3.px
+                    fontSize = 1.5.rem
+                }
+                +"Kotlin Object Multiplatform Mapper"
             }
             Typography {
                 variant = TypographyVariant.body1
-                asDynamic().color = "text.secondary"
                 sx {
                     maxWidth = 700.px
                     margin = Margin(0.px, Auto.auto, 4.px)
-                    fontSize = js("{ xs: '1rem', md: '1.2rem' }")
+                    fontSize = js("{ xs: '1rem', md: '1.125rem' }")
+                    lineHeight = number(1.7)
                 }
-                +"Seamlessly map objects between different data models across multiple platforms with KOMM - a powerful KSP generator for Kotlin Multiplatform."
+                +"""Effortlessly generate extension functions to map objects in your Kotlin Multiplatform projects.
+        Reduce boilerplate, enhance type safety, and streamline your data transformations.""".trimIndent()
             }
         }
     }
