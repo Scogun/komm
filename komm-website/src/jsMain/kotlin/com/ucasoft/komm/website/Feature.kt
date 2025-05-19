@@ -1,6 +1,6 @@
 package com.ucasoft.komm.website
 
-import mui.material.Avatar
+import mui.material.Box
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -9,30 +9,44 @@ import mui.system.sx
 import react.FC
 import react.Props
 import react.ReactNode
-import web.cssom.Color
-import web.cssom.px
-import web.cssom.rgb
+import react.dom.html.ReactHTML.h3
+import web.cssom.*
 
 val Feature = FC<FeatureProps> {
     Card {
+        sx {
+            padding = 2.5.px
+            height = 100.pct
+        }
         CardContent {
-            Avatar {
+            Box {
                 sx {
-                    backgroundColor = rgb(127, 82, 255, 0.1)
-                    color = Color("primary.main")
-                    width = 60.px
-                    height = 60.px
+                    display = Display.flex
+                    alignItems = AlignItems.center
                     marginBottom = 2.px
                 }
-                +it.icon
+                Box {
+                    sx {
+                        color = Color("primary.main")
+                        marginRight = 1.5.px
+                        display = Display.inlineFlex
+                    }
+                    +it.icon
+                }
+                Typography {
+                    variant = TypographyVariant.h6
+                    component = h3
+                    sx {
+                        color = Color("text.primary")
+                    }
+                    +it.title
+                }
             }
             Typography {
-                variant = TypographyVariant.h3
-                gutterBottom = true
-                +it.title
-            }
-            Typography {
-                asDynamic().color = Color("text.secondary")
+                variant = TypographyVariant.body2
+                sx {
+                    color = Color("text.secondary")
+                }
                 +it.description
             }
         }
