@@ -7,11 +7,23 @@ import react.FC
 @JsName("AlignJustify")
 external val AlignJustify: FC<LucideProps>
 
+@JsName("Apple")
+external val Apple: FC<LucideProps>
+
+@JsName("ChevronsRight")
+external val ChevronsRight: FC<LucideProps>
+
 @JsName("Computer")
 external val Computer: FC<LucideProps>
 
+@JsName("Cpu")
+external val Cpu: FC<LucideProps>
+
 @JsName("Database")
 external val Database: FC<LucideProps>
+
+@JsName("FileJson")
+external val FileJson: FC<LucideProps>
 
 @JsName("Github")
 external val GitHub: FC<LucideProps>
@@ -22,17 +34,41 @@ external val Layers: FC<LucideProps>
 @JsName("Library")
 external val Library: FC<LucideProps>
 
+@JsName("ListTree")
+external val ListTree: FC<LucideProps>
+
 @JsName("Menu")
 external val Menu: FC<LucideProps>
+
+@JsName("Monitor")
+external val Monitor: FC<LucideProps>
+
+@JsName("Puzzle")
+external val Puzzle: FC<LucideProps>
+
+@JsName("Settings")
+external val Settings: FC<LucideProps>
+
+@JsName("Shield")
+external val Shield: FC<LucideProps>
+
+@JsName("ShieldCheck")
+external val ShieldCheck: FC<LucideProps>
 
 @JsName("SlidersVertical")
 external val SlidersVertical: FC<LucideProps>
 
+@JsName("Smartphone")
+external val Smartphone: FC<LucideProps>
+
 @JsName("SquareTerminal")
 external val SquareTerminal: FC<LucideProps>
 
-@JsName("Shield")
-external val Shield: FC<LucideProps>
+@JsName("Tag")
+external val Tag: FC<LucideProps>
+
+@JsName("Terminal")
+external val Terminal: FC<LucideProps>
 
 @JsName("X")
 external val X: FC<LucideProps>
