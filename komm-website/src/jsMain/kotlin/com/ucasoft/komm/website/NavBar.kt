@@ -2,96 +2,173 @@ package com.ucasoft.komm.website
 
 import com.ucasoft.wrappers.lucide.GitHub
 import com.ucasoft.wrappers.lucide.Menu
+import js.objects.unsafeJso
 import mui.material.*
-import mui.material.StackDirection.Companion.row
 import mui.material.styles.Theme
+import mui.material.styles.useTheme
 import mui.system.Breakpoint
-import mui.system.responsive
 import mui.system.sx
 import mui.system.useMediaQuery
 import react.*
-import react.dom.html.ReactHTML.button
 import web.cssom.*
 import web.html.HTMLDivElement
+
+data class NavBarMenu(val icon: ReactNode, val title: String, val ref: RefObject<HTMLDivElement>)
+
+external interface NavBarProps : Props {
+    var menu: List<NavBarMenu>
+}
+
+private external interface NavDrawerProps : NavBarProps {
+    var isOpen: Boolean
+    var onChoose: (NavBarMenu) -> Unit
+}
 
 val NavBar = FC<NavBarProps> {
     val isMobile = useMediaQuery<Theme>({
         it.breakpoints.down(Breakpoint.md)
     })
     var isMobileOpen by useState(false)
+    val theme = useTheme<Theme>()
     AppBar {
         position = AppBarPosition.fixed
-        elevation = 2
         sx {
-            backgroundColor = rgb(255, 255, 255, 0.85)
-            backdropFilter = blur(10.px)
-            boxShadow = "sm".unsafeCast<BoxShadow>()
+            zIndex = integer(theme.zIndex.drawer.toInt() + 1)
         }
         Container {
-            maxWidth = "lg"
+            maxWidth = "xl"
             Toolbar {
                 disableGutters = true
-                sx {
-                    justifyContent = JustifyContent.spaceBetween
+                if (isMobile) {
+                    IconButton {
+                        color = IconButtonColor.inherit
+                        ariaLabel = "open drawer"
+                        edge = IconButtonEdge.start
+                        onClick = { isMobileOpen = !isMobileOpen }
+                        Menu {}
+                    }
                 }
                 Logo {}
                 if (!isMobile) {
                     Box {
                         sx {
-                            display = js("{ xs: 'none', md: 'flex' }")
+                            display = Display.flex
                             alignItems = AlignItems.center
                             gap = 2.px
+                            marginLeft = 4.px
                         }
                         it.menu.map { item ->
-                            Link {
-                                component = button
-                                variant = "body1"
-                                onClick = {
-                                    if (item.ref.current != null) {
-                                        item.ref.current!!.scrollIntoView(js("{ behavior: 'smooth', block: 'start' }"))
-                                    }
-                                }
+                            Button {
+                                onClick = { navClickHandler(item) }
                                 sx {
                                     color = Color("text.primary")
                                     hover { color = Color("primary.main") }
                                 }
+                                startIcon = item.icon
                                 +item.title
                             }
                         }
                     }
-                }
-                Stack {
-                    direction = responsive(row)
-                    spacing = responsive(2)
-                    Button {
-                        href = "https://github.com/Scogun/komm"
-                        asDynamic().target = "_blank"
-                        variant = ButtonVariant.outlined
-                        startIcon = GitHub.create {
-                            size = 18
-                        }
+                    Box {
                         sx {
-                            display = js("{ xs: 'none', sm: 'flex' }")
-                        }
-                        +"GitHub"
-                    }
-                    if (isMobile) {
-                        IconButton {
-                            color = IconButtonColor.inherit
-                            ariaLabel = "open drawer"
-                            edge = IconButtonEdge.end
-                            onClick = { isMobileOpen = !isMobileOpen }
-                            Menu {}
+                            flexGrow = number(1.0)
                         }
                     }
+                    GitHubButton {
+                        variant = ButtonVariant.contained
+                    }
+                }
+            }
+        }
+    }
+    NavDrawer {
+        menu = it.menu
+        isOpen = isMobileOpen
+        onChoose = {
+            navClickHandler(it)
+            isMobileOpen = false
+        }
+    }
+}
+
+private val NavDrawer = FC<NavDrawerProps> { d ->
+    Drawer {
+        variant = DrawerVariant.temporary
+        open = d.isOpen
+        ModalProps = unsafeJso {
+            keepMounted = true
+        }
+        sx {
+            display = Display.block
+            asDynamic()["& .MuiDrawer-paper"] = unsafeJso {
+                boxSizing = BoxSizing.borderBox
+                width = 240.px
+            }
+        }
+        Box {
+            sx {
+                minWidth = 225.px
+            }
+            Divider {
+                sx {
+                    marginTop = 70.px
+                }
+            }
+            List {
+                d.menu.map { item ->
+                    ListItem {
+                        disablePadding = true
+                        ListItemButton {
+                            onClick = { d.onChoose(item) }
+                            ListItemIcon {
+                                sx {
+                                    minWidth = 40.px
+                                    color = Color("primary.main")
+                                }
+                                +item.icon
+                            }
+                            ListItemText {
+                                primary = ReactNode(item.title)
+                            }
+                        }
+                    }
+                }
+            }
+            Divider {}
+            Box {
+                sx {
+                    padding = 2.px
+                }
+                GitHubButton {
+                    fullWidth = true
+                    variant = ButtonVariant.outlined
+                    color = ButtonColor.primary
                 }
             }
         }
     }
 }
 
-external interface NavBarProps : Props {
-    var menu: List<NavBarMenu>
+private val navClickHandler: (item: NavBarMenu) -> Unit = {
+    if (it.ref.current != null) {
+        it.ref.current!!.scrollIntoView(js("{ behavior: 'smooth', block: 'start' }"))
+    }
 }
 
-data class NavBarMenu(val title: String, val ref: RefObject<HTMLDivElement>)
+private val GitHubButton = FC<ButtonProps> {
+    Button {
+        fullWidth = it.fullWidth
+        variant = it.variant
+        color = it.color
+        href = "https://github.com/Scogun/komm"
+        asDynamic().target = "_blank"
+        startIcon = GitHub.create {
+            size = 18
+        }
+        rel = "noopener noreferre"
+        sx {
+            display = Display.inlineFlex
+        }
+        +"GitHub"
+    }
+}

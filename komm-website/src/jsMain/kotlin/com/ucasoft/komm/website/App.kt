@@ -1,13 +1,20 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.wrappers.lucide.Code
+import com.ucasoft.wrappers.lucide.Puzzle
+import com.ucasoft.wrappers.lucide.Rocket
+import com.ucasoft.wrappers.lucide.Tag
 import js.objects.unsafeJso
 import mui.material.Box
 import mui.material.CssBaseline
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
 import react.FC
+import react.create
 import react.useRef
+import web.cssom.blur
 import web.cssom.px
+import web.cssom.rem
 import web.cssom.rgb
 import web.html.HTMLDivElement
 
@@ -34,21 +41,42 @@ val appTheme = createTheme(
             fontFamily = arrayOf("Inter", "sans-serif").joinToString(",")
             h1 = unsafeJso {
                 fontWeight = 700
+                fontSize = 2.5.rem
+                `@media (min-width:600px)` = unsafeJso {
+                    fontSize = 3.rem
+                }
+                `@media (min-width:900px)` = unsafeJso {
+                    fontSize = 3.5.rem
+                }
             }
             h2 = unsafeJso {
                 fontWeight = 700
+                fontSize = 2.rem
+                `@media (min-width:600px)` = unsafeJso {
+                    fontSize = 2.5.rem
+                }
             }
             h3 = unsafeJso {
                 fontWeight = 700
+                fontSize = 1.75.rem
+                `@media (min-width:600px)` = unsafeJso {
+                    fontSize = 2.rem
+                }
             }
             h4 = unsafeJso {
-                fontWeight = 700
+                fontWeight = 600
+                fontSize = 1.5.rem
+                `@media (min-width:600px)` = unsafeJso {
+                    fontSize = 1.75.rem
+                }
             }
             h5 = unsafeJso {
                 fontWeight = 600
+                fontSize = 1.25.rem
             }
             h6 = unsafeJso {
                 fontWeight = 600
+                fontSize = 1.1.rem
             }
         }
         components = unsafeJso {
@@ -79,6 +107,15 @@ val appTheme = createTheme(
                     }
                 }
             }
+            MuiAppBar = unsafeJso {
+                styleOverrides = unsafeJso {
+                    root = unsafeJso {
+                        backgroundColor = rgb(255, 255, 255, 0.85)
+                        backdropFilter = blur(10.px)
+                        boxShadow = 1
+                    }
+                }
+            }
         }
     }
 )
@@ -95,10 +132,10 @@ val App = FC {
         CssBaseline {}
         NavBar {
             menu = listOf(
-                NavBarMenu("Features", featuresRef),
-                NavBarMenu("Targets", targetsRef),
-                NavBarMenu("Plugins", pluginsRef),
-                NavBarMenu("Installation", installationRef),
+                NavBarMenu(Rocket.create(), "Features", featuresRef),
+                NavBarMenu(Tag.create(), "Targets", targetsRef),
+                NavBarMenu(Puzzle.create(), "Plugins", pluginsRef),
+                NavBarMenu(Code.create(), "Installation", installationRef),
             )
         }
         Box {
