@@ -10,8 +10,17 @@ external val AlignJustify: FC<LucideProps>
 @JsName("Apple")
 external val Apple: FC<LucideProps>
 
+@JsName("BookOpen")
+external val BookOpen: FC<LucideProps>
+
+@JsName("ChevronLeft")
+external val ChevronLeft: FC<LucideProps>
+
 @JsName("ChevronsRight")
 external val ChevronsRight: FC<LucideProps>
+
+@JsName("Code")
+external val Code: FC<LucideProps>
 
 @JsName("Computer")
 external val Computer: FC<LucideProps>
@@ -27,6 +36,12 @@ external val FileJson: FC<LucideProps>
 
 @JsName("Github")
 external val GitHub: FC<LucideProps>
+
+@JsName("Heart")
+external val Heart: FC<LucideProps>
+
+@JsName("House")
+external val House: FC<LucideProps>
 
 @JsName("Layers")
 external val Layers: FC<LucideProps>
@@ -45,6 +60,9 @@ external val Monitor: FC<LucideProps>
 
 @JsName("Puzzle")
 external val Puzzle: FC<LucideProps>
+
+@JsName("Rocket")
+external val Rocket: FC<LucideProps>
 
 @JsName("Settings")
 external val Settings: FC<LucideProps>
