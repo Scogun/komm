@@ -20,7 +20,9 @@ val Logo = FC {
     Stack {
         direction = responsive(row)
         spacing = responsive(1)
-        asDynamic().alignItems = AlignItems.center
+        sx {
+            alignItems = AlignItems.center
+        }
         svg {
             width = 40.0
             height = 40.0

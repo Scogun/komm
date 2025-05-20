@@ -16,6 +16,7 @@ val appTheme = createTheme(
         palette = unsafeJso {
             primary = unsafeJso {
                 main = rgb(102, 126, 234)
+                light = rgb(132, 151, 238)
             }
             secondary = unsafeJso {
                 main = rgb(118, 75, 162)
@@ -64,7 +65,7 @@ val appTheme = createTheme(
                     root = unsafeJso {
                         borderRadius = 12.px
                         transition = "box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out"
-                        asDynamic().`&:hover` = unsafeJso {
+                        `&:hover` = unsafeJso {
                             boxShadow = "0px 10px 20px rgba(0, 0, 0, 0.1)"
                             transform = "translateY(-4px)"
                         }

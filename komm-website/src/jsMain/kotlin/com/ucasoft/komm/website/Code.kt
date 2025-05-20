@@ -12,6 +12,7 @@ import web.cssom.Color
 import web.cssom.Display
 import web.cssom.JustifyContent
 import web.cssom.Margin
+import web.cssom.Overflow
 import web.cssom.Padding
 import web.cssom.integer
 import web.cssom.px
@@ -21,7 +22,7 @@ import web.cssom.rgb
 val Code = FC<CodeProps> {
     Paper {
         sx {
-            asDynamic().overflow = "hidden"
+            overflow = Overflow.hidden
             margin = Margin(4.px, 0.px)
             boxShadow = BoxShadow(3.px, 3.px, Color.currentcolor)
         }
@@ -43,7 +44,7 @@ val Code = FC<CodeProps> {
         }
         Box {
             sx {
-                asDynamic().overflow = "auto"
+                overflow = "auto".unsafeCast<Overflow>()
             }
             SyntaxHighlighter {
                 language = "kotlin"

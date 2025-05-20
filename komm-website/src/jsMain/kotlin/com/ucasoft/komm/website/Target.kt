@@ -20,7 +20,7 @@ val Target = FC<TargetProps> {
         sx {
             padding = 2.px
             backgroundColor = Color("primary.main")
-            asDynamic().`&:hover` = js("{ backgroundColor: 'primary.light' }")
+            hover { backgroundColor = Color("primary.light") }
             transition = "background-color 0.3s".unsafeCast<Transition>()
         }
         Box {
