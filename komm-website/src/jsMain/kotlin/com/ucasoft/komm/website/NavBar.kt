@@ -53,7 +53,7 @@ val NavBar = FC<NavBarProps> {
                                 }
                                 sx {
                                     color = Color("text.primary")
-                                    asDynamic().`&:hover` = js("{ color: 'primary.main' }")
+                                    hover { color = Color("primary.main") }
                                 }
                                 +item.title
                             }
