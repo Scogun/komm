@@ -17,7 +17,10 @@ import react.create
 import react.dom.html.ReactHTML.a
 import web.cssom.Color
 import web.cssom.Padding
+import web.cssom.Position
+import web.cssom.pct
 import web.cssom.px
+import web.cssom.rem
 import web.cssom.rgb
 import kotlin.js.Date
 
@@ -40,6 +43,9 @@ val Footer = FC {
             backgroundColor = Color("text.primary")
             color = Color("white")
             padding = Padding(6.px, 0.px)
+            bottom = 0.px
+            position = Position.absolute
+            width = 100.pct
         }
         Container {
             Grid {

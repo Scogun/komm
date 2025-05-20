@@ -1,5 +1,6 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.wrappers.lucide.Code
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Rocket
@@ -9,13 +10,16 @@ import mui.material.Box
 import mui.material.CssBaseline
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
+import mui.system.sx
 import react.FC
 import react.create
 import react.useRef
+import web.cssom.Position
 import web.cssom.blur
 import web.cssom.px
 import web.cssom.rem
 import web.cssom.rgb
+import web.cssom.vh
 import web.html.HTMLDivElement
 
 val appTheme = createTheme(
@@ -140,7 +144,12 @@ val App = FC {
         }
         Box {
             asDynamic().component = "main"
-            Hero {}
+            sx {
+                marginTop = 70.px
+                position = Position.relative
+                height = 100.vh
+            }
+            /*Hero {}
             Features {
                 ref = featuresRef
             }
@@ -153,7 +162,8 @@ val App = FC {
             Installation {
                 ref = installationRef
             }
-            //CodeExamples {}
+            //CodeExamples {}*/
+            HomePage {}
             Footer {}
         }
     }
