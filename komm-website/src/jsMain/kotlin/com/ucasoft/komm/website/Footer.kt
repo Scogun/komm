@@ -44,10 +44,12 @@ val Footer = FC {
             color = Color("white")
             padding = Padding(6.px, 0.px)
             bottom = 0.px
-            position = Position.absolute
-            width = 100.pct
+            position = Position.fixed
+            left = 0.px
+            right = 0.px
         }
         Container {
+            maxWidth = "lg"
             Grid {
                 container = true
                 spacing = responsive(4)

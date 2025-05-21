@@ -14,8 +14,11 @@ import mui.system.sx
 import react.FC
 import react.create
 import react.useRef
+import web.cssom.Display
+import web.cssom.FlexDirection
 import web.cssom.Position
 import web.cssom.blur
+import web.cssom.number
 import web.cssom.px
 import web.cssom.rem
 import web.cssom.rgb
@@ -134,22 +137,29 @@ val App = FC {
     ThemeProvider {
         theme = appTheme
         CssBaseline {}
-        NavBar {
-            menu = listOf(
-                NavBarMenu(Rocket.create(), "Features", featuresRef),
-                NavBarMenu(Tag.create(), "Targets", targetsRef),
-                NavBarMenu(Puzzle.create(), "Plugins", pluginsRef),
-                NavBarMenu(Code.create(), "Installation", installationRef),
-            )
-        }
         Box {
-            asDynamic().component = "main"
             sx {
-                marginTop = 70.px
-                position = Position.relative
-                height = 100.vh
+                display = Display.flex
+                minHeight = 100.vh
+                flexDirection = FlexDirection.column
             }
-            /*Hero {}
+            NavBar {
+                menu = listOf(
+                    NavBarMenu(Rocket.create(), "Features", featuresRef),
+                    NavBarMenu(Tag.create(), "Targets", targetsRef),
+                    NavBarMenu(Puzzle.create(), "Plugins", pluginsRef),
+                    NavBarMenu(Code.create(), "Installation", installationRef),
+                )
+            }
+            Box {
+                asDynamic().component = "main"
+                sx {
+                    flexGrow = number(1.0)
+                    paddingTop = 64.px
+                    display = Display.flex
+                    flexDirection = FlexDirection.column
+                }
+                /*Hero {}
             Features {
                 ref = featuresRef
             }
@@ -163,8 +173,15 @@ val App = FC {
                 ref = installationRef
             }
             //CodeExamples {}*/
-            HomePage {}
-            Footer {}
+                Box {
+                    sx {
+                        flexGrow = number(1.0)
+                        paddingBottom = appTheme.spacing(35)
+                    }
+                    HomePage {}
+                }
+                Footer {}
+            }
         }
     }
 }
