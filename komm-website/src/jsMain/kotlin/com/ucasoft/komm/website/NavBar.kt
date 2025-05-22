@@ -10,10 +10,11 @@ import mui.system.Breakpoint
 import mui.system.sx
 import mui.system.useMediaQuery
 import react.*
+import react.router.dom.Link
 import web.cssom.*
 import web.html.HTMLDivElement
 
-data class NavBarMenu(val icon: ReactNode, val title: String, val ref: RefObject<HTMLDivElement>)
+data class NavBarMenu(val icon: ReactNode, val title: String, val path: String, val ref: RefObject<HTMLDivElement>)
 
 external interface NavBarProps : Props {
     var menu: List<NavBarMenu>
@@ -59,6 +60,8 @@ val NavBar = FC<NavBarProps> {
                         }
                         it.menu.map { item ->
                             Button {
+                                component = Link
+                                asDynamic().to = item.path
                                 onClick = { navClickHandler(item) }
                                 sx {
                                     color = Color("text.primary")

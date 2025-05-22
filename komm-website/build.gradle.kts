@@ -38,6 +38,7 @@ kotlin {
             dependencies {
                 implementation(kotlinWrappers.react)
                 implementation(kotlinWrappers.reactDom)
+                implementation(kotlinWrappers.reactRouter)
                 implementation(kotlinWrappers.mui.material)
                 implementation(kotlinWrappers.emotion.react)
                 implementation(kotlinWrappers.emotion.styled)

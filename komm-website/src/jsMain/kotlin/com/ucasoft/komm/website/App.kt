@@ -13,10 +13,15 @@ import mui.material.styles.createTheme
 import mui.system.sx
 import react.FC
 import react.create
+import react.router.Outlet
+import react.router.RouteObject
+import react.router.dom.RouterProvider
+import react.router.dom.createBrowserRouter
+import react.router.useLocation
+import react.useEffect
 import react.useRef
 import web.cssom.Display
 import web.cssom.FlexDirection
-import web.cssom.Position
 import web.cssom.blur
 import web.cssom.number
 import web.cssom.px
@@ -24,6 +29,7 @@ import web.cssom.rem
 import web.cssom.rgb
 import web.cssom.vh
 import web.html.HTMLDivElement
+import web.window.window
 
 val appTheme = createTheme(
     unsafeJso {
@@ -129,59 +135,77 @@ val appTheme = createTheme(
 
 val App = FC {
 
+    val router = createBrowserRouter(
+        arrayOf(
+            RouteObject(
+                path = "/",
+                Component = Root,
+                children = arrayOf(
+                    RouteObject(
+                        index = true,
+                        Component = HomePage,
+                    ),
+                    RouteObject(
+                        path = "/plugins",
+                        Component = Plugins
+                    )
+                )
+            )
+        )
+    )
+
+    ThemeProvider {
+        theme = appTheme
+        CssBaseline {}
+        RouterProvider {
+            this.router = router
+        }
+    }
+}
+
+private val Root = FC {
+
+    val path = useLocation()
+
+    useEffect(path) {
+        window.scrollTo(0.0, 0.0)
+    }
+
     val featuresRef = useRef<HTMLDivElement>(null)
     val targetsRef = useRef<HTMLDivElement>(null)
     val pluginsRef = useRef<HTMLDivElement>(null)
     val installationRef = useRef<HTMLDivElement>(null)
 
-    ThemeProvider {
-        theme = appTheme
-        CssBaseline {}
+    Box {
+        sx {
+            display = Display.flex
+            minHeight = 100.vh
+            flexDirection = FlexDirection.column
+        }
+        NavBar {
+            menu = listOf(
+                NavBarMenu(Rocket.create(), "Features",  "/", featuresRef),
+                NavBarMenu(Tag.create(), "Targets", "/", targetsRef),
+                NavBarMenu(Puzzle.create(), "Plugins", "/plugins", pluginsRef),
+                NavBarMenu(Code.create(), "Installation", "/", installationRef),
+            )
+        }
         Box {
+            asDynamic().component = "main"
             sx {
+                flexGrow = number(1.0)
+                paddingTop = 64.px
                 display = Display.flex
-                minHeight = 100.vh
                 flexDirection = FlexDirection.column
             }
-            NavBar {
-                menu = listOf(
-                    NavBarMenu(Rocket.create(), "Features", featuresRef),
-                    NavBarMenu(Tag.create(), "Targets", targetsRef),
-                    NavBarMenu(Puzzle.create(), "Plugins", pluginsRef),
-                    NavBarMenu(Code.create(), "Installation", installationRef),
-                )
-            }
             Box {
-                asDynamic().component = "main"
                 sx {
                     flexGrow = number(1.0)
-                    paddingTop = 64.px
-                    display = Display.flex
-                    flexDirection = FlexDirection.column
+                    paddingBottom = appTheme.spacing(35)
                 }
-                /*Hero {}
-            Features {
-                ref = featuresRef
+                Outlet {}
             }
-            Targets {
-                ref = targetsRef
-            }
-            Plugins {
-                ref = pluginsRef
-            }
-            Installation {
-                ref = installationRef
-            }
-            //CodeExamples {}*/
-                Box {
-                    sx {
-                        flexGrow = number(1.0)
-                        paddingBottom = appTheme.spacing(35)
-                    }
-                    HomePage {}
-                }
-                Footer {}
-            }
+            Footer {}
         }
     }
 }

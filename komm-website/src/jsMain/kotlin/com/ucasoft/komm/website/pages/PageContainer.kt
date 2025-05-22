@@ -9,15 +9,11 @@ import mui.system.sx
 import react.FC
 import react.PropsWithChildren
 import react.ReactNode
-import react.dom.html.ReactHTML.button
 import web.cssom.AlignItems
 import web.cssom.Color
 import web.cssom.Display
-import web.cssom.Padding
-import web.cssom.integer
-import web.cssom.number
-import web.cssom.pct
 import web.cssom.px
+import react.router.dom.Link as RouterLink
 
 data class BreadCrumb(val icon: ReactNode, val label: String, val path: String)
 
@@ -38,7 +34,8 @@ val PageContainer = FC<PageContainerProps> {
                     marginBottom = 3.px
                 }
                 Link {
-                    component = button
+                    component = RouterLink
+                    asDynamic().to = "/"
                     sx {
                         display = Display.flex
                         alignItems = AlignItems.center
@@ -63,7 +60,8 @@ val PageContainer = FC<PageContainerProps> {
                         }
                     } else {
                         Link {
-                            component = button
+                            component = RouterLink
+                            asDynamic().to = breadcrumb.path
                             sx {
                                 display = Display.flex
                                 alignItems = AlignItems.center
