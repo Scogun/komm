@@ -14,7 +14,7 @@ import react.router.dom.Link
 import web.cssom.*
 import web.html.HTMLDivElement
 
-data class NavBarMenu(val icon: ReactNode, val title: String, val path: String, val ref: RefObject<HTMLDivElement>)
+data class NavBarMenu(val icon: ReactNode, val title: String, val path: String)
 
 external interface NavBarProps : Props {
     var menu: List<NavBarMenu>
@@ -62,7 +62,6 @@ val NavBar = FC<NavBarProps> {
                             Button {
                                 component = Link
                                 asDynamic().to = item.path
-                                onClick = { navClickHandler(item) }
                                 sx {
                                     color = Color("text.primary")
                                     hover { color = Color("primary.main") }
@@ -88,7 +87,6 @@ val NavBar = FC<NavBarProps> {
         menu = it.menu
         isOpen = isMobileOpen
         onChoose = {
-            navClickHandler(it)
             isMobileOpen = false
         }
     }
@@ -122,6 +120,8 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
                     ListItem {
                         disablePadding = true
                         ListItemButton {
+                            component = Link
+                            asDynamic().to = item.path
                             onClick = { d.onChoose(item) }
                             ListItemIcon {
                                 sx {
@@ -149,12 +149,6 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
                 }
             }
         }
-    }
-}
-
-private val navClickHandler: (item: NavBarMenu) -> Unit = {
-    if (it.ref.current != null) {
-        it.ref.current!!.scrollIntoView(js("{ behavior: 'smooth', block: 'start' }"))
     }
 }
 

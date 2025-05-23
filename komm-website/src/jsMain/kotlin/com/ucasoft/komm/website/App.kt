@@ -20,16 +20,7 @@ import react.router.dom.RouterProvider
 import react.router.dom.createBrowserRouter
 import react.router.useLocation
 import react.useEffect
-import react.useRef
-import web.cssom.Display
-import web.cssom.FlexDirection
-import web.cssom.blur
-import web.cssom.number
-import web.cssom.px
-import web.cssom.rem
-import web.cssom.rgb
-import web.cssom.vh
-import web.html.HTMLDivElement
+import web.cssom.*
 import web.window.window
 
 val appTheme = createTheme(
@@ -172,11 +163,6 @@ private val Root = FC {
         window.scrollTo(0.0, 0.0)
     }
 
-    val featuresRef = useRef<HTMLDivElement>(null)
-    val targetsRef = useRef<HTMLDivElement>(null)
-    val pluginsRef = useRef<HTMLDivElement>(null)
-    val installationRef = useRef<HTMLDivElement>(null)
-
     Box {
         sx {
             display = Display.flex
@@ -185,10 +171,10 @@ private val Root = FC {
         }
         NavBar {
             menu = listOf(
-                NavBarMenu(Rocket.create(), "Features",  "/", featuresRef),
-                NavBarMenu(Tag.create(), "Targets", "/", targetsRef),
-                NavBarMenu(Puzzle.create(), "Plugins", "/plugins", pluginsRef),
-                NavBarMenu(Code.create(), "Installation", "/", installationRef),
+                NavBarMenu(Rocket.create(), "Features",  "/"),
+                NavBarMenu(Tag.create(), "Annotations", "/"),
+                NavBarMenu(Puzzle.create(), "Plugins", "/plugins"),
+                NavBarMenu(Code.create(), "Installation", "/"),
             )
         }
         Box {
