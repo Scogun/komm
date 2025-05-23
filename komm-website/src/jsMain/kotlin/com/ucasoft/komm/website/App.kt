@@ -1,6 +1,7 @@
 package com.ucasoft.komm.website
 
 import com.ucasoft.komm.website.pages.home.HomePage
+import com.ucasoft.komm.website.pages.plugins.Plugins
 import com.ucasoft.wrappers.lucide.Code
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Rocket
