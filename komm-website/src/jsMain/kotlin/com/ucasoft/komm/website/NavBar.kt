@@ -12,17 +12,14 @@ import mui.system.useMediaQuery
 import react.*
 import react.router.dom.Link
 import web.cssom.*
-import web.html.HTMLDivElement
-
-data class NavBarMenu(val icon: ReactNode, val title: String, val path: String)
 
 external interface NavBarProps : Props {
-    var menu: List<NavBarMenu>
+    var menu: List<PathItem>
 }
 
 private external interface NavDrawerProps : NavBarProps {
     var isOpen: Boolean
-    var onChoose: (NavBarMenu) -> Unit
+    var onChoose: (PathItem) -> Unit
 }
 
 val NavBar = FC<NavBarProps> {

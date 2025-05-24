@@ -1,10 +1,15 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.pages.annotations.Annotations
 import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.komm.website.pages.plugins.Plugins
 import com.ucasoft.wrappers.lucide.Code
+import com.ucasoft.wrappers.lucide.Database
+import com.ucasoft.wrappers.lucide.House
+import com.ucasoft.wrappers.lucide.ListTree
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Rocket
+import com.ucasoft.wrappers.lucide.Settings
 import com.ucasoft.wrappers.lucide.Tag
 import js.objects.unsafeJso
 import mui.material.Box
@@ -20,6 +25,9 @@ import react.router.dom.RouterProvider
 import react.router.dom.createBrowserRouter
 import react.router.useLocation
 import react.useEffect
+import remix.run.router.LoaderFunction
+import remix.run.router.LoaderFunctionArgs
+import remix.run.router.LoaderLike
 import web.cssom.*
 import web.window.window
 
@@ -125,6 +133,24 @@ val appTheme = createTheme(
     }
 )
 
+val portalData = listOf(
+    PathItem(House.create(), "Home", "/", HomePage),
+    PathItem(Rocket.create(), "Quick Start",  "/", HomePage),
+    ListPathItem(Tag.create(), "Annotations", "/annotations", Annotations, listOf(
+        IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
+        IconItem(Settings.create { size = 40 }, "@MapName", "Provides possibility to map properties with different names"),
+        IconItem(Settings.create { size = 40 }, "@MapConvert", "Provides possibility to add additional logic for properties mapping"),
+        IconItem(Settings.create { size = 40 }, "@MapDefault", "Provides possibility to add default values for orphans properties"),
+        IconItem(Settings.create { size = 40 }, "@NullSubstitute", "Extends mapping from nullable type properties")
+    )),
+    ListPathItem(Puzzle.create(), "Plugins", "/plugins", Plugins, listOf(
+        IconItem(ListTree.create { size = 40 }, "Iterable Plugin", "Supports mapping collections with different types of elements, simplifying list transformations."),
+        IconItem(Database.create { size = 40 }, "Exposed Plugin", "Provides mapping from Exposed Table Objects (ResultRow) for easy database interaction."),
+        IconItem(Puzzle.create { size = 40 }, "Enum Plugin", "Supports mapping enums from other enums, including default value annotations for robustness.")
+    )),
+    PathItem(Code.create(), "Examples", "/", HomePage),
+)
+
 val App = FC {
 
     val router = createBrowserRouter(
@@ -132,16 +158,29 @@ val App = FC {
             RouteObject(
                 path = "/",
                 Component = Root,
-                children = arrayOf(
-                    RouteObject(
-                        index = true,
-                        Component = HomePage,
-                    ),
-                    RouteObject(
-                        path = "/plugins",
-                        Component = Plugins
-                    )
-                )
+                children = mutableListOf<RouteObject>().apply {
+                    addAll(portalData.take(1).map {
+                        RouteObject(
+                            index = true,
+                            Component = it.component
+                        )
+                    })
+                    addAll(portalData.drop(1).map {
+                        val `object` = RouteObject(
+                            path = it.path,
+                            Component = it.component
+                        )
+                        if (it is ListPathItem) {
+                            `object`.copy(
+                                loader = {
+                                    it
+                                }.unsafeCast<LoaderLike>()
+                            )
+                        } else {
+                            `object`
+                        }
+                    })
+                }.toTypedArray()
             )
         )
     )
@@ -170,12 +209,7 @@ private val Root = FC {
             flexDirection = FlexDirection.column
         }
         NavBar {
-            menu = listOf(
-                NavBarMenu(Rocket.create(), "Features",  "/"),
-                NavBarMenu(Tag.create(), "Annotations", "/"),
-                NavBarMenu(Puzzle.create(), "Plugins", "/plugins"),
-                NavBarMenu(Code.create(), "Installation", "/"),
-            )
+            menu = portalData
         }
         Box {
             asDynamic().component = "main"
