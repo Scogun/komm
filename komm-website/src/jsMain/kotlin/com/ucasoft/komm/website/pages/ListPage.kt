@@ -61,7 +61,7 @@ val ListPage = FC<ListPageProps> {
                         disablePadding = true
                         ListItemButton {
                             component = Link
-                            asDynamic().to = ""
+                            asDynamic().to = plugin.id
                             ListItemIcon {
                                 sx {
                                     color = Color("primary.main")

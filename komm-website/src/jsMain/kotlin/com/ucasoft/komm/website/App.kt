@@ -1,5 +1,6 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.pages.DetailPage
 import com.ucasoft.komm.website.pages.annotations.Annotations
 import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.komm.website.pages.plugins.Plugins
@@ -25,8 +26,6 @@ import react.router.dom.RouterProvider
 import react.router.dom.createBrowserRouter
 import react.router.useLocation
 import react.useEffect
-import remix.run.router.LoaderFunction
-import remix.run.router.LoaderFunctionArgs
 import remix.run.router.LoaderLike
 import web.cssom.*
 import web.window.window
@@ -133,7 +132,7 @@ val appTheme = createTheme(
     }
 )
 
-val portalData = listOf(
+val navigationData = listOf(
     PathItem(House.create(), "Home", "/", HomePage),
     PathItem(Rocket.create(), "Quick Start",  "/", HomePage),
     ListPathItem(Tag.create(), "Annotations", "/annotations", Annotations, listOf(
@@ -151,6 +150,17 @@ val portalData = listOf(
     PathItem(Code.create(), "Examples", "/", HomePage),
 )
 
+val detailData = listOf(
+    DetailItem(ListTree.create(), "Iterable Plugin"),
+    DetailItem(Database.create(), "Exposed Plugin"),
+    DetailItem(Puzzle.create(), "Enum Plugin"),
+    DetailItem(Settings.create(), "@KOMMMap"),
+    DetailItem(Settings.create(), "@MapName"),
+    DetailItem(Settings.create(), "@MapConvert"),
+    DetailItem(Settings.create(), "@MapDefault"),
+    DetailItem(Settings.create(), "@NullSubstitute")
+)
+
 val App = FC {
 
     val router = createBrowserRouter(
@@ -159,26 +169,30 @@ val App = FC {
                 path = "/",
                 Component = Root,
                 children = mutableListOf<RouteObject>().apply {
-                    addAll(portalData.take(1).map {
+                    addAll(navigationData.take(1).map {
                         RouteObject(
                             index = true,
                             Component = it.component
                         )
                     })
-                    addAll(portalData.drop(1).map {
-                        val `object` = RouteObject(
+                    addAll(navigationData.drop(1).map {
+                        RouteObject(
                             path = it.path,
-                            Component = it.component
+                            Component = it.component,
+                            loader = {
+                                it
+                            }.unsafeCast<LoaderLike>()
                         )
-                        if (it is ListPathItem) {
-                            `object`.copy(
-                                loader = {
-                                    it
-                                }.unsafeCast<LoaderLike>()
-                            )
-                        } else {
-                            `object`
-                        }
+                    })
+                    addAll(
+                    navigationData.drop(1).filterIsInstance<ListPathItem>().map {
+                        RouteObject(
+                            path = "${it.path}/:id",
+                            Component = DetailPage,
+                            loader = { context: dynamic ->
+                                detailData.first { item -> item.id == context.params.id }
+                            }.unsafeCast<LoaderLike>()
+                        )
                     })
                 }.toTypedArray()
             )
@@ -209,7 +223,7 @@ private val Root = FC {
             flexDirection = FlexDirection.column
         }
         NavBar {
-            menu = portalData
+            menu = navigationData
         }
         Box {
             asDynamic().component = "main"
