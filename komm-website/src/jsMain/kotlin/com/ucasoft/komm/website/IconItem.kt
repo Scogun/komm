@@ -12,4 +12,11 @@ open class PathItem(icon: ReactNode, title: String, val path: String, val compon
 
 class ListPathItem(icon: ReactNode, title: String, path: String, component: ComponentType<*>, val listItems: List<IconItem>, description: String = ""): PathItem(icon, title, path, component, description)
 
-class DetailItem(icon: ReactNode, title: String, description: String = ""): IconItem(icon, title, description)
+class DetailItem(icon: ReactNode, title: String, description: String = "", val installation: List<InstallationData> = emptyList()): IconItem(icon, title, description)
+
+class InstallationData(val type: Type, val installation: String)
+
+enum class Type {
+    JVM,
+    KMP
+}

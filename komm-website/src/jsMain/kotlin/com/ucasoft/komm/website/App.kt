@@ -151,14 +151,103 @@ val navigationData = listOf(
 )
 
 val detailData = listOf(
-    DetailItem(ListTree.create(), "Iterable Plugin"),
-    DetailItem(Database.create(), "Exposed Plugin"),
-    DetailItem(Puzzle.create(), "Enum Plugin"),
-    DetailItem(Settings.create(), "@KOMMMap"),
-    DetailItem(Settings.create(), "@MapName"),
-    DetailItem(Settings.create(), "@MapConvert"),
-    DetailItem(Settings.create(), "@MapDefault"),
-    DetailItem(Settings.create(), "@NullSubstitute")
+    DetailItem(
+        ListTree.create(),
+        "Iterable Plugin",
+        "Supports mapping collections (like List, Set) with different types of elements, simplifying list transformations.",
+        listOf(
+            InstallationData(Type.KMP, """
+                plugins {
+                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                }
+
+                val kommVersion = "0.25.0"
+
+                //...
+
+                dependencies {
+                    add("kspJvm", "com.ucasoft.komm:komm-plugins-iterable:${'$'}kommVersion")
+                    add("kspJvm", "com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    add("kspJs", "com.ucasoft.komm:komm-plugins-iterable:${'$'}kommVersion")
+                    add("kspJs", "com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    // Add other platforms like `kspAndroidNativeX64`, `kspLinuxX64`, `kspMingwX64` etc.
+                }
+            """.trimIndent()),
+            InstallationData(Type.JVM, """
+                plugins {
+                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                }
+
+                val kommVersion = "0.25.0"
+
+                depensencies {
+                    implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-plugins-iterable:${'$'}kommVersion")
+                }
+            """.trimIndent())
+        )),
+    DetailItem(
+        Database.create(),
+        "Exposed Plugin",
+        "Provides mapping from Exposed Table Objects (ResultRow) to your data classes for easy database interaction.",
+        listOf(
+            InstallationData(Type.JVM, """
+                plugins {
+                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                }
+
+                val kommVersion = "0.25.0"
+
+                depensencies {
+                    implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-plugins-exposed:${'$'}kommVersion")
+                }
+            """.trimIndent())
+        )),
+    DetailItem(
+        Puzzle.create(),
+        "Enum Plugin",
+        "Supports mapping enums from other enums, including default value annotations for robustness.",
+        listOf(
+            InstallationData(Type.KMP, """
+                plugins {
+                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                }
+
+                val kommVersion = "0.25.0"
+
+                //...
+
+                dependencies {
+                    add("kspJvm", "com.ucasoft.komm:komm-plugins-enum:${'$'}kommVersion")
+                    add("kspJvm", "com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    add("kspJs", "com.ucasoft.komm:komm-plugins-enum:${'$'}kommVersion")
+                    add("kspJs", "com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    // Add other platforms like `kspAndroidNativeX64`, `kspLinuxX64`, `kspMingwX64` etc.
+                }
+            """.trimIndent()),
+            InstallationData(Type.JVM, """
+                plugins {
+                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                }
+
+                val kommVersion = "0.25.0"
+
+                depensencies {
+                    implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
+                    ksp("com.ucasoft.komm:komm-plugins-enum:${'$'}kommVersion")
+                }
+            """.trimIndent())
+        )
+    ),
+    DetailItem(Settings.create(), "@KOMMMap", "Core annotation to enable mapping for a class"),
+    DetailItem(Settings.create(), "@MapName", "Provides possibility to map properties with different names"),
+    DetailItem(Settings.create(), "@MapConvert", "Provides possibility to add additional logic for properties mapping"),
+    DetailItem(Settings.create(), "@MapDefault", "Provides possibility to add default values for orphans properties"),
+    DetailItem(Settings.create(), "@NullSubstitute", "Extends mapping from nullable type properties")
 )
 
 val App = FC {
