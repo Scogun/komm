@@ -5,6 +5,7 @@ import com.ucasoft.komm.website.pages.annotations.Annotations
 import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.komm.website.pages.plugins.Plugins
 import com.ucasoft.komm.website.pages.plugins.pluginData
+import com.ucasoft.komm.website.pages.quickStart.QuickStart
 import com.ucasoft.wrappers.lucide.Code
 import com.ucasoft.wrappers.lucide.Database
 import com.ucasoft.wrappers.lucide.House
@@ -135,7 +136,7 @@ val appTheme = createTheme(
 
 val navigationData = listOf(
     PathItem(House.create(), "Home", "/", HomePage),
-    PathItem(Rocket.create(), "Quick Start",  "/", HomePage),
+    PathItem(Rocket.create(), "Quick Start",  "/quickstart", QuickStart),
     ListPathItem(Tag.create(), "Annotations", "/annotations", Annotations, listOf(
         IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
         IconItem(Settings.create { size = 40 }, "@MapName", "Provides possibility to map properties with different names"),
