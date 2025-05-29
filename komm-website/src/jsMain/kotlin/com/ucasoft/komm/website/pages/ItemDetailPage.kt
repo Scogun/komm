@@ -1,20 +1,14 @@
 package com.ucasoft.komm.website.pages
 
 import com.ucasoft.komm.website.DetailItem
-import com.ucasoft.komm.website.Type
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Tag
-import com.ucasoft.wrappers.`react-syntax-highlighter`.SyntaxHighlighter
-import mui.material.Box
 import mui.material.Card
 import mui.material.CardContent
-import mui.material.Tab
-import mui.material.Tabs
 import mui.material.Typography
 import mui.material.styles.TypographyVariant
 import mui.system.sx
 import react.FC
-import react.ReactNode
 import react.create
 import react.dom.html.ReactHTML.h1
 import react.router.useLoaderData
@@ -35,7 +29,7 @@ val DetailPage = FC {
         BreadCrumb(item.icon, item.title, item.title)
     )
 
-    var codeType by useState(item.installation.firstOrNull()?.type)
+    var codeType by useState(item.codes.firstOrNull()?.type)
 
     PageContainer {
         homePath = "Home"
@@ -67,7 +61,7 @@ val DetailPage = FC {
                 }
             }
         }
-        if (item.installation.isNotEmpty()) {
+        if (item.codes.isNotEmpty()) {
             Card {
                 sx {
                     marginTop = 5.px
@@ -78,26 +72,10 @@ val DetailPage = FC {
                         gutterBottom = true
                         +"Installation"
                     }
-                    Tabs {
-                        value = codeType
-                        onChange = { _, newCode ->
-                            codeType = newCode as Type
-                        }
-                        item.installation.map {
-                            Tab {
-                                value = it.type
-                                label = ReactNode(it.type.toString())
-                            }
-                        }
-                    }
-                    item.installation.map {
-                        Box {
-                            hidden = codeType != it.type
-                            SyntaxHighlighter {
-                                language = "kotlin"
-                                +it.installation
-                            }
-                        }
+                    CodeTabs {
+                        type = codeType
+                        items = item.codes
+                        typeChange = { newCode -> codeType = newCode }
                     }
                 }
             }
