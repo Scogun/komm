@@ -1,11 +1,11 @@
 package com.ucasoft.komm.website
 
-import com.ucasoft.komm.website.data.DetailItem
 import com.ucasoft.komm.website.data.IconItem
 import com.ucasoft.komm.website.data.ListPathItem
 import com.ucasoft.komm.website.data.PathItem
 import com.ucasoft.komm.website.pages.DetailPage
 import com.ucasoft.komm.website.pages.annotations.Annotations
+import com.ucasoft.komm.website.pages.annotations.annotationData
 import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.komm.website.pages.plugins.Plugins
 import com.ucasoft.komm.website.pages.plugins.pluginData
@@ -184,15 +184,7 @@ val navigationData = listOf(
     PathItem(Code.create(), "Examples", "/", HomePage),
 )
 
-val detailData = mutableListOf(
-    DetailItem(Settings.create(), "@KOMMMap", "Core annotation to enable mapping for a class"),
-    DetailItem(Settings.create(), "@MapName", "Provides possibility to map properties with different names"),
-    DetailItem(Settings.create(), "@MapConvert", "Provides possibility to add additional logic for properties mapping"),
-    DetailItem(Settings.create(), "@MapDefault", "Provides possibility to add default values for orphans properties"),
-    DetailItem(Settings.create(), "@NullSubstitute", "Extends mapping from nullable type properties")
-).also {
-    it.addAll(pluginData)
-}
+val detailData = annotationData + pluginData
 
 val App = FC {
 

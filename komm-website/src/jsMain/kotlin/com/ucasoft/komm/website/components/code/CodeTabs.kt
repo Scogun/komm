@@ -33,15 +33,16 @@ val CodeTabs = FC<CodeTabsProps> { tabs ->
             Box {
                 hidden = tabs.type != it.type
                 SyntaxHighlighter {
-                    language = "kotlin"
+                    language = it.language
                     +it.code
                 }
             }
         }
     } else {
+        val firstItem = tabs.items.first()
         SyntaxHighlighter {
-            language = "kotlin"
-            +tabs.items.first().code
+            language = firstItem.language
+            +firstItem.code
         }
     }
 }
