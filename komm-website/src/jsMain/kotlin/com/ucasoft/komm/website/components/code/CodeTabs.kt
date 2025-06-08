@@ -1,4 +1,4 @@
-package com.ucasoft.komm.website.pages
+package com.ucasoft.komm.website.components.code
 
 import com.ucasoft.wrappers.`react-syntax-highlighter`.SyntaxHighlighter
 import mui.material.Box

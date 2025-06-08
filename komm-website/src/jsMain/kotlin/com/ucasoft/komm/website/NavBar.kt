@@ -1,5 +1,6 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.data.PathItem
 import com.ucasoft.wrappers.lucide.GitHub
 import com.ucasoft.wrappers.lucide.Menu
 import js.objects.unsafeJso

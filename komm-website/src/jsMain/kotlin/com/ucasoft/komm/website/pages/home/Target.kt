@@ -1,4 +1,4 @@
-package com.ucasoft.komm.website
+package com.ucasoft.komm.website.pages.home
 
 import mui.material.Box
 import mui.material.Paper

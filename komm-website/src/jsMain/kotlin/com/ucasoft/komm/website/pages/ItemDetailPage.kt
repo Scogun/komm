@@ -1,6 +1,7 @@
 package com.ucasoft.komm.website.pages
 
-import com.ucasoft.komm.website.DetailItem
+import com.ucasoft.komm.website.components.code.CodeTabs
+import com.ucasoft.komm.website.data.DetailItem
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Tag
 import mui.material.Card
@@ -29,7 +30,7 @@ val DetailPage = FC {
         BreadCrumb(item.icon, item.title, item.title)
     )
 
-    var codeType by useState(item.codes.firstOrNull()?.type)
+    var codeType by useState(item.steps.firstOrNull()?.codes?.firstOrNull()?.type)
 
     PageContainer {
         homePath = "Home"
@@ -61,7 +62,7 @@ val DetailPage = FC {
                 }
             }
         }
-        if (item.codes.isNotEmpty()) {
+        item.steps.map {
             Card {
                 sx {
                     marginTop = 5.px
@@ -70,11 +71,11 @@ val DetailPage = FC {
                     Typography {
                         variant = TypographyVariant.h4
                         gutterBottom = true
-                        +"Installation"
+                        +it.title
                     }
                     CodeTabs {
                         type = codeType
-                        items = item.codes
+                        items = it.codes
                         typeChange = { newCode -> codeType = newCode }
                     }
                 }

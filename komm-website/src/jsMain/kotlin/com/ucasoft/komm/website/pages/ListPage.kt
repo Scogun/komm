@@ -1,6 +1,6 @@
 package com.ucasoft.komm.website.pages
 
-import com.ucasoft.komm.website.IconItem
+import com.ucasoft.komm.website.data.IconItem
 import mui.material.Divider
 import mui.material.List
 import mui.material.ListItem

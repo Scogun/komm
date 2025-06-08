@@ -1,5 +1,9 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.data.DetailItem
+import com.ucasoft.komm.website.data.IconItem
+import com.ucasoft.komm.website.data.ListPathItem
+import com.ucasoft.komm.website.data.PathItem
 import com.ucasoft.komm.website.pages.DetailPage
 import com.ucasoft.komm.website.pages.annotations.Annotations
 import com.ucasoft.komm.website.pages.home.HomePage
@@ -136,19 +140,47 @@ val appTheme = createTheme(
 
 val navigationData = listOf(
     PathItem(House.create(), "Home", "/", HomePage),
-    PathItem(Rocket.create(), "Quick Start",  "/quickstart", QuickStart),
-    ListPathItem(Tag.create(), "Annotations", "/annotations", Annotations, listOf(
-        IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
-        IconItem(Settings.create { size = 40 }, "@MapName", "Provides possibility to map properties with different names"),
-        IconItem(Settings.create { size = 40 }, "@MapConvert", "Provides possibility to add additional logic for properties mapping"),
-        IconItem(Settings.create { size = 40 }, "@MapDefault", "Provides possibility to add default values for orphans properties"),
-        IconItem(Settings.create { size = 40 }, "@NullSubstitute", "Extends mapping from nullable type properties")
-    )),
-    ListPathItem(Puzzle.create(), "Plugins", "/plugins", Plugins, listOf(
-        IconItem(ListTree.create { size = 40 }, "Iterable Plugin", "Supports mapping collections with different types of elements, simplifying list transformations."),
-        IconItem(Database.create { size = 40 }, "Exposed Plugin", "Provides mapping from Exposed Table Objects (ResultRow) for easy database interaction."),
-        IconItem(Puzzle.create { size = 40 }, "Enum Plugin", "Supports mapping enums from other enums, including default value annotations for robustness.")
-    )),
+    PathItem(Rocket.create(), "Quick Start", "/quickstart", QuickStart),
+    ListPathItem(
+        Tag.create(), "Annotations", "/annotations", Annotations, listOf(
+            IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapName",
+                "Provides possibility to map properties with different names"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapConvert",
+                "Provides possibility to add additional logic for properties mapping"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapDefault",
+                "Provides possibility to add default values for orphans properties"
+            ),
+            IconItem(Settings.create { size = 40 }, "@NullSubstitute", "Extends mapping from nullable type properties")
+        )
+    ),
+    ListPathItem(
+        Puzzle.create(), "Plugins", "/plugins", Plugins, listOf(
+            IconItem(
+                ListTree.create { size = 40 },
+                "Iterable Plugin",
+                "Supports mapping collections with different types of elements, simplifying list transformations."
+            ),
+            IconItem(
+                Database.create { size = 40 },
+                "Exposed Plugin",
+                "Provides mapping from Exposed Table Objects (ResultRow) for easy database interaction."
+            ),
+            IconItem(
+                Puzzle.create { size = 40 },
+                "Enum Plugin",
+                "Supports mapping enums from other enums, including default value annotations for robustness."
+            )
+        )
+    ),
     PathItem(Code.create(), "Examples", "/", HomePage),
 )
 

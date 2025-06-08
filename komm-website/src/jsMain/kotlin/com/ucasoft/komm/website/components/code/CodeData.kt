@@ -1,4 +1,4 @@
-package com.ucasoft.komm.website.pages
+package com.ucasoft.komm.website.components.code
 
 class CodeData(val type: Type, val code: String)
 
