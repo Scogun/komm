@@ -64,17 +64,10 @@ val QuickStart = FC {
                         }
                         +it.description
                     }
-                    if (it.codes.size > 1) {
-                        CodeTabs {
-                            type = codeType
-                            items = it.codes
-                            typeChange = { newCode -> codeType = newCode }
-                        }
-                    } else {
-                        SyntaxHighlighter {
-                            language = "kotlin"
-                            +it.codes.first().code
-                        }
+                    CodeTabs {
+                        type = codeType
+                        items = it.codes
+                        typeChange = { newCode -> codeType = newCode }
                     }
                 }
             }

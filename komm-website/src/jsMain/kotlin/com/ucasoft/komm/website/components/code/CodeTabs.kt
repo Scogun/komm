@@ -16,25 +16,32 @@ external interface CodeTabsProps : Props {
 
 val CodeTabs = FC<CodeTabsProps> { tabs ->
 
-    Tabs {
-        value = tabs.type
-        onChange = { _, newType ->
-            tabs.typeChange(newType as Type)
+    if (tabs.items.size > 1) {
+        Tabs {
+            value = tabs.type
+            onChange = { _, newType ->
+                tabs.typeChange(newType as Type)
+            }
+            tabs.items.map {
+                Tab {
+                    value = it.type
+                    label = ReactNode(it.type.toString())
+                }
+            }
         }
         tabs.items.map {
-            Tab {
-                value = it.type
-                label = ReactNode(it.type.toString())
+            Box {
+                hidden = tabs.type != it.type
+                SyntaxHighlighter {
+                    language = "kotlin"
+                    +it.code
+                }
             }
         }
-    }
-    tabs.items.map {
-        Box {
-            hidden = tabs.type != it.type
-            SyntaxHighlighter {
-                language = "kotlin"
-                +it.code
-            }
+    } else {
+        SyntaxHighlighter {
+            language = "kotlin"
+            +tabs.items.first().code
         }
     }
 }

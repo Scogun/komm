@@ -4,6 +4,7 @@ import com.ucasoft.komm.website.components.code.CodeTabs
 import com.ucasoft.komm.website.data.DetailItem
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Tag
+import com.ucasoft.wrappers.`react-syntax-highlighter`.SyntaxHighlighter
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -17,6 +18,7 @@ import react.useState
 import web.cssom.AlignItems
 import web.cssom.Display
 import web.cssom.WhiteSpace
+import web.cssom.number
 import web.cssom.px
 
 val DetailPage = FC {
@@ -62,7 +64,7 @@ val DetailPage = FC {
                 }
             }
         }
-        item.steps.map {
+        item.steps.groupBy { it.title }.map {
             Card {
                 sx {
                     marginTop = 5.px
@@ -71,12 +73,23 @@ val DetailPage = FC {
                     Typography {
                         variant = TypographyVariant.h4
                         gutterBottom = true
-                        +it.title
+                        +it.key
                     }
-                    CodeTabs {
-                        type = codeType
-                        items = it.codes
-                        typeChange = { newCode -> codeType = newCode }
+                    it.value.map {
+                        Typography {
+                            variant = TypographyVariant.body1
+                            sx {
+                                marginBottom = 2.px
+                                whiteSpace = WhiteSpace.preLine
+                                lineHeight = number(1.7)
+                            }
+                            +it.description
+                        }
+                        CodeTabs {
+                            type = codeType
+                            items = it.codes
+                            typeChange = { newCode -> codeType = newCode }
+                        }
                     }
                 }
             }
