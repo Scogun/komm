@@ -229,7 +229,12 @@ val App = FC {
                         })
                 }.toTypedArray()
             )
-        )
+        ),
+        unsafeJso {
+            future = unsafeJso {
+                asDynamic().v7_startTransition = true
+            }
+        }
     )
 
     ThemeProvider {
