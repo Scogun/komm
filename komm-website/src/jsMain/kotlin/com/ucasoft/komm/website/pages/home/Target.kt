@@ -39,7 +39,7 @@ val Target = FC<TargetProps> {
     }
 }
 
-external interface TargetProps: Props {
+external interface TargetProps : Props {
     var icon: ReactNode
     var title: String
     var description: String

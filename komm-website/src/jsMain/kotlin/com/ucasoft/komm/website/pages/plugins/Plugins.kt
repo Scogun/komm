@@ -20,7 +20,8 @@ val pluginData = listOf(
         "Iterable Plugin",
         "Supports mapping collections (like List, Set) with different types of elements, simplifying list transformations.",
         listOf(
-            Step( "Installation",
+            Step(
+                "Installation",
                 "",
                 listOf(
                     CodeData(
@@ -58,16 +59,20 @@ val pluginData = listOf(
             """.trimIndent()
                     )
                 )
-            ))),
+            )
+        )
+    ),
     DetailItem(
         Database.create(),
         "Exposed Plugin",
         "Provides mapping from Exposed Table Objects (ResultRow) to your data classes for easy database interaction.",
         listOf(
-            Step( "Installation",
+            Step(
+                "Installation",
                 "",
                 listOf(
-            CodeData(Type.JVM, """
+                    CodeData(
+                        Type.JVM, """
                 plugins {
                     id("com.google.devtools.ksp") version "2.0.21-1.0.28"
                 }
@@ -79,18 +84,23 @@ val pluginData = listOf(
                     ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
                     ksp("com.ucasoft.komm:komm-plugins-exposed:${'$'}kommVersion")
                 }
-            """.trimIndent())
-        )))),
+            """.trimIndent()
+                    )
+                )
+            )
+        )
+    ),
     DetailItem(
         Puzzle.create(),
         "Enum Plugin",
         "Supports mapping enums from other enums, including default value annotations for robustness.",
         listOf(
-            Step( "Installation",
+            Step(
+                "Installation",
                 "",
                 listOf(
-            CodeData(
-                Type.KMP, """
+                    CodeData(
+                        Type.KMP, """
                 plugins {
                     id("com.google.devtools.ksp") version "2.0.21-1.0.28"
                 }
@@ -106,8 +116,10 @@ val pluginData = listOf(
                     add("kspJs", "com.ucasoft.komm:komm-processor:${'$'}kommVersion")
                     // Add other platforms like `kspAndroidNativeX64`, `kspLinuxX64`, `kspMingwX64` etc.
                 }
-            """.trimIndent()),
-            CodeData(Type.JVM, """
+            """.trimIndent()
+                    ),
+                    CodeData(
+                        Type.JVM, """
                 plugins {
                     id("com.google.devtools.ksp") version "2.0.21-1.0.28"
                 }
@@ -119,9 +131,13 @@ val pluginData = listOf(
                     ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
                     ksp("com.ucasoft.komm:komm-plugins-enum:${'$'}kommVersion")
                 }
-            """.trimIndent())
+            """.trimIndent()
+                    )
+                )
+            )
         )
-    ))))
+    )
+)
 
 val Plugins = FC {
 

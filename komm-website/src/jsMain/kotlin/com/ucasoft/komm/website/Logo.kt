@@ -47,7 +47,7 @@ val Logo = FC {
                 color = Color("primary.main")
             }
             span {
-               +"KOMM"
+                +"KOMM"
             }
         }
     }

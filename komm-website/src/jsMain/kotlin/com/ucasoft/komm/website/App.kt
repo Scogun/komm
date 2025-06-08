@@ -218,15 +218,15 @@ val App = FC {
                         )
                     })
                     addAll(
-                    navigationData.drop(1).filterIsInstance<ListPathItem>().map {
-                        RouteObject(
-                            path = "${it.path}/:id",
-                            Component = DetailPage,
-                            loader = { context: dynamic ->
-                                detailData.first { item -> item.id == context.params.id }
-                            }.unsafeCast<LoaderLike>()
-                        )
-                    })
+                        navigationData.drop(1).filterIsInstance<ListPathItem>().map {
+                            RouteObject(
+                                path = "${it.path}/:id",
+                                Component = DetailPage,
+                                loader = { context: dynamic ->
+                                    detailData.first { item -> item.id == context.params.id }
+                                }.unsafeCast<LoaderLike>()
+                            )
+                        })
                 }.toTypedArray()
             )
         )
