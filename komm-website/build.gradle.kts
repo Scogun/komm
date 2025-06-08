@@ -43,7 +43,7 @@ kotlin {
                 implementation(kotlinWrappers.emotion.react)
                 implementation(kotlinWrappers.emotion.styled)
                 implementation(devNpm("html-webpack-plugin", "5.6.3"))
-                implementation(npm("lucide-react","0.511.0"))
+                implementation(npm("lucide-react","0.513.0"))
                 implementation(npm("react-syntax-highlighter","15.6.1"))
             }
         }
