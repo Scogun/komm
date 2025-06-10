@@ -1,5 +1,6 @@
-package com.ucasoft.komm.website
+package com.ucasoft.komm.website.pages.home
 
+import com.ucasoft.komm.website.data.IconItem
 import com.ucasoft.wrappers.lucide.*
 import mui.material.Box
 import mui.material.Container
@@ -15,12 +16,36 @@ import web.cssom.*
 import web.html.HTMLDivElement
 
 val features = listOf(
-    IconItem(Cpu.create { size = 36 }, "KSP Multiplatform Support", description = "Utilizes Kotlin Symbol Processing (KSP) for efficient, multiplatform code generation."),
-    IconItem(Settings.create { size = 36 }, "Constructor & Property Mapping", "Maps to constructor parameters and public properties with setters for maximum flexibility."),
-    IconItem(Zap.create { size = 36 }, "Property Type Casting", "Supports automatic casting of property types during mapping operations."),
-    IconItem(FileJson.create { size = 36 }, "Java `get*` Function Support", "Seamlessly maps from Java objects using their `get*` accessor methods."),
-    IconItem(Layers.create { size = 36 }, "Multi-Source Class Mapping", "Map data from multiple source classes with distinct configurations for each."),
-    IconItem(Tag.create { size = 36 }, "Advanced Annotations", "Fine-tune mappings with annotations for different names, converters, resolvers, and null substitutes.")
+    IconItem(
+        Cpu.create { size = 36 },
+        "KSP Multiplatform Support",
+        description = "Utilizes Kotlin Symbol Processing (KSP) for efficient, multiplatform code generation."
+    ),
+    IconItem(
+        Settings.create { size = 36 },
+        "Constructor & Property Mapping",
+        "Maps to constructor parameters and public properties with setters for maximum flexibility."
+    ),
+    IconItem(
+        Zap.create { size = 36 },
+        "Property Type Casting",
+        "Supports automatic casting of property types during mapping operations."
+    ),
+    IconItem(
+        FileJson.create { size = 36 },
+        "Java `get*` Function Support",
+        "Seamlessly maps from Java objects using their `get*` accessor methods."
+    ),
+    IconItem(
+        Layers.create { size = 36 },
+        "Multi-Source Class Mapping",
+        "Map data from multiple source classes with distinct configurations for each."
+    ),
+    IconItem(
+        Tag.create { size = 36 },
+        "Advanced Annotations",
+        "Fine-tune mappings with annotations for different names, converters, resolvers, and null substitutes."
+    )
 )
 
 val Features = FC<PropsWithRef<HTMLDivElement>> {

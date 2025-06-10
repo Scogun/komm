@@ -1,5 +1,6 @@
-package com.ucasoft.komm.website
+package com.ucasoft.komm.website.pages.home
 
+import com.ucasoft.komm.website.data.IconItem
 import com.ucasoft.wrappers.lucide.*
 import mui.material.Box
 import mui.material.Grid
@@ -16,12 +17,12 @@ import web.cssom.*
 import web.html.HTMLDivElement
 
 val targetList = listOf(
-    IconItem(Cpu.create { size = 40 },"JVM", "Full support for Java Virtual Machine platforms."),
-    IconItem(FileJson.create { size = 40 },"JavaScript", "Seamless integration with JavaScript environments."),
+    IconItem(Cpu.create { size = 40 }, "JVM", "Full support for Java Virtual Machine platforms."),
+    IconItem(FileJson.create { size = 40 }, "JavaScript", "Seamless integration with JavaScript environments."),
     IconItem(Terminal.create { size = 40 }, "Linux", "Native support for Linux platforms."),
-    IconItem(Monitor.create { size = 40 },"Windows", "Native support for Windows (mingwX64)."),
-    IconItem(Apple.create { size = 40 },"macOS", "Native support for macOS platforms."),
-    IconItem(Smartphone.create { size = 40 },"iOS", "Native support for iOS development.")
+    IconItem(Monitor.create { size = 40 }, "Windows", "Native support for Windows (mingwX64)."),
+    IconItem(Apple.create { size = 40 }, "macOS", "Native support for macOS platforms."),
+    IconItem(Smartphone.create { size = 40 }, "iOS", "Native support for iOS development.")
 )
 
 val Targets = FC<PropsWithRef<HTMLDivElement>> {
