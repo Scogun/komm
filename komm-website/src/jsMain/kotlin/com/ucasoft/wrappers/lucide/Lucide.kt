@@ -1,5 +1,6 @@
 @file:JsModule("lucide-react")
 @file:JsNonModule
+
 package com.ucasoft.wrappers.lucide
 
 import react.FC

@@ -1,4 +1,4 @@
-package com.ucasoft.komm.website
+package com.ucasoft.komm.website.pages.home
 
 import mui.material.Box
 import mui.material.Paper
@@ -39,7 +39,7 @@ val Target = FC<TargetProps> {
     }
 }
 
-external interface TargetProps: Props {
+external interface TargetProps : Props {
     var icon: ReactNode
     var title: String
     var description: String

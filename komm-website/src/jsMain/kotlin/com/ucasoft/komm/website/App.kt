@@ -1,22 +1,43 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.data.IconItem
+import com.ucasoft.komm.website.data.ListPathItem
+import com.ucasoft.komm.website.data.PathItem
+import com.ucasoft.komm.website.pages.DetailPage
+import com.ucasoft.komm.website.pages.annotations.Annotations
+import com.ucasoft.komm.website.pages.annotations.annotationData
+import com.ucasoft.komm.website.pages.home.HomePage
+import com.ucasoft.komm.website.pages.plugins.Plugins
+import com.ucasoft.komm.website.pages.plugins.pluginData
+import com.ucasoft.komm.website.pages.quickStart.QuickStart
 import com.ucasoft.wrappers.lucide.Code
+import com.ucasoft.wrappers.lucide.Database
+import com.ucasoft.wrappers.lucide.House
+import com.ucasoft.wrappers.lucide.ListTree
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Rocket
+import com.ucasoft.wrappers.lucide.Settings
 import com.ucasoft.wrappers.lucide.Tag
 import js.objects.unsafeJso
 import mui.material.Box
 import mui.material.CssBaseline
+import mui.material.styles.Theme
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
+import mui.system.Breakpoint
+import mui.system.sx
+import mui.system.useMediaQuery
 import react.FC
 import react.create
-import react.useRef
-import web.cssom.blur
-import web.cssom.px
-import web.cssom.rem
-import web.cssom.rgb
-import web.html.HTMLDivElement
+import react.router.Outlet
+import react.router.RouteObject
+import react.router.dom.RouterProvider
+import react.router.dom.createBrowserRouter
+import react.router.useLocation
+import react.useEffect
+import remix.run.router.LoaderLike
+import web.cssom.*
+import web.window.window
 
 val appTheme = createTheme(
     unsafeJso {
@@ -120,40 +141,143 @@ val appTheme = createTheme(
     }
 )
 
+val navigationData = listOf(
+    PathItem(House.create(), "Home", "/", HomePage),
+    PathItem(Rocket.create(), "Quick Start", "/quickstart", QuickStart),
+    ListPathItem(
+        Tag.create(), "Annotations", "/annotations", Annotations, listOf(
+            IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapName",
+                "Provides possibility to map properties with different names"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapConvert",
+                "Provides possibility to add additional logic for properties mapping"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapDefault",
+                "Provides possibility to add default values for orphans properties"
+            ),
+            IconItem(Settings.create { size = 40 }, "@NullSubstitute", "Extends mapping from nullable type properties")
+        )
+    ),
+    ListPathItem(
+        Puzzle.create(), "Plugins", "/plugins", Plugins, listOf(
+            IconItem(
+                ListTree.create { size = 40 },
+                "Iterable Plugin",
+                "Supports mapping collections with different types of elements, simplifying list transformations."
+            ),
+            IconItem(
+                Database.create { size = 40 },
+                "Exposed Plugin",
+                "Provides mapping from Exposed Table Objects (ResultRow) for easy database interaction."
+            ),
+            IconItem(
+                Puzzle.create { size = 40 },
+                "Enum Plugin",
+                "Supports mapping enums from other enums, including default value annotations for robustness."
+            )
+        )
+    ),
+    //PathItem(Code.create(), "Examples", "/", HomePage),
+)
+
+val detailData = annotationData + pluginData
+
 val App = FC {
 
-    val featuresRef = useRef<HTMLDivElement>(null)
-    val targetsRef = useRef<HTMLDivElement>(null)
-    val pluginsRef = useRef<HTMLDivElement>(null)
-    val installationRef = useRef<HTMLDivElement>(null)
+    val router = createBrowserRouter(
+        arrayOf(
+            RouteObject(
+                path = "/",
+                Component = Root,
+                children = mutableListOf<RouteObject>().apply {
+                    addAll(navigationData.take(1).map {
+                        RouteObject(
+                            index = true,
+                            Component = it.component
+                        )
+                    })
+                    addAll(navigationData.drop(1).map {
+                        RouteObject(
+                            path = it.path,
+                            Component = it.component,
+                            loader = {
+                                it
+                            }.unsafeCast<LoaderLike>()
+                        )
+                    })
+                    addAll(
+                        navigationData.drop(1).filterIsInstance<ListPathItem>().map {
+                            RouteObject(
+                                path = "${it.path}/:id",
+                                Component = DetailPage,
+                                loader = { context: dynamic ->
+                                    detailData.first { item -> item.id == context.params.id }
+                                }.unsafeCast<LoaderLike>()
+                            )
+                        })
+                }.toTypedArray()
+            )
+        ),
+        unsafeJso {
+            future = unsafeJso {
+                asDynamic().v7_startTransition = true
+            }
+        }
+    )
 
     ThemeProvider {
         theme = appTheme
         CssBaseline {}
+        RouterProvider {
+            this.router = router
+        }
+    }
+}
+
+private val Root = FC {
+
+    val path = useLocation()
+
+    useEffect(path) {
+        window.scrollTo(0.0, 0.0)
+    }
+
+    val isMobile = useMediaQuery<Theme>({
+        it.breakpoints.down(Breakpoint.md)
+    })
+
+    Box {
+        sx {
+            display = Display.flex
+            minHeight = 100.vh
+            flexDirection = FlexDirection.column
+        }
         NavBar {
-            menu = listOf(
-                NavBarMenu(Rocket.create(), "Features", featuresRef),
-                NavBarMenu(Tag.create(), "Targets", targetsRef),
-                NavBarMenu(Puzzle.create(), "Plugins", pluginsRef),
-                NavBarMenu(Code.create(), "Installation", installationRef),
-            )
+            menu = navigationData
+            this.isMobile = isMobile
         }
         Box {
             asDynamic().component = "main"
-            Hero {}
-            Features {
-                ref = featuresRef
+            sx {
+                flexGrow = number(1.0)
+                paddingTop = 64.px
+                display = Display.flex
+                flexDirection = FlexDirection.column
             }
-            Targets {
-                ref = targetsRef
+            Box {
+                sx {
+                    flexGrow = number(1.0)
+                    paddingBottom = appTheme.spacing(if (isMobile) 35 else 21)
+                }
+                Outlet {}
             }
-            Plugins {
-                ref = pluginsRef
-            }
-            Installation {
-                ref = installationRef
-            }
-            //CodeExamples {}
             Footer {}
         }
     }

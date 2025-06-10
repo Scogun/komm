@@ -1,33 +1,28 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.data.PathItem
 import com.ucasoft.wrappers.lucide.GitHub
 import com.ucasoft.wrappers.lucide.Menu
 import js.objects.unsafeJso
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.useTheme
-import mui.system.Breakpoint
 import mui.system.sx
-import mui.system.useMediaQuery
 import react.*
+import react.router.dom.Link
 import web.cssom.*
-import web.html.HTMLDivElement
-
-data class NavBarMenu(val icon: ReactNode, val title: String, val ref: RefObject<HTMLDivElement>)
 
 external interface NavBarProps : Props {
-    var menu: List<NavBarMenu>
+    var menu: List<PathItem>
+    var isMobile: Boolean
 }
 
 private external interface NavDrawerProps : NavBarProps {
     var isOpen: Boolean
-    var onChoose: (NavBarMenu) -> Unit
+    var onChoose: (PathItem) -> Unit
 }
 
 val NavBar = FC<NavBarProps> {
-    val isMobile = useMediaQuery<Theme>({
-        it.breakpoints.down(Breakpoint.md)
-    })
     var isMobileOpen by useState(false)
     val theme = useTheme<Theme>()
     AppBar {
@@ -39,7 +34,7 @@ val NavBar = FC<NavBarProps> {
             maxWidth = "xl"
             Toolbar {
                 disableGutters = true
-                if (isMobile) {
+                if (it.isMobile) {
                     IconButton {
                         color = IconButtonColor.inherit
                         ariaLabel = "open drawer"
@@ -49,7 +44,7 @@ val NavBar = FC<NavBarProps> {
                     }
                 }
                 Logo {}
-                if (!isMobile) {
+                if (!it.isMobile) {
                     Box {
                         sx {
                             display = Display.flex
@@ -59,7 +54,8 @@ val NavBar = FC<NavBarProps> {
                         }
                         it.menu.map { item ->
                             Button {
-                                onClick = { navClickHandler(item) }
+                                component = Link
+                                asDynamic().to = item.path
                                 sx {
                                     color = Color("text.primary")
                                     hover { color = Color("primary.main") }
@@ -85,7 +81,6 @@ val NavBar = FC<NavBarProps> {
         menu = it.menu
         isOpen = isMobileOpen
         onChoose = {
-            navClickHandler(it)
             isMobileOpen = false
         }
     }
@@ -119,6 +114,8 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
                     ListItem {
                         disablePadding = true
                         ListItemButton {
+                            component = Link
+                            asDynamic().to = item.path
                             onClick = { d.onChoose(item) }
                             ListItemIcon {
                                 sx {
@@ -146,12 +143,6 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
                 }
             }
         }
-    }
-}
-
-private val navClickHandler: (item: NavBarMenu) -> Unit = {
-    if (it.ref.current != null) {
-        it.ref.current!!.scrollIntoView(js("{ behavior: 'smooth', block: 'start' }"))
     }
 }
 
