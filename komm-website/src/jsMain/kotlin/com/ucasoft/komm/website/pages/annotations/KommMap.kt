@@ -193,6 +193,56 @@ val kommMap = DetailItem(
             )
         ),
         Step(
+            "Allow NotNullAssertion",
+            "Classes declaration",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                        @KOMMMap(
+                            from = [SourceObject::class],
+                            config = MapConfiguration(
+                              allowNotNullAssertion = true
+                            )
+                        )
+                        data class DestinationObject(
+                            val id: Int
+                        )
+                        data class SourceObject(
+                            val id: Int?
+                        )
+                    """.trimIndent()
+                )
+            )
+        ),
+        Step(
+            "Allow NotNullAssertion",
+            "Generation result",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                        fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+                            id = id!!
+                        )
+                    """.trimIndent(),
+                )
+            )
+        ),
+        Step(
+            "Allow NotNullAssertion",
+            "Otherwise",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                        e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: Auto Not-Null Assertion is not allowed! You have to use @NullSubstitute annotation for id property.
+                    """.trimIndent(),
+                    "console"
+                )
+            )
+        ),
+        Step(
             "Change Convert Function Name",
             "Classes declaration",
             listOf(
