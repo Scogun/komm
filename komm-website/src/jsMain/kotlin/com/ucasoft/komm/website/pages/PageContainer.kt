@@ -25,7 +25,7 @@ external interface PageContainerProps : PropsWithChildren {
 val PageContainer = FC<PageContainerProps> {
     Box {
         sx {
-            padding = 3.px
+            padding = 10.px
         }
         if (it.breadcrumbs.isNotEmpty()) {
             Breadcrumbs {

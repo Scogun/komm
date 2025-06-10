@@ -4,7 +4,6 @@ import com.ucasoft.komm.website.components.code.CodeTabs
 import com.ucasoft.komm.website.data.DetailItem
 import com.ucasoft.wrappers.lucide.Puzzle
 import com.ucasoft.wrappers.lucide.Tag
-import com.ucasoft.wrappers.`react-syntax-highlighter`.SyntaxHighlighter
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -15,11 +14,7 @@ import react.create
 import react.dom.html.ReactHTML.h1
 import react.router.useLoaderData
 import react.useState
-import web.cssom.AlignItems
-import web.cssom.Display
-import web.cssom.WhiteSpace
-import web.cssom.number
-import web.cssom.px
+import web.cssom.*
 
 val DetailPage = FC {
 

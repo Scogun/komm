@@ -7,15 +7,14 @@ import js.objects.unsafeJso
 import mui.material.*
 import mui.material.styles.Theme
 import mui.material.styles.useTheme
-import mui.system.Breakpoint
 import mui.system.sx
-import mui.system.useMediaQuery
 import react.*
 import react.router.dom.Link
 import web.cssom.*
 
 external interface NavBarProps : Props {
     var menu: List<PathItem>
+    var isMobile: Boolean
 }
 
 private external interface NavDrawerProps : NavBarProps {
@@ -24,9 +23,6 @@ private external interface NavDrawerProps : NavBarProps {
 }
 
 val NavBar = FC<NavBarProps> {
-    val isMobile = useMediaQuery<Theme>({
-        it.breakpoints.down(Breakpoint.md)
-    })
     var isMobileOpen by useState(false)
     val theme = useTheme<Theme>()
     AppBar {
@@ -38,7 +34,7 @@ val NavBar = FC<NavBarProps> {
             maxWidth = "xl"
             Toolbar {
                 disableGutters = true
-                if (isMobile) {
+                if (it.isMobile) {
                     IconButton {
                         color = IconButtonColor.inherit
                         ariaLabel = "open drawer"
@@ -48,7 +44,7 @@ val NavBar = FC<NavBarProps> {
                     }
                 }
                 Logo {}
-                if (!isMobile) {
+                if (!it.isMobile) {
                     Box {
                         sx {
                             display = Display.flex

@@ -21,9 +21,12 @@ import com.ucasoft.wrappers.lucide.Tag
 import js.objects.unsafeJso
 import mui.material.Box
 import mui.material.CssBaseline
+import mui.material.styles.Theme
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
+import mui.system.Breakpoint
 import mui.system.sx
+import mui.system.useMediaQuery
 import react.FC
 import react.create
 import react.router.Outlet
@@ -181,7 +184,7 @@ val navigationData = listOf(
             )
         )
     ),
-    PathItem(Code.create(), "Examples", "/", HomePage),
+    //PathItem(Code.create(), "Examples", "/", HomePage),
 )
 
 val detailData = annotationData + pluginData
@@ -246,6 +249,10 @@ private val Root = FC {
         window.scrollTo(0.0, 0.0)
     }
 
+    val isMobile = useMediaQuery<Theme>({
+        it.breakpoints.down(Breakpoint.md)
+    })
+
     Box {
         sx {
             display = Display.flex
@@ -254,6 +261,7 @@ private val Root = FC {
         }
         NavBar {
             menu = navigationData
+            this.isMobile = isMobile
         }
         Box {
             asDynamic().component = "main"
@@ -266,7 +274,7 @@ private val Root = FC {
             Box {
                 sx {
                     flexGrow = number(1.0)
-                    paddingBottom = appTheme.spacing(35)
+                    paddingBottom = appTheme.spacing(if (isMobile) 35 else 21)
                 }
                 Outlet {}
             }

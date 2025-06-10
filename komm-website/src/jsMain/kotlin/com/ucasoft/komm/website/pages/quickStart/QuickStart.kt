@@ -1,10 +1,9 @@
 package com.ucasoft.komm.website.pages.quickStart
 
-import com.ucasoft.komm.website.pages.BreadCrumb
 import com.ucasoft.komm.website.components.code.CodeTabs
+import com.ucasoft.komm.website.pages.BreadCrumb
 import com.ucasoft.komm.website.pages.PageContainer
 import com.ucasoft.wrappers.lucide.Rocket
-import com.ucasoft.wrappers.`react-syntax-highlighter`.SyntaxHighlighter
 import mui.material.Card
 import mui.material.CardContent
 import mui.material.Typography
@@ -15,11 +14,7 @@ import react.create
 import react.dom.html.ReactHTML.h1
 import react.dom.html.ReactHTML.h3
 import react.useState
-import web.cssom.Color
-import web.cssom.WhiteSpace
-import web.cssom.integer
-import web.cssom.number
-import web.cssom.px
+import web.cssom.*
 
 val QuickStart = FC {
 

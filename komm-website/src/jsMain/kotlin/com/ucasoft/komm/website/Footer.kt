@@ -1,27 +1,13 @@
 package com.ucasoft.komm.website
 
-import mui.material.Box
-import mui.material.Container
-import mui.material.Divider
-import mui.material.Grid
-import mui.material.List
-import mui.material.ListItem
-import mui.material.ListItemText
-import mui.material.Typography
-import mui.material.TypographyAlign
+import mui.material.*
 import mui.material.styles.TypographyVariant
 import mui.system.responsive
 import mui.system.sx
 import react.FC
 import react.create
 import react.dom.html.ReactHTML.a
-import web.cssom.Color
-import web.cssom.Padding
-import web.cssom.Position
-import web.cssom.pct
-import web.cssom.px
-import web.cssom.rem
-import web.cssom.rgb
+import web.cssom.*
 import kotlin.js.Date
 
 val footerLinks = mapOf(

@@ -5,7 +5,6 @@ import com.ucasoft.komm.website.components.code.Type
 import com.ucasoft.komm.website.data.DetailItem
 import com.ucasoft.komm.website.data.Step
 import com.ucasoft.wrappers.lucide.ListTree
-import mui.material.Step
 import react.create
 
 val iterablePlugin = DetailItem(
