@@ -1,10 +1,12 @@
 package com.ucasoft.komm.website
 
+import com.ucasoft.komm.website.data.PathItem
 import mui.material.*
 import mui.material.styles.TypographyVariant
 import mui.system.responsive
 import mui.system.sx
 import react.FC
+import react.Props
 import react.create
 import react.dom.html.ReactHTML.a
 import web.cssom.*
@@ -23,7 +25,11 @@ val footerLinks = mapOf(
     )
 )
 
-val Footer = FC {
+external interface FooterProps : Props {
+    var isMobile: Boolean
+}
+
+val Footer = FC<FooterProps> {
     Box {
         sx {
             backgroundColor = Color("text.primary")
@@ -52,44 +58,48 @@ val Footer = FC {
                         }
                         Logo {}
                     }
-                    Typography {
-                        variant = TypographyVariant.body2
-                        sx {
-                            color = rgb(255, 255, 255, 0.7)
+                    if(!it.isMobile) {
+                        Typography {
+                            variant = TypographyVariant.body2
+                            sx {
+                                color = rgb(255, 255, 255, 0.7)
+                            }
+                            +"KOMM is a powerful Kotlin Symbol Processing (KSP) based library for mapping between object models in Kotlin Multiplatform projects."
                         }
-                        +"KOMM is a powerful Kotlin Symbol Processing (KSP) based library for mapping between object models in Kotlin Multiplatform projects."
                     }
                 }
-                footerLinks.map {
-                    Grid {
-                        item = true
-                        asDynamic().xs = responsive(12)
-                        asDynamic().sm = responsive(6)
-                        asDynamic().md = responsive(4)
-                        Typography {
-                            variant = TypographyVariant.h6
-                            sx {
-                                marginBottom = 3.px
+                if (!it.isMobile) {
+                    footerLinks.map {
+                        Grid {
+                            item = true
+                            asDynamic().xs = responsive(12)
+                            asDynamic().sm = responsive(6)
+                            asDynamic().md = responsive(4)
+                            Typography {
+                                variant = TypographyVariant.h6
+                                sx {
+                                    marginBottom = 3.px
+                                }
+                                +it.key
                             }
-                            +it.key
-                        }
-                        List {
-                            disablePadding = true
-                            it.value.map {
-                                ListItem {
-                                    disableGutters = true
-                                    disablePadding = true
-                                    ListItemText {
-                                        primary = Typography.create {
-                                            variant = TypographyVariant.body2
-                                            component = a
-                                            asDynamic().href = it.key
-                                            asDynamic().target = "_blank"
-                                            sx {
-                                                color = rgb(255, 255, 255, 0.7)
+                            List {
+                                disablePadding = true
+                                it.value.map {
+                                    ListItem {
+                                        disableGutters = true
+                                        disablePadding = true
+                                        ListItemText {
+                                            primary = Typography.create {
+                                                variant = TypographyVariant.body2
+                                                component = a
+                                                asDynamic().href = it.key
+                                                asDynamic().target = "_blank"
+                                                sx {
+                                                    color = rgb(255, 255, 255, 0.7)
 
+                                                }
+                                                +it.value
                                             }
-                                            +it.value
                                         }
                                     }
                                 }
