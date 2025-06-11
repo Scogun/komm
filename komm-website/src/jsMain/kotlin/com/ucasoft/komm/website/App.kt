@@ -274,11 +274,13 @@ private val Root = FC {
             Box {
                 sx {
                     flexGrow = number(1.0)
-                    paddingBottom = appTheme.spacing(if (isMobile) 35 else 21)
+                    paddingBottom = appTheme.spacing(if (isMobile) 13 else 21)
                 }
                 Outlet {}
             }
-            Footer {}
+            Footer {
+                this.isMobile = isMobile
+            }
         }
     }
 }
