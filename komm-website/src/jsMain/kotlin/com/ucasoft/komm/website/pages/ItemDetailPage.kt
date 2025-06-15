@@ -53,7 +53,6 @@ val DetailPage = FC {
                     variant = TypographyVariant.body1
                     sx {
                         whiteSpace = WhiteSpace.preLine
-                        lineHeight = 1.7.px
                     }
                     +item.description
                 }
