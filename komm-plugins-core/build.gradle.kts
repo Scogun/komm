@@ -4,10 +4,8 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(8)
-    jvm {
-        withJava()
-    }
+    jvmToolchain(11)
+    jvm()
     sourceSets {
         val jvmMain by getting {
             dependencies {
