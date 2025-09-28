@@ -197,7 +197,7 @@ internal class ProcessorTests : CompilationTests() {
             )
         )
 
-        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.INTERNAL_ERROR)
         generated.messages.shouldContain("${KOMMException::class.simpleName}: The class ${Currency::class.simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
     }
 

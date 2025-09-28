@@ -43,7 +43,7 @@ internal class CastTests: CompilationTests() {
             )
         )
 
-        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.INTERNAL_ERROR)
         generated.messages.shouldContain("${KOMMCastException::class.simpleName}: AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (id: String) from (id: Int)")
     }
 

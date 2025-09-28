@@ -51,7 +51,7 @@ internal class ConverterTests: SatelliteTests() {
             )
         )
 
-        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.INTERNAL_ERROR)
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There is no mapping for toId property! It seems you specify bad name (id) into name support annotation (e.g. @${MapName::class.simpleName} etc.).")
     }
 

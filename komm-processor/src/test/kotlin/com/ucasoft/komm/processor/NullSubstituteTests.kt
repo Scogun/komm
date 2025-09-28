@@ -37,7 +37,7 @@ internal class NullSubstituteTests: SatelliteTests() {
             )
         )
 
-        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.INTERNAL_ERROR)
         generated.messages.shouldContain("${KOMMCastException::class.simpleName}: Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for id property.")
     }
 
