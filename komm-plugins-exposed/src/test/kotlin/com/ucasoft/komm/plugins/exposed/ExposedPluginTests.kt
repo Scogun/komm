@@ -81,6 +81,10 @@ internal class ExposedPluginTests {
                         this
                     }
                 ).asSequence()
+                every { qualifiedName } returns with(mockk<KSName>()) {
+                    every { asString() } returns sourceClass.toString()
+                    this
+                }
                 this
             }
             every { this@with.toClassName() } returns ClassName.bestGuess(sourceClass.toString())

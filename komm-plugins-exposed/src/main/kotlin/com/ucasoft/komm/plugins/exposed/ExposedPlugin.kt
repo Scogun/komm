@@ -4,7 +4,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -19,7 +18,7 @@ class ExposedPlugin: KOMMTypePlugin {
 
     override fun sourceType(sourceType: KSType) = ResultRow::class
 
-    override fun forCast(sourceType: KSType, destinationType: KSType) = sourceType.toClassName() == Column::class.asClassName()
+    override fun forCast(sourceType: KSType, destinationType: KSType) = sourceType.declaration.qualifiedName?.asString() == Column::class.qualifiedName
 
     override fun cast(
         sourceProperty: KSDeclaration,
