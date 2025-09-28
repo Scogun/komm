@@ -14,7 +14,7 @@ import com.ucasoft.komm.plugins.KOMMCastPlugin
 
 abstract class BaseIterablePlugin: KOMMCastPlugin {
 
-    protected fun KSType.isIterable() = (this.declaration as KSClassDeclaration).getAllSuperTypes().any { it.toClassName() == ITERABLE }
+    protected fun KSType.isIterable() = (this.declaration as KSClassDeclaration).getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == ITERABLE.canonicalName }
 
     protected fun addSafeNullCall(add: Boolean, safe: String = "?", otherwise: String = "") = if (add) safe else otherwise
 
