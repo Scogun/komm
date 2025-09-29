@@ -5,7 +5,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
 
 class IterablePlugin: BaseIterablePlugin() {
 
@@ -22,14 +21,14 @@ class IterablePlugin: BaseIterablePlugin() {
         val destinationParam = destinationType.arguments.first()
         val sourceParam = sourceType.arguments.first()
         val stringBuilder = StringBuilder(sourceName)
-        var fromCastDeclaration = sourceType.declaration.qualifiedName?.asString()
+        var fromCastDeclaration = sourceType.toClassName()
         val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
             stringBuilder.append(".map{ it.to${destinationParam.type}() }")
-            fromCastDeclaration = LIST.canonicalName
+            fromCastDeclaration = LIST
         }
-        if (destinationType.declaration.qualifiedName?.asString() != fromCastDeclaration) {
+        if (!destinationType.toClassName().isAssignableFrom(fromCastDeclaration)) {
             stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
         }
         return stringBuilder.toString().trimEnd('?')
