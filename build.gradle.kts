@@ -2,7 +2,7 @@ plugins {
     kotlin("multiplatform") apply false
     id("com.google.devtools.ksp") apply false
     alias(libs.plugins.kotlinx.kover) apply false
-    id("publish") apply false
+    alias(libs.plugins.maven.publish) apply false
 }
 
 tasks.wrapper {
@@ -12,7 +12,7 @@ tasks.wrapper {
 allprojects {
     group = "com.ucasoft.komm"
 
-    version = "0.25.0"
+    version = "2.2.20-0.28.7-RC1"
 
     repositories {
         mavenCentral()

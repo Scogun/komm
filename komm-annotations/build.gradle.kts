@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -23,7 +23,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Annotations")
-    description.set("Annotations library for Kotlin Object Multiplatform Mapper")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Annotations", "Annotations library for Kotlin Object Multiplatform Mapper", this)
+    }
 }

@@ -9,6 +9,7 @@ kover = "0.9.2"
 mockk = "1.14.5"
 classgraph = "4.8.181"
 exposed = "0.61.0"
+maven-publish = "0.34.0"
 
 [libraries]
 ksp-processor = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp" }
@@ -22,3 +23,4 @@ exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version
 
 [plugins]
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }

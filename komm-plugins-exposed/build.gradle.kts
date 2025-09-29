@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.kover)
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -37,7 +37,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Plugins Exposed")
-    description.set("Plugins to map Exposed ResultRow to DTO Object for Kotlin Object Multiplatform Mapper Plugins")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Plugins Exposed", "Plugins to map Exposed ResultRow to DTO Object for Kotlin Object Multiplatform Mapper Plugins", this)
+    }
 }

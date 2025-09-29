@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -16,7 +16,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Plugins Core")
-    description.set("Core library for Kotlin Object Multiplatform Mapper Plugins")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Plugins Core", "Core library for Kotlin Object Multiplatform Mapper Plugins", this)
+    }
 }

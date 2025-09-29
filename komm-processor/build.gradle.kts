@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.kover)
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -40,7 +40,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Processor")
-    description.set("Kotlin Object Multiplatform Mapper Processor")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Processor", "Kotlin Object Multiplatform Mapper Processor", this)
+    }
 }

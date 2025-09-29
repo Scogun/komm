@@ -1,7 +1,7 @@
 plugins {
     kotlin("multiplatform")
     alias(libs.plugins.kotlinx.kover)
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -47,7 +47,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Plugins Enum")
-    description.set("Plugins to map enum properties for Kotlin Object Multiplatform Mapper Plugins")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Plugins Enum", "Plugins to map enum properties for Kotlin Object Multiplatform Mapper Plugins", this)
+    }
 }
