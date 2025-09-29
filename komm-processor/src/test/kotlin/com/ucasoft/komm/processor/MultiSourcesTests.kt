@@ -11,6 +11,7 @@ import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class MultiSourcesTests: SatelliteTests() {
@@ -285,6 +286,7 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
+    @Ignore("Until KSP typeArguments fix")
     fun multiSourcesConvertsAndDefault() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(
@@ -378,6 +380,7 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
+    @Ignore("Until KSP typeArguments fix")
     fun multiSourcesDefaultFallback() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(
