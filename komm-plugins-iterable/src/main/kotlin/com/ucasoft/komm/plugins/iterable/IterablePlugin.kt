@@ -21,15 +21,15 @@ class IterablePlugin: BaseIterablePlugin() {
         val destinationParam = destinationType.arguments.first()
         val sourceParam = sourceType.arguments.first()
         val stringBuilder = StringBuilder(sourceName)
-        var fromCastDeclaration = sourceType.toClassName()
+        var fromCastDeclaration = sourceType.declaration.qualifiedName!!.getShortName()
         val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
         if (!destinationParam.type!!.resolve().isAssignableFrom(sourceParam.type!!.resolve())) {
             stringBuilder.append(".map{ it.to${destinationParam.type}() }")
-            fromCastDeclaration = LIST
+            fromCastDeclaration = LIST.simpleName
         }
-        if (!destinationType.toClassName().isAssignableFrom(fromCastDeclaration)) {
-            stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
+        if (!destinationType.declaration.qualifiedName!!.isAssignableFrom(fromCastDeclaration)) {
+            stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.declaration.qualifiedName!!.getShortName()}()")
         }
         return stringBuilder.toString().trimEnd('?')
     }

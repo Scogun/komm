@@ -35,8 +35,8 @@ class IterableStringPlugin: BaseIterablePlugin() {
             stringBuilder.append(")")
         } else {
             stringBuilder.append(".split(\"$delimiter\")")
-            if (!destinationType.toClassName().isAssignableFrom(LIST)) {
-                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
+            if (!destinationType.declaration.qualifiedName!!.isAssignableFrom(LIST)) {
+                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.declaration.qualifiedName!!.getShortName()}()")
             }
         }
 

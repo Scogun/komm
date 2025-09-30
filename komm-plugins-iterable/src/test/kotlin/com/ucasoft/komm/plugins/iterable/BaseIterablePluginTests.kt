@@ -38,6 +38,10 @@ open class BaseIterablePluginTests {
                     kType.toString().contains(".MutableList") -> MUTABLE_LIST.canonicalName
                     else -> (kType.classifier as KClass<*>).qualifiedName!!
                 }
+                every { this@with.getShortName() } returns when {
+                    kType.toString().contains(".MutableList") -> MUTABLE_LIST.simpleName
+                    else -> (kType.classifier as KClass<*>).simpleName!!
+                }
                 this
             }
             this
