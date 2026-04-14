@@ -6,8 +6,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.configureKsp
-import com.tschuchort.compiletesting.kspWithCompilation
-import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.reflect.KClass
@@ -104,7 +102,7 @@ abstract class CompilationTests {
         inheritClassPath = true
         sources = fileSpec.map { SourceFile.kotlin(it.name, it.toString()) }
         workingDir = tempDir
-        configureKsp(useKsp2 = true) {
+        configureKsp {
             symbolProcessorProviders.add(KOMMProcessorProvider())
         }
     }.compile()
