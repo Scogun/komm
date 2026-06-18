@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform")
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.maven.publish)
 }
 
@@ -11,7 +11,6 @@ kotlin {
     }
     linuxX64()
     mingwX64()
-    macosX64()
     macosArm64()
     iosX64()
     iosArm64()
