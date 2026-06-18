@@ -1,10 +1,14 @@
 package com.ucasoft.komm.processor
 
 import com.google.devtools.ksp.symbol.KSAnnotation
+import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeArgument
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
 
@@ -83,10 +87,57 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         }
 
         if (item.annotationType.toString() == MapConvert::class.simpleName) {
-            return item.annotationType.element!!.typeArguments.take(2).map {  it.type!!.resolve().toClassName() }
+            return item.annotationType.element!!.typeArguments.take(2).mapNotNull { it.type?.resolve()?.toClassName() }
+                .ifEmpty { getMapConvertAssociationsFromConverter(item) }
         }
 
         return emptyList()
+    }
+
+    private fun getMapConvertAssociationsFromConverter(item: KSAnnotation): List<ClassName> {
+        val converterArgument = item.arguments
+            .firstOrNull { it.name?.asString() == MapConvert<*, *, *>::converter.name }
+            ?.value as? KSType
+            ?: return emptyList()
+
+        val converterDeclaration = converterArgument.declaration as? KSClassDeclaration ?: return emptyList()
+        return getKOMMConverterAssociations(converterDeclaration).map { it.toClassName() }
+    }
+
+    private fun getKOMMConverterAssociations(
+        declaration: KSClassDeclaration,
+        typeSubstitutions: Map<String, KSType> = emptyMap()
+    ): List<KSType> {
+        for (superTypeReference in declaration.superTypes) {
+            val superType = superTypeReference.resolve()
+            val superDeclaration = superType.declaration as? KSClassDeclaration ?: continue
+
+            if (superDeclaration.qualifiedName?.asString() == KOMMConverter::class.qualifiedName) {
+                return listOfNotNull(
+                    resolveTypeArgument(superType.arguments.getOrNull(0), typeSubstitutions),
+                    resolveTypeArgument(superType.arguments.getOrNull(2), typeSubstitutions)
+                )
+            }
+
+            val superSubstitutions = superDeclaration.typeParameters
+                .zip(superType.arguments)
+                .mapNotNull { (parameter, argument) ->
+                    resolveTypeArgument(argument, typeSubstitutions)?.let { parameter.name.asString() to it }
+                }
+                .toMap()
+            val associations = getKOMMConverterAssociations(superDeclaration, superSubstitutions)
+            if (associations.isNotEmpty()) {
+                return associations
+            }
+        }
+
+        return emptyList()
+    }
+
+    private fun resolveTypeArgument(argument: KSTypeArgument?, typeSubstitutions: Map<String, KSType>): KSType? {
+        val type = argument?.type?.resolve() ?: return null
+        val typeParameter = type.declaration as? KSTypeParameter ?: return type
+        return typeSubstitutions[typeParameter.name.asString()]
     }
 
     private fun filterAnnotationsByClass(

@@ -286,7 +286,6 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
-    @Ignore("Until KSP typeArguments fix")
     fun multiSourcesConvertsAndDefault() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(
@@ -380,7 +379,6 @@ class MultiSourcesTests: SatelliteTests() {
     }
 
     @Test
-    @Ignore("Until KSP typeArguments fix")
     fun multiSourcesDefaultFallback() {
         val firstSourceSpec = buildFileSpec(
             "FirstSourceObject", mapOf(

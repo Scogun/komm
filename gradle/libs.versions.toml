@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.20"
-ksp = "2.3.6"
+ksp = "2.3.9"
 kotlin-poet = "2.3.0"
 compile-testing = "0.13.0"
 junit = "6.1.0"

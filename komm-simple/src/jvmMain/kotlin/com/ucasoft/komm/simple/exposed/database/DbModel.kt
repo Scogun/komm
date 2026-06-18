@@ -1,6 +1,6 @@
 package com.ucasoft.komm.simple.exposed.database
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Table
 
 object DbModel: Table() {
     val id = integer("id").autoIncrement()
