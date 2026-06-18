@@ -1,13 +1,11 @@
 plugins {
-    kotlin("multiplatform")
-    id("publish")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
-    jvmToolchain(8)
-    jvm {
-        withJava()
-    }
+    jvmToolchain(17)
+    jvm()
     sourceSets {
         val jvmMain by getting {
             dependencies {
@@ -18,7 +16,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Plugins Core")
-    description.set("Core library for Kotlin Object Multiplatform Mapper Plugins")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Plugins Core", "Core library for Kotlin Object Multiplatform Mapper Plugins", this)
+    }
 }

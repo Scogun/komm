@@ -3,6 +3,7 @@ package com.ucasoft.komm.plugins.iterable
 import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSDeclaration
+import com.google.devtools.ksp.symbol.KSName
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
@@ -14,7 +15,7 @@ import com.ucasoft.komm.plugins.KOMMCastPlugin
 
 abstract class BaseIterablePlugin: KOMMCastPlugin {
 
-    protected fun KSType.isIterable() = (this.declaration as KSClassDeclaration).getAllSuperTypes().any { it.toClassName() == ITERABLE }
+    protected fun KSType.isIterable() = (this.declaration as KSClassDeclaration).getAllSuperTypes().any { it.declaration.qualifiedName?.asString() == ITERABLE.canonicalName }
 
     protected fun addSafeNullCall(add: Boolean, safe: String = "?", otherwise: String = "") = if (add) safe else otherwise
 
@@ -28,6 +29,9 @@ abstract class BaseIterablePlugin: KOMMCastPlugin {
         return Pair(sourceIsNullable, destinationIsNullOrNullSubstitute)
     }
 
-    protected fun ClassName.isAssignableFrom(other: ClassName) =
-        this == other || other.simpleName.endsWith(this.simpleName)
+    protected fun KSName.isAssignableFrom(other: ClassName) =
+        other.simpleName.endsWith(this.getShortName())
+
+    protected fun KSName.isAssignableFrom(other: String) =
+        other.endsWith(this.getShortName())
 }

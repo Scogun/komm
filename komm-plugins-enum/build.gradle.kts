@@ -1,11 +1,11 @@
 plugins {
-    kotlin("multiplatform")
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.kover)
-    id("publish")
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
     jvm {
         tasks.withType<Test> {
             useJUnitPlatform()
@@ -19,7 +19,6 @@ kotlin {
     }
     linuxX64()
     mingwX64()
-    macosX64()
     macosArm64()
     iosX64()
     iosArm64()
@@ -47,7 +46,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Plugins Enum")
-    description.set("Plugins to map enum properties for Kotlin Object Multiplatform Mapper Plugins")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Plugins Enum", "Plugins to map enum properties for Kotlin Object Multiplatform Mapper Plugins", this)
+    }
 }

@@ -1,17 +1,16 @@
 plugins {
-    kotlin("multiplatform")
-    id("publish")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
     jvm()
     js {
         nodejs()
     }
     linuxX64()
     mingwX64()
-    macosX64()
     macosArm64()
     iosX64()
     iosArm64()
@@ -23,7 +22,10 @@ kotlin {
     }
 }
 
-libraryData {
-    name.set("KOMM Annotations")
-    description.set("Annotations library for Kotlin Object Multiplatform Mapper")
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    pom {
+        configurePom("KOMM Annotations", "Annotations library for Kotlin Object Multiplatform Mapper", this)
+    }
 }

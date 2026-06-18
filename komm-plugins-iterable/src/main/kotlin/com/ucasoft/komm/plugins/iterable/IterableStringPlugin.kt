@@ -11,8 +11,8 @@ import com.ucasoft.komm.plugins.iterable.annotations.KOMMIterableString
 class IterableStringPlugin: BaseIterablePlugin() {
 
     override fun forCast(sourceType: KSType, destinationType: KSType) =
-        (sourceType.isIterable() && destinationType.toClassName() == STRING) ||
-        (sourceType.toClassName() == STRING && destinationType.isIterable())
+        (sourceType.isIterable() && destinationType.declaration.qualifiedName?.asString() == STRING.canonicalName) ||
+        (sourceType.declaration.qualifiedName?.asString() == STRING.canonicalName && destinationType.isIterable())
 
     override fun cast(
         sourceProperty: KSDeclaration,
@@ -35,8 +35,8 @@ class IterableStringPlugin: BaseIterablePlugin() {
             stringBuilder.append(")")
         } else {
             stringBuilder.append(".split(\"$delimiter\")")
-            if (!destinationType.toClassName().isAssignableFrom(LIST)) {
-                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.toClassName().simpleName}()")
+            if (!destinationType.declaration.qualifiedName!!.isAssignableFrom(LIST)) {
+                stringBuilder.append("${addSafeNullCall(sourceIsNullable && destinationIsNullOrNullSubstitute)}.to${destinationType.declaration.qualifiedName!!.getShortName()}()")
             }
         }
 

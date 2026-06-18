@@ -23,9 +23,27 @@ open class BaseIterablePluginTests {
             every { this@with.getAllSuperTypes() } returns (kType.classifier as KClass<*>).allSuperclasses.map { sc ->
                 with(mockk<KSType>()) {
                     every { this@with.toClassName() } returns sc.asClassName()
+                    every { this@with.declaration } returns with(mockk<KSClassDeclaration>()) {
+                        every { this@with.qualifiedName } returns with(mockk<KSName>()) {
+                            every { this@with.asString() } returns sc.qualifiedName!!
+                            this
+                        }
+                        this
+                    }
                     this
                 }
             }.asSequence()
+            every { this@with.qualifiedName } returns with(mockk<KSName>()) {
+                every { this@with.asString() } returns when {
+                    kType.toString().contains(".MutableList") -> MUTABLE_LIST.canonicalName
+                    else -> (kType.classifier as KClass<*>).qualifiedName!!
+                }
+                every { this@with.getShortName() } returns when {
+                    kType.toString().contains(".MutableList") -> MUTABLE_LIST.simpleName
+                    else -> (kType.classifier as KClass<*>).simpleName!!
+                }
+                this
+            }
             this
         }
         if (kType.arguments.isNotEmpty()) {

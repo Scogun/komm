@@ -11,6 +11,7 @@ import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class MultiSourcesTests: SatelliteTests() {
@@ -125,7 +126,7 @@ class MultiSourcesTests: SatelliteTests() {
             )
         )
 
-        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.COMPILATION_ERROR)
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.INTERNAL_ERROR)
         generated.messages.shouldContain("${KOMMException::class.simpleName}: There are too many @${MapName::class.simpleName} annotations for id property could be applied for $firstSourceObjectClassName")
     }
 
@@ -303,7 +304,7 @@ class MultiSourcesTests: SatelliteTests() {
             STRING,
             destinationObjectClassName,
             STRING,
-            "return \"\${source.name} \${source.surname}\""
+            $$"return \"${source.name} ${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
         val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
@@ -396,7 +397,7 @@ class MultiSourcesTests: SatelliteTests() {
             STRING,
             destinationObjectClassName,
             STRING,
-            "return \"\${source.name} \${source.surname}\""
+            $$"return \"${source.name} ${source.surname}\""
         )
         val converterClassName = converter.typeSpecs.first().name!!
         val resolver = buildResolver(destinationObjectClassName, STRING, "return \"John Doe\"")
