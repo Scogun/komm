@@ -80,10 +80,10 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 #### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -93,10 +93,10 @@ depensencies {
 #### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 kotlin {
     jvm {
@@ -466,10 +466,10 @@ fun SecondSourceObject.toDestinationObject(): DestinationObject = DestinationObj
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -480,10 +480,10 @@ depensencies {
 ###### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 //...
 
@@ -540,10 +540,10 @@ public fun SourceObject.toDestinationObject(): DestinationObject = DestinationOb
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -584,10 +584,10 @@ public fun ResultRow.toDestinationObject(): DestinationObject = DestinationObjec
 ###### JVM Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -598,10 +598,10 @@ depensencies {
 ###### Multiplatform Project
 ```kotlin
 plugins {
-    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.25.0"
+val kommVersion = "0.50.9"
 
 //...
 
