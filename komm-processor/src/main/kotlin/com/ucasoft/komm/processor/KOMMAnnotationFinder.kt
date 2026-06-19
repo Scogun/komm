@@ -76,6 +76,14 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
     fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) =
         filterAnnotationsByClass(forClass.toClassName(), getSuitedNamedAnnotationsForClass(member), member)
 
+    fun getSuitedEmbeddedAnnotations(classDeclaration: KSClassDeclaration): List<KSAnnotation> =
+        classDeclaration.annotations
+            .filter { it.shortName.asString() == MapEmbedded::class.simpleName }
+            .associateWith(::associateWithFor)
+            .filter { it.value.isEmpty() || it.value.contains(forClass.toClassName()) }
+            .keys
+            .toList()
+
     private fun getSuitedNamedAnnotationsForClass(member: KSPropertyDeclaration) =
         member.annotations.filter { it.shortName.asString() in namedAnnotations }
             .associateWith(::associateWithFor)

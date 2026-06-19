@@ -16,4 +16,4 @@ include("komm-plugins-iterable")
 
 include("komm-processor")
 
-include("komm-simple")
+include("komm-sample")
