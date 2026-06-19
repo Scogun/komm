@@ -19,6 +19,7 @@ import kotlin.reflect.KClass
 
 class KOMMVisitor(
     private val functions: MutableList<FunSpec>,
+    private val imports: MutableMap<String, List<String>>,
     private val plugins: Map<KClass<out KOMMPlugin>, List<Class<*>>>
 ) : KSVisitorVoid() {
 
@@ -91,7 +92,7 @@ class KOMMVisitor(
                     ?.map { it.getDeclaredConstructor().newInstance() } ?: emptyList())
             }.filterIsInstance<KOMMCastPlugin>()
 
-        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins)
+        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins, imports)
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }

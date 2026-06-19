@@ -36,6 +36,25 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
             MapConvert<*, *, *>::converter.name
         )
 
+    fun findFunction(member: KSPropertyDeclaration): Pair<String, String>? {
+        val annotations = member.annotations.filter { it.shortName.asString() == MapFunction::class.simpleName }
+            .associateWith(::associateWithFor)
+
+        val annotation = filterAnnotationsByClass(forClass.toClassName(), annotations, member)
+            ?: return null
+
+        val packageName = annotation.arguments
+            .first { it.name?.asString() == MapFunction::packageName.name }
+            .value
+            .toString()
+        val name = annotation.arguments
+            .first { it.name?.asString() == MapFunction::name.name }
+            .value
+            .toString()
+
+        return packageName to name
+    }
+
     fun findSubstituteResolver(member: KSPropertyDeclaration): String? {
         val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }
             .associateWith(::associateWithFor)

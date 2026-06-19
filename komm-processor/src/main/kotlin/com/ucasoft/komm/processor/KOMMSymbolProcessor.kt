@@ -32,14 +32,16 @@ class KOMMSymbolProcessor(
 
         symbols.groupBy { it.packageName }.forEach { (packageName, classDeclarations) ->
             val functions = mutableListOf<FunSpec>()
+            val imports = mutableMapOf<String, List<String>>()
 
             classDeclarations.forEach {
-                it.accept(KOMMVisitor(functions, plugins), Unit)
+                it.accept(KOMMVisitor(functions, imports, plugins), Unit)
             }
 
             val file = FileSpec
                 .builder(packageName.asString(), "MappingExtensions")
                 .apply {
+                    imports.forEach { addImport(it.key, it.value) }
                     functions.forEach { this.addFunction(it) }
                 }
                 .build()

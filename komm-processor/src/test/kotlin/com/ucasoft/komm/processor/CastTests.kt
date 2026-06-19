@@ -11,6 +11,7 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
 import com.ucasoft.komm.annotations.MapConvert
+import com.ucasoft.komm.annotations.MapFunction
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -137,15 +138,18 @@ internal class CastTests: CompilationTests() {
         val sourceObjectClassName = ClassName(packageName, "SourceObject")
         val imageBitmapClassName = ClassName(packageName, "ImageBitmap")
         val byteArrayClassName = ClassName("kotlin", "ByteArray")
+        val convertersPackageName = "$packageName.converters"
         val propertyName = "logo"
         val generated = generate(
             FileSpec.builder(packageName, "ImageBitmap.kt")
                 .addType(TypeSpec.classBuilder(imageBitmapClassName).build())
+                .build(),
+            FileSpec.builder(convertersPackageName, "ImageBitmapConverters.kt")
                 .addFunction(
                     FunSpec.builder("toImageBitmap")
                         .receiver(byteArrayClassName)
                         .returns(imageBitmapClassName)
-                        .addStatement("return ImageBitmap()")
+                        .addStatement("return %T()", imageBitmapClassName)
                         .build()
                 )
                 .build(),
@@ -155,7 +159,17 @@ internal class CastTests: CompilationTests() {
             ),
             buildFileSpec(
                 "DestinationObject",
-                mapOf(propertyName to PropertySpecInit(imageBitmapClassName, isNullable = true)),
+                mapOf(
+                    propertyName to PropertySpecInit(
+                        imageBitmapClassName,
+                        isNullable = true,
+                        annotations = listOf(
+                            MapFunction::class to mapOf(
+                                "packageName = %S" to listOf(convertersPackageName)
+                            )
+                        )
+                    )
+                ),
                 listOf(KOMMMap::class to mapOf("from = %L" to listOf("[${sourceObjectClassName.simpleName}::class]")))
             )
         )
