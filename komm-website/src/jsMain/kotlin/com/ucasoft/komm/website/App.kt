@@ -161,6 +161,11 @@ val navigationData = listOf(
             ),
             IconItem(
                 Settings.create { size = 40 },
+                "@MapEmbedded",
+                "Maps several destination properties from the same nested source property"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
                 "@MapConvert",
                 "Provides possibility to add additional logic for properties mapping"
             ),

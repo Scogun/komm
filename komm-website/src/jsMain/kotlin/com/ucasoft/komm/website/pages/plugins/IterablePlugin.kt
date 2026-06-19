@@ -22,7 +22,7 @@ val iterablePlugin = DetailItem(
                     id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.50.9"
+                val kommVersion = "0.60.0"
 
                 //...
 
@@ -41,7 +41,7 @@ val iterablePlugin = DetailItem(
                     id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.50.9"
+                val kommVersion = "0.60.0"
 
                 dependencies {
                     implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")

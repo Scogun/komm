@@ -22,7 +22,7 @@ val enumPlugin = DetailItem(
                     id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.50.9"
+                val kommVersion = "0.60.0"
 
                 //...
 
@@ -41,9 +41,9 @@ val enumPlugin = DetailItem(
                     id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.50.9"
+                val kommVersion = "0.60.0"
 
-                depensencies {
+                dependencies {
                     implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")
                     ksp("com.ucasoft.komm:komm-processor:${'$'}kommVersion")
                     ksp("com.ucasoft.komm:komm-plugins-enum:${'$'}kommVersion")
