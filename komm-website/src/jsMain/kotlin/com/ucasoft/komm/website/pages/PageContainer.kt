@@ -13,7 +13,7 @@ import web.cssom.AlignItems
 import web.cssom.Color
 import web.cssom.Display
 import web.cssom.px
-import react.router.dom.Link as RouterLink
+import tanstack.react.router.Link as RouterLink
 
 data class BreadCrumb(val icon: ReactNode, val label: String, val path: String)
 

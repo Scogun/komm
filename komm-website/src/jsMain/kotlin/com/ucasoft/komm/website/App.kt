@@ -10,7 +10,6 @@ import com.ucasoft.komm.website.pages.home.HomePage
 import com.ucasoft.komm.website.pages.plugins.Plugins
 import com.ucasoft.komm.website.pages.plugins.pluginData
 import com.ucasoft.komm.website.pages.quickStart.QuickStart
-import com.ucasoft.wrappers.lucide.Code
 import com.ucasoft.wrappers.lucide.Database
 import com.ucasoft.wrappers.lucide.House
 import com.ucasoft.wrappers.lucide.ListTree
@@ -29,13 +28,20 @@ import mui.system.sx
 import mui.system.useMediaQuery
 import react.FC
 import react.create
-import react.router.Outlet
-import react.router.RouteObject
-import react.router.dom.RouterProvider
-import react.router.dom.createBrowserRouter
-import react.router.useLocation
 import react.useEffect
-import remix.run.router.LoaderLike
+import tanstack.react.router.Outlet
+import tanstack.react.router.RootRouteOptions
+import tanstack.react.router.Route
+import tanstack.react.router.RouteOptions
+import tanstack.react.router.RouterOptions
+import tanstack.react.router.RouterProvider
+import tanstack.react.router.createRootRoute
+import tanstack.react.router.createRoute
+import tanstack.react.router.createRouter
+import tanstack.react.router.useLocation
+import tanstack.router.core.AnyRoute
+import tanstack.router.core.RouteLoaderEntry
+import tanstack.router.core.RoutePath
 import web.cssom.*
 import web.window.window
 
@@ -191,45 +197,55 @@ val detailData = annotationData + pluginData
 
 val App = FC {
 
-    val router = createBrowserRouter(
-        arrayOf(
-            RouteObject(
-                path = "/",
-                Component = Root,
-                children = mutableListOf<RouteObject>().apply {
-                    addAll(navigationData.take(1).map {
-                        RouteObject(
-                            index = true,
-                            Component = it.component
-                        )
-                    })
-                    addAll(navigationData.drop(1).map {
-                        RouteObject(
-                            path = it.path,
-                            Component = it.component,
-                            loader = {
-                                it
-                            }.unsafeCast<LoaderLike>()
-                        )
-                    })
-                    addAll(
-                        navigationData.drop(1).filterIsInstance<ListPathItem>().map {
-                            RouteObject(
-                                path = "${it.path}/:id",
-                                Component = DetailPage,
-                                loader = { context: dynamic ->
-                                    detailData.first { item -> item.id == context.params.id }
-                                }.unsafeCast<LoaderLike>()
-                            )
-                        })
-                }.toTypedArray()
+    val rootRouter = createRootRoute(
+        RootRouteOptions(
+            component = Root
+        )
+    )
+
+    val childRoutes = mutableListOf<AnyRoute>()
+
+    navigationData.take(1).forEach {
+        val indexRoute = createRoute(
+            RouteOptions(
+                getParentRoute = { rootRouter },
+                path = RoutePath("/"),
+                component = it.component
             )
-        ),
-        unsafeJso {
-            future = unsafeJso {
-                asDynamic().v7_startTransition = true
-            }
-        }
+        )
+        childRoutes.add(indexRoute)
+    }
+
+    navigationData.drop(1).forEach { item ->
+        val firstLineRoute = createRoute(
+            RouteOptions(
+                getParentRoute = { rootRouter },
+                path = RoutePath(item.path),
+                component = item.component,
+                loader = ({ _: dynamic -> item }).unsafeCast<RouteLoaderEntry>()
+            )
+        )
+        childRoutes.add(firstLineRoute)
+    }
+
+    navigationData.drop(1).filterIsInstance<ListPathItem>().forEach { item ->
+        val secondLineRoute = createRoute(
+            RouteOptions(
+                getParentRoute = { rootRouter },
+                path = RoutePath("${item.path}/:id"),
+                component = DetailPage,
+                loader = ({ context: dynamic -> detailData.first { it.id == context.params.id } }).unsafeCast<RouteLoaderEntry>()
+            )
+        )
+        childRoutes.add(secondLineRoute)
+    }
+
+    rootRouter.addChildren(childRoutes.toTypedArray().unsafeCast<Array<out Route>>())
+
+    val router = createRouter(
+        RouterOptions(
+            routeTree = rootRouter
+        )
     )
 
     ThemeProvider {

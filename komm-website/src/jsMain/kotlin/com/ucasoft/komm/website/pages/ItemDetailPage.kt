@@ -12,8 +12,8 @@ import mui.system.sx
 import react.FC
 import react.create
 import react.dom.html.ReactHTML.h1
-import react.router.useLoaderData
 import react.useState
+import tanstack.react.router.useLoaderData
 import web.cssom.*
 
 val DetailPage = FC {

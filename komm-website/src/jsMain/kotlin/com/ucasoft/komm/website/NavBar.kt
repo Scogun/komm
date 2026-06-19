@@ -9,7 +9,6 @@ import mui.material.styles.Theme
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.*
-import react.router.dom.Link
 import web.cssom.*
 
 external interface NavBarProps : Props {

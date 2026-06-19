@@ -17,7 +17,7 @@ import react.ReactNode
 import react.create
 import react.dom.html.ReactHTML.li
 import react.dom.html.ReactHTML.span
-import react.router.dom.Link
+import tanstack.react.router.Link
 import web.cssom.Color
 import web.cssom.px
 
