@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "2.1.21"
+    kotlin("multiplatform") version "2.4.0"
 }
 
 fun extractRootProperty(propertyName: String): String? {
@@ -17,7 +17,7 @@ val parentGroup = extractRootProperty("group")
 val parentVersion = extractRootProperty("version")
 
 group = parentGroup ?: "com.ucasoft.komm"
-version = parentVersion ?: "0.25.0"
+version = parentVersion ?: "0.50.9"
 
 repositories {
     mavenCentral()
@@ -38,13 +38,14 @@ kotlin {
             dependencies {
                 implementation(kotlinWrappers.react)
                 implementation(kotlinWrappers.reactDom)
-                implementation(kotlinWrappers.reactRouter)
+                implementation(kotlinWrappers.js)
+                implementation(kotlinWrappers.tanstack.reactRouter)
                 implementation(kotlinWrappers.mui.material)
                 implementation(kotlinWrappers.emotion.react)
                 implementation(kotlinWrappers.emotion.styled)
-                implementation(devNpm("html-webpack-plugin", "5.6.3"))
-                implementation(npm("lucide-react","0.513.0"))
-                implementation(npm("react-syntax-highlighter","15.6.1"))
+                implementation(devNpm("html-webpack-plugin", "5.6.7"))
+                implementation(npm("lucide-react","1.21.0"))
+                implementation(npm("react-syntax-highlighter","16.1.1"))
             }
         }
     }
