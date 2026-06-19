@@ -23,8 +23,9 @@ class KOMMSymbolProcessor(
 
         val symbols =
             resolver.getSymbolsWithAnnotation(KOMMMap::class.qualifiedName!!).filterIsInstance<KSClassDeclaration>()
+                .toList()
 
-        if (!symbols.iterator().hasNext()) {
+        if (symbols.isEmpty()) {
             return emptyList()
         }
 
@@ -46,10 +47,10 @@ class KOMMSymbolProcessor(
                 }
                 .build()
 
-            file.writeTo(codeGenerator, false)
+            file.writeTo(codeGenerator, true, classDeclarations.mapNotNull { it.containingFile })
         }
 
-        return symbols.filterNot { it.validate() }.toList()
+        return symbols.filterNot { it.validate() }
     }
 
     private fun loadPlugins(): Map<KClass<out KOMMPlugin>, List<Class<*>>> {
