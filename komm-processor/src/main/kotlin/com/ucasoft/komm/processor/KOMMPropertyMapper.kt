@@ -215,12 +215,14 @@ class KOMMPropertyMapper(
             return if (useSafeAccess) propertyName else getSourceAccessName(source, assertNotNull = true)
         }
 
-        return "${
-            if (sourceIsNullable && !useSafeAccess) getSourceAccessName(
-                source,
-                assertNotNull = true
-            ) else propertyName
-        }${if (sourceIsNullable && useSafeAccess) "?" else ""}.to${destinationProperty.type}()"
+        val shouldUseSafeCall = sourceIsNullable && (useSafeAccess || destinationIsNullable)
+        val sourceAccessName = when {
+            shouldUseSafeCall -> getSourceAccessName(source, useSafeAccess = true)
+            sourceIsNullable -> getSourceAccessName(source, assertNotNull = true)
+            else -> propertyName
+        }
+
+        return "$sourceAccessName${if (shouldUseSafeCall) "?." else "."}to${destinationType.declaration.simpleName.asString()}()"
     }
 
     private fun getSourceWithPluginCast(
