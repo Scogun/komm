@@ -207,13 +207,8 @@ class KOMMPropertyMapper(
             throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
         }
 
-        val castPlugin = plugins.filter { it.forCast(effectiveSourceType, destinationType) }
-
-        if (castPlugin.count() > 1) {
-            throw KOMMPluginsException("There are more than one plugin for casting from $effectiveSourceType to $destinationType.")
-        } else if (castPlugin.count() == 1) {
-            return castPlugin.first()
-                .cast(source.sourceProperty, propertyName, effectiveSourceType, destinationProperty, destinationType)
+        getSourceWithPluginCast(source, propertyName, effectiveSourceType, destinationProperty, destinationType)?.let {
+            return it
         }
 
         if (sourceIsNullable && destinationType.isAssignableFrom(propertyType.makeNotNullable())) {
@@ -226,6 +221,22 @@ class KOMMPropertyMapper(
                 assertNotNull = true
             ) else propertyName
         }${if (sourceIsNullable && useSafeAccess) "?" else ""}.to${destinationProperty.type}()"
+    }
+
+    private fun getSourceWithPluginCast(
+        source: EmbeddedSourceProperty,
+        propertyName: String,
+        sourceType: KSType,
+        destinationProperty: KSPropertyDeclaration,
+        destinationType: KSType
+    ): String? {
+        val castPlugin = plugins.filter { it.forCast(sourceType, destinationType) }
+
+        return when (castPlugin.count()) {
+            0 -> null
+            1 -> castPlugin.first().cast(source.sourceProperty, propertyName, sourceType, destinationProperty, destinationType)
+            else -> throw KOMMPluginsException("There are more than one plugin for casting from $sourceType to $destinationType.")
+        }
     }
 
     private fun getSourceAccessName(
