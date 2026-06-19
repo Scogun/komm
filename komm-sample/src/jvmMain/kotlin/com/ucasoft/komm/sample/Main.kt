@@ -9,6 +9,7 @@ fun main() {
     println(destination)
     println(source.toSecondDestinationObject())
     println(source.toThirdDestinationObject())
+    println(EmbeddedSourceObject(EmbeddedDetails(1L, "Main"), "Embedded sample").toEmbeddedDestinationObject())
 
     val c = Currency.getInstance(Locale.US)
     println(c.toExCurrency())
