@@ -23,6 +23,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
     * [Disable AutoCast](#disable-autocast)
     * [Change Convert Function Name](#change-convert-function-name)
   * [@MapName](#mapname-annotation)
+  * [@MapEmbedded](#mapembedded-annotation)
   * [@MapConverter](#use-converter)
   * [@MapDefault](#use-resolver)
   * [@NullSubstitute](#use-nullsubstitute)
@@ -262,6 +263,64 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
 ).also { 
     it.intToString = intToString.toString()
 }
+```
+
+### @MapEmbedded annotation
+Use `@MapEmbedded` when several destination properties should be mapped from the same nested source property.
+KOMM checks only the first nested level. Direct source properties have priority over embedded properties.
+If two embedded properties can provide the same destination property, generation fails and the mapping should be made explicit.
+
+#### Classes declaration
+```kotlin
+data class Account(
+    val id: Long,
+    val name: String
+)
+
+data class AccountWithCurrencies(
+    val account: Account,
+    val currencies: List<AccountCurrency>
+)
+
+@KOMMMap(from = [AccountWithCurrencies::class])
+@MapEmbedded("account")
+data class AccountDto(
+    val name: String,
+    val currencies: List<AccountCurrencyDto>
+) {
+    var id: Long = 0L
+}
+```
+#### Generated extension function
+```kotlin
+fun AccountWithCurrencies.toAccountDto(): AccountDto = AccountDto(
+    name = account.name,
+    currencies = currencies.map { it.toAccountCurrencyDto() }
+).also {
+    it.id = account.id
+}
+```
+#### Nullable embedded source
+```kotlin
+data class AccountWithCurrencies(
+    val account: Account?,
+    val currencies: List<AccountCurrency>
+)
+
+@KOMMMap(from = [AccountWithCurrencies::class])
+@MapEmbedded("account")
+data class AccountDto(
+    @NullSubstitute(MapDefault(StringResolver::class))
+    val name: String,
+    val currencies: List<AccountCurrencyDto>
+)
+```
+#### Generated extension function
+```kotlin
+fun AccountWithCurrencies.toAccountDto(): AccountDto = AccountDto(
+    name = account?.name ?: StringResolver(null).resolve(),
+    currencies = currencies.map { it.toAccountCurrencyDto() }
+)
 ```
 
 ### Use Converter
