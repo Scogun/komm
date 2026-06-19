@@ -32,14 +32,15 @@ external interface ListPageProps : Props {
 val ListPage = FC<ListPageProps> {
 
     val decapitateTitle = it.title.replaceFirstChar { it.lowercase() }
+    val pagePath = it.path?.let { if (it.startsWith("/")) it else "/$it" } ?: "/$decapitateTitle"
 
     PageContainer {
         homePath = "Home"
-        breadcrumbs = listOf(BreadCrumb(it.icon, it.title, "/${if (it.path != null) it.path else decapitateTitle}"))
+        breadcrumbs = listOf(BreadCrumb(it.icon, it.title, pagePath))
         Typography {
             variant = TypographyVariant.h2
             gutterBottom = true
-            +"Plugins"
+            +it.title
         }
         Typography {
             variant = TypographyVariant.body1
@@ -61,7 +62,7 @@ val ListPage = FC<ListPageProps> {
                         disablePadding = true
                         ListItemButton {
                             component = Link
-                            asDynamic().to = plugin.id
+                            asDynamic().to = "$pagePath/${plugin.id}"
                             ListItemIcon {
                                 sx {
                                     color = Color("primary.main")

@@ -31,7 +31,7 @@ val CodeTabs = FC<CodeTabsProps> { tabs ->
         }
         tabs.items.map {
             Box {
-                hidden = tabs.type != it.type
+                asDynamic().hidden = tabs.type != it.type
                 SyntaxHighlighter {
                     language = it.language
                     +it.code

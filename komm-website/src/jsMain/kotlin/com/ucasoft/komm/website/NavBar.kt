@@ -1,7 +1,7 @@
 package com.ucasoft.komm.website
 
 import com.ucasoft.komm.website.data.PathItem
-import com.ucasoft.wrappers.lucide.GitHub
+import com.ucasoft.wrappers.lucide.Code
 import com.ucasoft.wrappers.lucide.Menu
 import js.objects.unsafeJso
 import mui.material.*
@@ -9,6 +9,7 @@ import mui.material.styles.Theme
 import mui.material.styles.useTheme
 import mui.system.sx
 import react.*
+import tanstack.react.router.Link as RouterLink
 import web.cssom.*
 
 external interface NavBarProps : Props {
@@ -27,7 +28,7 @@ val NavBar = FC<NavBarProps> {
     AppBar {
         position = AppBarPosition.fixed
         sx {
-            zIndex = integer(theme.zIndex.drawer.toInt() + 1)
+            zIndex = integer(theme.zIndex.asDynamic().drawer.unsafeCast<Int>() + 1)
         }
         Container {
             maxWidth = "xl"
@@ -53,7 +54,7 @@ val NavBar = FC<NavBarProps> {
                         }
                         it.menu.map { item ->
                             Button {
-                                component = Link
+                                component = RouterLink
                                 asDynamic().to = item.path
                                 sx {
                                     color = Color("text.primary")
@@ -94,10 +95,10 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
         }
         sx {
             display = Display.block
-            asDynamic()["& .MuiDrawer-paper"] = unsafeJso {
-                boxSizing = BoxSizing.borderBox
-                width = 240.px
-            }
+            val drawerPaper = unsafeJso<Any>().asDynamic()
+            drawerPaper.boxSizing = BoxSizing.borderBox
+            drawerPaper.width = 240.px
+            asDynamic()["& .MuiDrawer-paper"] = drawerPaper
         }
         Box {
             sx {
@@ -113,7 +114,7 @@ private val NavDrawer = FC<NavDrawerProps> { d ->
                     ListItem {
                         disablePadding = true
                         ListItemButton {
-                            component = Link
+                            component = RouterLink
                             asDynamic().to = item.path
                             onClick = { d.onChoose(item) }
                             ListItemIcon {
@@ -152,7 +153,7 @@ private val GitHubButton = FC<ButtonProps> {
         color = it.color
         href = "https://github.com/Scogun/komm"
         asDynamic().target = "_blank"
-        startIcon = GitHub.create {
+        startIcon = Code.create {
             size = 18
         }
         rel = "noopener noreferre"

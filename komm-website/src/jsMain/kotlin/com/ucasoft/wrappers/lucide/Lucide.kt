@@ -35,9 +35,6 @@ external val Database: FC<LucideProps>
 @JsName("FileJson")
 external val FileJson: FC<LucideProps>
 
-@JsName("Github")
-external val GitHub: FC<LucideProps>
-
 @JsName("Heart")
 external val Heart: FC<LucideProps>
 

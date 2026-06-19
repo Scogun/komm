@@ -20,12 +20,12 @@ import com.ucasoft.wrappers.lucide.Tag
 import js.objects.unsafeJso
 import mui.material.Box
 import mui.material.CssBaseline
+import mui.material.useMediaQuery
 import mui.material.styles.Theme
 import mui.material.styles.ThemeProvider
 import mui.material.styles.createTheme
 import mui.system.Breakpoint
 import mui.system.sx
-import mui.system.useMediaQuery
 import react.FC
 import react.create
 import react.useEffect
@@ -40,12 +40,13 @@ import tanstack.react.router.createRoute
 import tanstack.react.router.createRouter
 import tanstack.react.router.useLocation
 import tanstack.router.core.AnyRoute
+import tanstack.router.core.ParamName
 import tanstack.router.core.RouteLoaderEntry
 import tanstack.router.core.RoutePath
 import web.cssom.*
 import web.window.window
 
-val appTheme = createTheme(
+val appTheme: Theme = createTheme(
     unsafeJso {
         palette = unsafeJso {
             primary = unsafeJso {
@@ -232,7 +233,7 @@ val App = FC {
         val secondLineRoute = createRoute(
             RouteOptions(
                 getParentRoute = { rootRouter },
-                path = RoutePath("${item.path}/:id"),
+                path = RoutePath("${item.path}/", ParamName("id")),
                 component = DetailPage,
                 loader = ({ context: dynamic -> detailData.first { it.id == context.params.id } }).unsafeCast<RouteLoaderEntry>()
             )
@@ -290,7 +291,7 @@ private val Root = FC {
             Box {
                 sx {
                     flexGrow = number(1.0)
-                    paddingBottom = appTheme.spacing(if (isMobile) 13 else 21)
+                    paddingBottom = appTheme.asDynamic().spacing(if (isMobile) 13 else 21).unsafeCast<Length>()
                 }
                 Outlet {}
             }
