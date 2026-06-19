@@ -19,10 +19,10 @@ val enumPlugin = DetailItem(
                 CodeData(
                     Type.KMP, """
                 plugins {
-                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                    id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.25.0"
+                val kommVersion = "0.50.9"
 
                 //...
 
@@ -38,10 +38,10 @@ val enumPlugin = DetailItem(
                 CodeData(
                     Type.JVM, """
                 plugins {
-                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                    id("com.google.devtools.ksp") version "2.3.9"
                 }
 
-                val kommVersion = "0.25.0"
+                val kommVersion = "0.50.9"
 
                 depensencies {
                     implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")

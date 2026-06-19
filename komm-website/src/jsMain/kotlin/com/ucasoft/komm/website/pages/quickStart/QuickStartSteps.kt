@@ -12,16 +12,16 @@ val steps = listOf(
             CodeData(
                 Type.KMP, """
                 plugins {
-                    kotlin("multiplatform") version "2.0.21"
-                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                    kotlin("multiplatform") version "2.4.0"
+                    id("com.google.devtools.ksp") version "2.3.9"
                 }
             """.trimIndent()
             ),
             CodeData(
                 Type.JVM, """
                 plugins {
-                    kotlin("jvm") version "2.0.21"
-                    id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+                    kotlin("jvm") version "2.4.0"
+                    id("com.google.devtools.ksp") version "2.3.9"
                 }
             """.trimIndent()
             )
@@ -33,7 +33,7 @@ val steps = listOf(
         listOf(
             CodeData(
                 Type.KMP, """
-                val kommVersion = "0.25.0"
+                val kommVersion = "0.50.9"
 
                 kotlin {
                     jvm()
@@ -60,7 +60,7 @@ val steps = listOf(
             ),
             CodeData(
                 Type.JVM, """
-                val kommVersion = "0.25.0"
+                val kommVersion = "0.50.9"
 
                 dependencies {
                     implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")
