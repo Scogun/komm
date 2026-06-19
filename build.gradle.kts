@@ -12,7 +12,7 @@ tasks.wrapper {
 allprojects {
     group = "com.ucasoft.komm"
 
-    version = "0.60.1"
+    version = "0.61.5"
 
     repositories {
         mavenCentral()
