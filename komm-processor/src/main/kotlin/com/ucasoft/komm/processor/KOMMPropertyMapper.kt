@@ -61,16 +61,18 @@ class KOMMPropertyMapper(
                 annotationFinder.findSubstituteResolver(it)
             }
         }
-        return if (converter != null && converter.isContextConverter) {
-            "$destination = $converter(this, ${getRequiredContextParameterName()}).convert(${getSourceAccessName(source)})"
-        } else if (converter != null) {
-            "$destination = $converter(this).convert(${getSourceAccessName(source)})"
-        } else if (nullSubstituteResolver != null) {
-            "$destination = ${
-                getSourceWithCast(destination, source, config, function, useSafeAccess = true)
-            } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
-        } else {
-            "$destination = ${getSourceWithCast(destination, source, config, function)}"
+        return when {
+            converter != null ->
+                if (converter.isContextConverter)
+                    "$destination = $converter(this, ${getRequiredContextParameterName()}).convert(${getSourceAccessName(source)})"
+                else
+                    "$destination = $converter(this).convert(${getSourceAccessName(source)})"
+            nullSubstituteResolver != null ->
+                "$destination = ${
+                    getSourceWithCast(destination, source, config, function, useSafeAccess = true)
+                } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
+            else ->
+                "$destination = ${getSourceWithCast(destination, source, config, function)}"
         }
     }
 
