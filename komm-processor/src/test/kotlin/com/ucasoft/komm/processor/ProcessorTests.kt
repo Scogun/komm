@@ -188,6 +188,34 @@ internal class ProcessorTests : CompilationTests() {
     }
 
     @Test
+    fun mapsClassesWithSameSimpleNameFromDifferentPackages() {
+        val sourcePackageName = "$packageName.db"
+        val sourceSpec = buildFileSpec("Account", mapOf("id" to PropertySpecInit(INT)), `package` = sourcePackageName)
+        val generated = generate(
+            sourceSpec,
+            buildFileSpec(
+                "Account",
+                mapOf("id" to PropertySpecInit(INT)),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[$sourcePackageName.Account::class]")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first { it.name == "toAccount" }
+        val sourceClass = generated.classLoader.loadClass("$sourcePackageName.Account")
+        val destinationClass = generated.classLoader.loadClass("$packageName.Account")
+        val sourceInstance = sourceClass.constructors.first().newInstance(123)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance::class.java.shouldBe(destinationClass)
+        destinationInstance::class.shouldHaveMemberProperty("id") {
+            it.getter.call(destinationInstance).shouldBe(123)
+        }
+    }
+
+    @Test
     fun toDestinationIsNotKotlinFails() {
         val generated = generate(
             buildFileSpec(

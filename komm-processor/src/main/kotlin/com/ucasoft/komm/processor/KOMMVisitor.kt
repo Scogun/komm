@@ -2,6 +2,7 @@ package com.ucasoft.komm.processor
 
 import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.*
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asTypeName
@@ -64,10 +65,13 @@ class KOMMVisitor(
     }
 
     private fun syncImports(destination: KSType, source: KSType, imports: MutableMap<String, List<String>>) {
-        val destinationPackageName = destination.toClassName().packageName
-        val sourcePackageName = source.toClassName().packageName
-        if (sourcePackageName != destinationPackageName) {
-            imports[sourcePackageName] = imports[sourcePackageName].orEmpty() + source.toClassName().simpleName
+        val destinationClassName = destination.toClassName()
+        val sourceClassName = source.toClassName()
+        if (
+            sourceClassName.packageName != destinationClassName.packageName &&
+            sourceClassName.simpleName != destinationClassName.simpleName
+        ) {
+            imports[sourceClassName.packageName] = imports[sourceClassName.packageName].orEmpty() + sourceClassName.simpleName
         }
     }
 
@@ -77,7 +81,7 @@ class KOMMVisitor(
         return FunSpec.builder(fromSourceFunctionName)
             .receiver(getSourceName(source))
             .returns(destination.toClassName())
-            .addStatement(buildStatement(source, destination.declaration as KSClassDeclaration, direction, config))
+            .addCode(buildStatement(source, destination.declaration as KSClassDeclaration, direction, config))
             .build()
     }
 
@@ -95,13 +99,13 @@ class KOMMVisitor(
         return source.toTypeName()
     }
 
-    private fun buildStatement(source: KSType, destination: KSClassDeclaration, direction: Direction, config: KSAnnotation): String {
+    private fun buildStatement(source: KSType, destination: KSClassDeclaration, direction: Direction, config: KSAnnotation): CodeBlock {
         val castPlugins = typePlugins.toMutableList().apply {
                 addAll(plugins[KOMMCastPlugin::class]
                     ?.map { it.getDeclaredConstructor().newInstance() } ?: emptyList())
             }.filterIsInstance<KOMMCastPlugin>()
 
-        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins)
+        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins, imports)
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }
@@ -116,8 +120,8 @@ class KOMMVisitor(
             propertyMapper.map(it, MapTo.Also)
         }
 
-        return buildString {
-            appendLine("return $destination(")
+        val statement = buildString {
+            appendLine("return %T(")
             constructorProperties?.forEach { appendLine("\t$it,") }
             deleteLast(2)
             if (noConstructorProperties.isNullOrEmpty()) {
@@ -128,6 +132,8 @@ class KOMMVisitor(
                 append("}")
             }
         }
+
+        return CodeBlock.of(statement, destination.toClassName())
     }
 
     private fun StringBuilder.deleteLast(length: Int) = this.delete(this.length - length, this.length - 1)!!

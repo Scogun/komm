@@ -14,7 +14,8 @@ class KOMMPropertyMapper(
     destination: KSType,
     private val direction: KOMMVisitor.Direction,
     private val config: KSAnnotation,
-    private val plugins: List<KOMMCastPlugin>
+    private val plugins: List<KOMMCastPlugin>,
+    private val imports: MutableMap<String, List<String>>
 ) {
 
     private val annotationFinder = KOMMAnnotationFinder(
@@ -44,6 +45,12 @@ class KOMMPropertyMapper(
                 annotationFinder.findConverter(it)
             }
         }
+        val function = when (direction) {
+            KOMMVisitor.Direction.From -> annotationFinder.findFunction(destination)
+            KOMMVisitor.Direction.To -> (sourceProperty as? KSPropertyDeclaration)?.let {
+                annotationFinder.findFunction(it)
+            }
+        }
         val nullSubstituteResolver = when (direction) {
             KOMMVisitor.Direction.From -> annotationFinder.findSubstituteResolver(destination)
             KOMMVisitor.Direction.To -> (sourceProperty as? KSPropertyDeclaration)?.let {
@@ -54,10 +61,10 @@ class KOMMPropertyMapper(
             "$destination = $converter(this).convert(${getSourceAccessName(source)})"
         } else if (nullSubstituteResolver != null) {
             "$destination = ${
-                getSourceWithCast(destination, source, config, useSafeAccess = true)
+                getSourceWithCast(destination, source, config, function, useSafeAccess = true)
             } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
         } else {
-            "$destination = ${getSourceWithCast(destination, source, config)}"
+            "$destination = ${getSourceWithCast(destination, source, config, function)}"
         }
     }
 
@@ -175,6 +182,7 @@ class KOMMPropertyMapper(
         destinationProperty: KSPropertyDeclaration,
         source: EmbeddedSourceProperty,
         config: KSAnnotation,
+        function: Pair<String, String>?,
         useSafeAccess: Boolean = false
     ): String {
         val propertyName = getSourceAccessName(source, useSafeAccess)
@@ -215,12 +223,21 @@ class KOMMPropertyMapper(
             return if (useSafeAccess) propertyName else getSourceAccessName(source, assertNotNull = true)
         }
 
-        return "${
-            if (sourceIsNullable && !useSafeAccess) getSourceAccessName(
-                source,
-                assertNotNull = true
-            ) else propertyName
-        }${if (sourceIsNullable && useSafeAccess) "?" else ""}.to${destinationProperty.type}()"
+        val shouldUseSafeCall = sourceIsNullable && (useSafeAccess || destinationIsNullable)
+        val sourceAccessName = when {
+            shouldUseSafeCall -> getSourceAccessName(source, useSafeAccess = true)
+            sourceIsNullable -> getSourceAccessName(source, assertNotNull = true)
+            else -> propertyName
+        }
+
+        val conversionFunctionName = "to${destinationType.declaration.simpleName.asString()}"
+        val functionName = function?.second?.ifEmpty { conversionFunctionName } ?: conversionFunctionName
+        if (function != null) {
+            imports[function.first] = imports[function.first].orEmpty() + functionName
+        }
+        val receiverPrefix = "$sourceAccessName${if (shouldUseSafeCall) "?." else "."}"
+
+        return "$receiverPrefix$functionName()"
     }
 
     private fun getSourceWithPluginCast(

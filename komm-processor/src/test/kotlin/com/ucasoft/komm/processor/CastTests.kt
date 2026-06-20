@@ -1,12 +1,17 @@
 package com.ucasoft.komm.processor
 
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapConfiguration
 import com.ucasoft.komm.annotations.MapConvert
+import com.ucasoft.komm.annotations.MapFunction
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -125,6 +130,66 @@ internal class CastTests: CompilationTests() {
 
         destinationInstance::class.shouldHaveMemberProperty(propertyName) {
             it.getter.call(destinationInstance).shouldBe(sourceInstance.numericCode.toString())
+        }
+    }
+
+    @Test
+    fun nullableSourceCastsToNullableDestinationWithSafeCall() {
+        val sourceObjectClassName = ClassName(packageName, "SourceObject")
+        val imageBitmapClassName = ClassName(packageName, "ImageBitmap")
+        val byteArrayClassName = ClassName("kotlin", "ByteArray")
+        val convertersPackageName = "$packageName.converters"
+        val propertyName = "logo"
+        val generated = generate(
+            FileSpec.builder(packageName, "ImageBitmap.kt")
+                .addType(TypeSpec.classBuilder(imageBitmapClassName).build())
+                .build(),
+            FileSpec.builder(convertersPackageName, "ImageBitmapConverters.kt")
+                .addFunction(
+                    FunSpec.builder("toImageBitmap")
+                        .receiver(byteArrayClassName)
+                        .returns(imageBitmapClassName)
+                        .addStatement("return %T()", imageBitmapClassName)
+                        .build()
+                )
+                .build(),
+            buildFileSpec(
+                sourceObjectClassName.simpleName,
+                mapOf(propertyName to PropertySpecInit(byteArrayClassName, isNullable = true))
+            ),
+            buildFileSpec(
+                "DestinationObject",
+                mapOf(
+                    propertyName to PropertySpecInit(
+                        imageBitmapClassName,
+                        isNullable = true,
+                        annotations = listOf(
+                            MapFunction::class to mapOf(
+                                "packageName = %S" to listOf(convertersPackageName)
+                            )
+                        )
+                    )
+                ),
+                listOf(KOMMMap::class to mapOf("from = %L" to listOf("[${sourceObjectClassName.simpleName}::class]")))
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceObjectClassName.canonicalName)
+
+        val nullSourceInstance = sourceClass.constructors.first().newInstance(null)
+        val nullDestinationInstance = mappingMethod.invoke(null, nullSourceInstance)
+        nullDestinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(nullDestinationInstance).shouldBe(null)
+        }
+
+        val sourceInstance = sourceClass.constructors.first().newInstance(byteArrayOf(1))
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+        destinationInstance::class.shouldHaveMemberProperty(propertyName) {
+            it.getter.call(destinationInstance).shouldNotBeNull()
         }
     }
 

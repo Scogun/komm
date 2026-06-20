@@ -21,9 +21,10 @@ abstract class CompilationTests {
         className: String,
         constructorProperties: Map<String, PropertySpecInit>,
         classAnnotations: List<Pair<KClass<out Annotation>, Map<String, List<Any>>>> = emptyList(),
-        properties: Map<String, PropertySpecInit> = emptyMap()
+        properties: Map<String, PropertySpecInit> = emptyMap(),
+        `package`: String = packageName
     ) = FileSpec
-        .builder(packageName, "$className.kt")
+        .builder(`package`, "$className.kt")
         .addImport("com.ucasoft.komm.annotations", "MapConfiguration", "MapDefault")
         .addImport("java.util", "Currency")
         .addType(
@@ -100,7 +101,7 @@ abstract class CompilationTests {
 
     fun generate(vararg fileSpec: FileSpec) = KotlinCompilation().apply {
         inheritClassPath = true
-        sources = fileSpec.map { SourceFile.kotlin(it.name, it.toString()) }
+        sources = fileSpec.map { SourceFile.kotlin("${it.packageName.replace('.', '/')}/${it.name}", it.toString()) }
         workingDir = tempDir
         configureKsp {
             symbolProcessorProviders.add(KOMMProcessorProvider())

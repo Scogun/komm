@@ -22,6 +22,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [Configuration](#mapping-configuration)
     * [Disable AutoCast](#disable-autocast)
     * [Change Convert Function Name](#change-convert-function-name)
+  * [@MapFunction](#mapfunction-annotation)
   * [@MapName](#mapname-annotation)
   * [@MapEmbedded](#mapembedded-annotation)
   * [@MapConverter](#use-converter)
@@ -55,6 +56,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
 * Has next properties annotations:
   * Specify mapping from property with different name
   * Specify a converter to map data from source unusual way
+  * Specify a top-level extension function for property casting
   * Specify a resolver to map default values into properties
   * Specify null substitute to map nullable properties into not-nullable
 * Support extension via plugins
@@ -84,7 +86,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -97,7 +99,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 kotlin {
     jvm {
@@ -220,6 +222,42 @@ fun SourceObject.convertToDestination(): DestinationObject = DestinationObject(
 ).also { 
     it.intToString = intToString.toString()
 }
+```
+
+### @MapFunction annotation
+Use `@MapFunction` when the automatic `toType()` cast should call a top-level extension function from another package.
+KOMM imports the function and keeps extension-call syntax in generated code.
+
+#### Function declaration
+```kotlin
+fun ByteArray.toImageBitmap(): ImageBitmap = //...
+```
+#### Classes declaration
+```kotlin
+data class SourceObject(
+    val logo: ByteArray?
+)
+
+@KOMMMap(from = [SourceObject::class])
+data class DestinationObject(
+    @MapFunction(packageName = "com.test.converters")
+    val logo: ImageBitmap?
+)
+```
+or specify the function name explicitly:
+```kotlin
+@MapFunction(
+    packageName = "com.test.converters",
+    name = "toImageBitmap"
+)
+```
+#### Generated extension function
+```kotlin
+import com.test.converters.toImageBitmap
+
+fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
+    logo = logo?.toImageBitmap()
+)
 ```
 
 ### @MapName annotation
@@ -528,7 +566,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -542,7 +580,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 //...
 
@@ -602,7 +640,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -646,7 +684,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -660,7 +698,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.60.0"
+val kommVersion = "0.61.6"
 
 //...
 
