@@ -51,14 +51,27 @@ class KOMMVisitor(
             val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }.value as ArrayList<KSType>
             val toArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::to.name }.value as ArrayList<KSType>
             fromArgument.forEach {
+                syncImports(classDeclaration.asStarProjectedType(), it, imports)
                 functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, Direction.From, config))
             }
             toArgument.forEach {
                 if (!it.isKotlinClass()) {
                     throw KOMMException("The class ${it.toClassName().simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
                 }
+                syncImports(it, classDeclaration.asStarProjectedType(), imports)
                 functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), Direction.To, config))
             }
+        }
+    }
+
+    private fun syncImports(destination: KSType, source: KSType, imports: MutableMap<String, List<String>>) {
+        val destinationClassName = destination.toClassName()
+        val sourceClassName = source.toClassName()
+        if (
+            sourceClassName.packageName != destinationClassName.packageName &&
+            sourceClassName.simpleName != destinationClassName.simpleName
+        ) {
+            imports[sourceClassName.packageName] = imports[sourceClassName.packageName].orEmpty() + sourceClassName.simpleName
         }
     }
 
