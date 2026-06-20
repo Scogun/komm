@@ -26,6 +26,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [@MapName](#mapname-annotation)
   * [@MapEmbedded](#mapembedded-annotation)
   * [@MapConverter](#use-converter)
+  * [Context](#use-context)
   * [@MapDefault](#use-resolver)
   * [@NullSubstitute](#use-nullsubstitute)
     * [Allow Not-Null Assertion](#mapping-configuration-1)
@@ -86,7 +87,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -99,7 +100,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 kotlin {
     jvm {
@@ -397,6 +398,85 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     it.otherCost = CostConverter(this).convert(cost)
 }
 ```
+`@MapConvert` can also use a context-aware converter when the mapping has `KOMMMap.context`.
+
+```kotlin
+data class AccountMapContext(
+    val banks: Map<Long, Bank>
+)
+
+class BankConverter(
+    source: FullAccount,
+    context: AccountMapContext
+) : KOMMContextConverter<FullAccount, Long?, AccountMapContext, Account, Bank?>(source, context) {
+
+    override fun convert(sourceMember: Long?): Bank? =
+        sourceMember?.let(context.banks::get)
+}
+```
+#### Classes declaration
+```kotlin
+@KOMMMap(from = [FullAccount::class], context = AccountMapContext::class)
+data class Account(
+    //...
+    @MapConvert<FullAccount, Account, BankConverter>(BankConverter::class, "bankId")
+    val bank: Bank?
+)
+```
+#### Generated extension function
+```kotlin
+fun FullAccount.toAccount(kommContext: AccountMapContext): Account = Account(
+    //...
+    bank = BankConverter(this, kommContext).convert(bankId)
+)
+```
+
+### Use Context
+Use mapping context when destination members depend on data that is not part of the source object, such as lookup tables produced by other flows.
+
+#### Context declaration
+```kotlin
+data class TransactionMapContext(
+    val accounts: Map<Long, Account>,
+    val accountCurrencies: Map<Long, AccountCurrency>,
+    val categories: Map<Long, Category>
+)
+```
+#### Context resolver declaration
+```kotlin
+class FallbackAccountResolver(
+    destination: Transaction?,
+    context: TransactionMapContext
+) : KOMMContextResolver<TransactionMapContext, Transaction, Account?>(destination, context) {
+
+    override fun resolve(): Account? {
+        return context.accounts.values.firstOrNull()
+    }
+}
+```
+#### Classes declaration
+```kotlin
+@KOMMMap(from = [DbTransaction::class], context = TransactionMapContext::class)
+data class Transaction(
+    //...
+    @MapDefault<FallbackAccountResolver>(FallbackAccountResolver::class)
+    val expenseAccount: Account?
+)
+```
+#### Generated extension function
+```kotlin
+fun DbTransaction.toTransaction(kommContext: TransactionMapContext): Transaction = Transaction(
+    //...
+    expenseAccount = FallbackAccountResolver(null, kommContext).resolve()
+)
+```
+The context is a snapshot. Combine reactive inputs before mapping, then build a fresh context whenever any dependency emits.
+```kotlin
+combine(transactions, accountCurrencies, categories, accounts) { items, currencies, cats, accs ->
+    val context = TransactionMapContext(accs, currencies, cats)
+    items.map { it.toTransaction(context) }
+}
+```
 ### Use Resolver
 #### Resolver declaration
 ```kotlin
@@ -566,7 +646,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -580,7 +660,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 //...
 
@@ -640,7 +720,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -684,7 +764,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -698,7 +778,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.61.6"
+val kommVersion = "0.70.6"
 
 //...
 

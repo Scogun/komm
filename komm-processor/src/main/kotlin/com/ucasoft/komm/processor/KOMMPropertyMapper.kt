@@ -2,12 +2,15 @@ package com.ucasoft.komm.processor
 
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ksp.toTypeName
+import com.ucasoft.komm.abstractions.KOMMContextConverter
+import com.ucasoft.komm.abstractions.KOMMContextResolver
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.plugins.KOMMCastPlugin
 import com.ucasoft.komm.plugins.exceptions.KOMMPluginsException
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
+import com.ucasoft.komm.processor.extensions.resolveTypeArgument
 
 class KOMMPropertyMapper(
     source: KSType,
@@ -15,7 +18,8 @@ class KOMMPropertyMapper(
     private val direction: KOMMVisitor.Direction,
     private val config: KSAnnotation,
     private val plugins: List<KOMMCastPlugin>,
-    private val imports: MutableMap<String, List<String>>
+    private val imports: MutableMap<String, List<String>>,
+    private val contextParameterName: String?
 ) {
 
     private val annotationFinder = KOMMAnnotationFinder(
@@ -57,19 +61,65 @@ class KOMMPropertyMapper(
                 annotationFinder.findSubstituteResolver(it)
             }
         }
-        return if (converter != null) {
-            "$destination = $converter(this).convert(${getSourceAccessName(source)})"
-        } else if (nullSubstituteResolver != null) {
-            "$destination = ${
-                getSourceWithCast(destination, source, config, function, useSafeAccess = true)
-            } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
-        } else {
-            "$destination = ${getSourceWithCast(destination, source, config, function)}"
+        return when {
+            converter != null ->
+                if (converter.isContextConverter)
+                    "$destination = $converter(this, ${getRequiredContextParameterName()}).convert(${getSourceAccessName(source)})"
+                else
+                    "$destination = $converter(this).convert(${getSourceAccessName(source)})"
+            nullSubstituteResolver != null ->
+                "$destination = ${
+                    getSourceWithCast(destination, source, config, function, useSafeAccess = true)
+                } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
+            else ->
+                "$destination = ${getSourceWithCast(destination, source, config, function)}"
         }
     }
 
-    private fun mapResolver(resolver: String, mapTo: KOMMVisitor.MapTo) =
-        "$resolver(${if (mapTo == KOMMVisitor.MapTo.Constructor) "null" else "it"}).resolve()"
+    private fun mapResolver(resolver: KSType, mapTo: KOMMVisitor.MapTo): String {
+        val destination = if (mapTo == KOMMVisitor.MapTo.Constructor) "null" else "it"
+        return if (resolver.isContextResolver) {
+            "$resolver($destination, ${getRequiredContextParameterName()}).resolve()"
+        } else {
+            "$resolver($destination).resolve()"
+        }
+    }
+
+    private val KSType?.isContextConverter
+            get() = (this?.declaration as? KSClassDeclaration)?.let { isContext(it, KOMMContextConverter::class.qualifiedName!!) } ?: false
+
+    private val KSType?.isContextResolver
+            get() = (this?.declaration as? KSClassDeclaration)?.let { isContext(it, KOMMContextResolver::class.qualifiedName!!) } ?: false
+
+    private fun isContext(
+        declaration: KSClassDeclaration,
+        superClassName: String,
+        typeSubstitutions: Map<String, KSType> = emptyMap()
+    ): Boolean {
+        for (superTypeReference in declaration.superTypes) {
+            val superType = superTypeReference.resolve()
+            val superDeclaration = superType.declaration as? KSClassDeclaration ?: continue
+
+            if (superDeclaration.qualifiedName?.asString() == superClassName) {
+                return true
+            }
+
+            val superSubstitutions = superDeclaration.typeParameters
+                .zip(superType.arguments)
+                .mapNotNull { (parameter, argument) ->
+                    argument.resolveTypeArgument(typeSubstitutions)?.let { parameter.name.asString() to it }
+                }
+                .toMap()
+            if (isContext(superDeclaration, superClassName, superSubstitutions)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private fun getRequiredContextParameterName() = contextParameterName
+        ?: throw KOMMException("${KOMMMap::class.simpleName}.context is required when using context-aware @${MapConvert::class.simpleName} or @${MapDefault::class.simpleName}.")
 
     private fun getSourceProperty(sourceName: String): EmbeddedSourceProperty? {
         sourceProperties[sourceName]?.let { return EmbeddedSourceProperty(null, it) }
@@ -111,7 +161,7 @@ class KOMMPropertyMapper(
     }
 
     private fun handleNoSourceProperty(
-        resolver: String?,
+        resolver: KSType?,
         destination: KSPropertyDeclaration,
         sourceName: String,
         mapTo: KOMMVisitor.MapTo
