@@ -4,13 +4,14 @@ import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeArgument
-import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.ucasoft.komm.abstractions.KOMMContextConverter
+import com.ucasoft.komm.abstractions.KOMMContextResolver
 import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException
+import com.ucasoft.komm.processor.extensions.resolveTypeArgument
 
 class KOMMAnnotationFinder(private val forClass: KSType) {
 
@@ -55,7 +56,7 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         return packageName to name
     }
 
-    fun findSubstituteResolver(member: KSPropertyDeclaration): String? {
+    fun findSubstituteResolver(member: KSPropertyDeclaration): KSType? {
         val annotations = member.annotations.filter { it.shortName.asString() == NullSubstitute::class.simpleName }
             .associateWith(::associateWithFor)
 
@@ -64,7 +65,7 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         if (annotation != null) {
             val resolverArgument =
                 annotation.arguments.first { it.name?.asString() == NullSubstitute::default.name }.value as KSAnnotation
-            return resolverArgument.arguments.first { it.name?.asString() == MapDefault<*>::resolver.name }.value.toString()
+            return resolverArgument.arguments.first { it.name?.asString() == MapDefault<*>::resolver.name }.value as? KSType
         }
 
         return null
@@ -75,18 +76,26 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
         member: KSPropertyDeclaration,
         annotationName: String?,
         argumentName: String
-    ): String? {
-        val annotations =
-            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith(::associateWithFor)
-
-        val annotation = filterAnnotationsByClass(forClass, annotations, member)
+    ): KSType? {
+        val annotation = findAnnotation(forClass, member, annotationName)
 
         if (annotation != null) {
             val resolverArgument = annotation.arguments.first { it.name?.asString() == argumentName }
-            return resolverArgument.value.toString()
+            return resolverArgument.value as? KSType
         }
 
         return null
+    }
+
+    private fun findAnnotation(
+        forClass: ClassName,
+        member: KSPropertyDeclaration,
+        annotationName: String?
+    ): KSAnnotation? {
+        val annotations =
+            member.annotations.filter { it.shortName.asString() == annotationName }.associateWith(::associateWithFor)
+
+        return filterAnnotationsByClass(forClass, annotations, member)
     }
 
     fun getSuitedNamedAnnotations(member: KSPropertyDeclaration) =
@@ -128,43 +137,48 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
             ?: return emptyList()
 
         val converterDeclaration = converterArgument.declaration as? KSClassDeclaration ?: return emptyList()
-        return getKOMMConverterAssociations(converterDeclaration).map { it.toClassName() }
+        return getKOMMAssociations(converterDeclaration, KOMMConverter::class.qualifiedName!!, 0, 2)
+            .ifEmpty { getKOMMAssociations(converterDeclaration, KOMMContextConverter::class.qualifiedName!!, 0, 3) }
+            .map { it.toClassName() }
     }
 
-    private fun getKOMMConverterAssociations(
+    private fun getKOMMAssociations(
         declaration: KSClassDeclaration,
+        superClassName: String,
+        sourceIndex: Int,
+        destinationIndex: Int,
         typeSubstitutions: Map<String, KSType> = emptyMap()
     ): List<KSType> {
         for (superTypeReference in declaration.superTypes) {
             val superType = superTypeReference.resolve()
             val superDeclaration = superType.declaration as? KSClassDeclaration ?: continue
 
-            if (superDeclaration.qualifiedName?.asString() == KOMMConverter::class.qualifiedName) {
+            if (superDeclaration.qualifiedName?.asString() == superClassName) {
                 return listOfNotNull(
-                    resolveTypeArgument(superType.arguments.getOrNull(0), typeSubstitutions),
-                    resolveTypeArgument(superType.arguments.getOrNull(2), typeSubstitutions)
+                    superType.arguments.getOrNull(sourceIndex).resolveTypeArgument(typeSubstitutions),
+                    superType.arguments.getOrNull(destinationIndex).resolveTypeArgument(typeSubstitutions)
                 )
             }
 
             val superSubstitutions = superDeclaration.typeParameters
                 .zip(superType.arguments)
                 .mapNotNull { (parameter, argument) ->
-                    resolveTypeArgument(argument, typeSubstitutions)?.let { parameter.name.asString() to it }
+                    argument.resolveTypeArgument(typeSubstitutions)?.let { parameter.name.asString() to it }
                 }
                 .toMap()
-            val associations = getKOMMConverterAssociations(superDeclaration, superSubstitutions)
+            val associations = getKOMMAssociations(
+                superDeclaration,
+                superClassName,
+                sourceIndex,
+                destinationIndex,
+                superSubstitutions
+            )
             if (associations.isNotEmpty()) {
                 return associations
             }
         }
 
         return emptyList()
-    }
-
-    private fun resolveTypeArgument(argument: KSTypeArgument?, typeSubstitutions: Map<String, KSType>): KSType? {
-        val type = argument?.type?.resolve() ?: return null
-        val typeParameter = type.declaration as? KSTypeParameter ?: return type
-        return typeSubstitutions[typeParameter.name.asString()]
     }
 
     private fun filterAnnotationsByClass(

@@ -5,6 +5,7 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
@@ -48,18 +49,22 @@ class KOMMVisitor(
         for (annotation in annotations) {
             val configArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::config.name }
             val config = configArgument.value as KSAnnotation
+            val context = annotation.arguments
+                .first { it.name?.asString() == KOMMMap::context.name }
+                .value as? KSType
+            val effectiveContext = context?.takeUnless { it.toClassName() == Unit::class.asClassName() }
             val fromArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::from.name }.value as ArrayList<KSType>
             val toArgument = annotation.arguments.first { it.name?.asString() == KOMMMap::to.name }.value as ArrayList<KSType>
             fromArgument.forEach {
                 syncImports(classDeclaration.asStarProjectedType(), it, imports)
-                functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, Direction.From, config))
+                functions.add(buildFunction(classDeclaration.asStarProjectedType(), it, Direction.From, config, effectiveContext))
             }
             toArgument.forEach {
                 if (!it.isKotlinClass()) {
                     throw KOMMException("The class ${it.toClassName().simpleName} is not a Kotlin class! Only Kotlin classes can be mapped via `to` parameter.")
                 }
                 syncImports(it, classDeclaration.asStarProjectedType(), imports)
-                functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), Direction.To, config))
+                functions.add(buildFunction(it, classDeclaration.asStarProjectedType(), Direction.To, config, effectiveContext))
             }
         }
     }
@@ -75,13 +80,24 @@ class KOMMVisitor(
         }
     }
 
-    private fun buildFunction(destination: KSType, source: KSType, direction: Direction, config: KSAnnotation) : FunSpec {
+    private fun buildFunction(
+        destination: KSType,
+        source: KSType,
+        direction: Direction,
+        config: KSAnnotation,
+        context: KSType?
+    ) : FunSpec {
         val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
         val fromSourceFunctionName = convertFunctionName.ifEmpty { "to${destination.toClassName().simpleName}" }
         return FunSpec.builder(fromSourceFunctionName)
             .receiver(getSourceName(source))
+            .apply {
+                if (context != null) {
+                    addParameter("kommContext", context.toTypeName())
+                }
+            }
             .returns(destination.toClassName())
-            .addCode(buildStatement(source, destination.declaration as KSClassDeclaration, direction, config))
+            .addCode(buildStatement(source, destination.declaration as KSClassDeclaration, direction, config, context))
             .build()
     }
 
@@ -99,13 +115,27 @@ class KOMMVisitor(
         return source.toTypeName()
     }
 
-    private fun buildStatement(source: KSType, destination: KSClassDeclaration, direction: Direction, config: KSAnnotation): CodeBlock {
+    private fun buildStatement(
+        source: KSType,
+        destination: KSClassDeclaration,
+        direction: Direction,
+        config: KSAnnotation,
+        context: KSType?
+    ): CodeBlock {
         val castPlugins = typePlugins.toMutableList().apply {
                 addAll(plugins[KOMMCastPlugin::class]
                     ?.map { it.getDeclaredConstructor().newInstance() } ?: emptyList())
             }.filterIsInstance<KOMMCastPlugin>()
 
-        val propertyMapper = KOMMPropertyMapper(source, destination.asStarProjectedType(), direction, config, castPlugins, imports)
+        val propertyMapper = KOMMPropertyMapper(
+            source,
+            destination.asStarProjectedType(),
+            direction,
+            config,
+            castPlugins,
+            imports,
+            context?.let { "kommContext" }
+        )
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
         }
