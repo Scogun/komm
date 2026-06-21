@@ -243,29 +243,24 @@ class KOMMPropertyMapper(
         val sourceIsNullable = source.isNullable
         val effectiveSourceType = if (sourceIsNullable) propertyType.makeNullable() else propertyType
 
-        if (destinationType.isAssignableFrom(effectiveSourceType)) {
-            return if (sourceIsNullable && destinationIsNullable) {
-                getSourceAccessName(source, useSafeAccess = true)
-            } else {
-                propertyName
-            }
+        getAssignableSource(
+            source,
+            propertyName,
+            destinationType,
+            destinationIsNullable,
+            sourceIsNullable,
+            effectiveSourceType,
+            useSafeAccess
+        )?.let {
+            return it
         }
 
         if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
             throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
         }
 
-        val destinationHasNullSubstitute =
-            destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-        val sourceHasNullSubstitute = (source.sourceProperty as? KSPropertyDeclaration)
-            ?.annotations
-            ?.any { it.shortName.asString() == NullSubstitute::class.simpleName }
-            ?: false
-        val destinationIsNullOrNullSubstitute =
-            destinationIsNullable || destinationHasNullSubstitute || sourceHasNullSubstitute
         val allowNotNullAssertion = config.getConfigValue<Boolean>(MapConfiguration::allowNotNullAssertion.name)
-
-        if (sourceIsNullable && !destinationIsNullOrNullSubstitute && !allowNotNullAssertion) {
+        if (!canMapNullableSource(source, destinationProperty, destinationIsNullable, allowNotNullAssertion)) {
             throw KOMMCastException("Auto Not-Null Assertion is not allowed! You have to use @${NullSubstitute::class.simpleName} annotation for ${destinationProperty.simpleName.asString()} property.")
         }
 
@@ -293,6 +288,45 @@ class KOMMPropertyMapper(
 
         return "$receiverPrefix$functionName()"
     }
+
+    private fun getAssignableSource(
+        source: EmbeddedSourceProperty,
+        propertyName: String,
+        destinationType: KSType,
+        destinationIsNullable: Boolean,
+        sourceIsNullable: Boolean,
+        effectiveSourceType: KSType,
+        useSafeAccess: Boolean
+    ): String? {
+        if (!destinationType.isAssignableFrom(effectiveSourceType)) {
+            return null
+        }
+
+        return if (sourceIsNullable && destinationIsNullable) {
+            getSourceAccessName(source, useSafeAccess = true)
+        } else {
+            propertyName
+        }
+    }
+
+    private fun canMapNullableSource(
+        source: EmbeddedSourceProperty,
+        destinationProperty: KSPropertyDeclaration,
+        destinationIsNullable: Boolean,
+        allowNotNullAssertion: Boolean
+    ): Boolean {
+        if (!source.isNullable || destinationIsNullable || allowNotNullAssertion) {
+            return true
+        }
+
+        return destinationProperty.hasNullSubstitute || source.sourceProperty.hasNullSubstitute
+    }
+
+    private val KSDeclaration.hasNullSubstitute
+        get() = (this as? KSPropertyDeclaration)
+            ?.annotations
+            ?.any { it.shortName.asString() == NullSubstitute::class.simpleName }
+            ?: false
 
     private fun getSourceWithPluginCast(
         source: EmbeddedSourceProperty,
