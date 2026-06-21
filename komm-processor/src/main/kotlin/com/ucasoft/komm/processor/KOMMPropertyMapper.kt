@@ -239,18 +239,22 @@ class KOMMPropertyMapper(
         val propertyType = getSourcePropertyType(source.sourceProperty)
 
         val destinationType = destinationProperty.type.resolve()
+        val destinationIsNullable = destinationType.toTypeName().isNullable
         val sourceIsNullable = source.isNullable
         val effectiveSourceType = if (sourceIsNullable) propertyType.makeNullable() else propertyType
 
         if (destinationType.isAssignableFrom(effectiveSourceType)) {
-            return propertyName
+            return if (sourceIsNullable && destinationIsNullable) {
+                getSourceAccessName(source, useSafeAccess = true)
+            } else {
+                propertyName
+            }
         }
 
         if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
             throw KOMMCastException("AutoCast is turned off! You have to use @${MapConvert::class.simpleName} annotation to cast (${destinationProperty.simpleName.asString()}: $destinationType) from ($propertyName: $propertyType).")
         }
 
-        val destinationIsNullable = destinationType.toTypeName().isNullable
         val destinationHasNullSubstitute =
             destinationProperty.annotations.any { it.shortName.asString() == NullSubstitute::class.simpleName }
         val sourceHasNullSubstitute = (source.sourceProperty as? KSPropertyDeclaration)

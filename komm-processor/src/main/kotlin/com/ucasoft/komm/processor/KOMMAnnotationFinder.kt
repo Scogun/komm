@@ -99,7 +99,10 @@ class KOMMAnnotationFinder(private val forClass: KSType) {
     }
 
     fun getSuitedNamedAnnotations(member: KSPropertyDeclaration) =
-        getSuitedNamedAnnotationsForClass(member).keys.toList()
+        getSuitedNamedAnnotationsForClass(member)
+            .filter { it.value.isEmpty() || it.value.contains(forClass.toClassName()) }
+            .keys
+            .toList()
 
     fun getSuitedNamedAnnotation(member: KSPropertyDeclaration) =
         filterAnnotationsByClass(forClass.toClassName(), getSuitedNamedAnnotationsForClass(member), member)
