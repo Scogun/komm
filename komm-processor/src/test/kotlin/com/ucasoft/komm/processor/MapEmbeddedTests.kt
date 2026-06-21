@@ -2,11 +2,16 @@ package com.ucasoft.komm.processor
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.ucasoft.komm.annotations.KOMMMap
+import com.ucasoft.komm.annotations.MapConvert
 import com.ucasoft.komm.annotations.MapDefault
 import com.ucasoft.komm.annotations.MapEmbedded
+import com.ucasoft.komm.annotations.MapName
 import com.ucasoft.komm.annotations.NullSubstitute
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -318,6 +323,100 @@ internal class MapEmbeddedTests: SatelliteTests() {
 
         destination::class.shouldHaveMemberProperty("name") {
             it.getter.call(destination).shouldBe("Account")
+        }
+    }
+
+    @Test
+    fun mapEmbeddedWithMapToAndNestedMapName() {
+        val bankSpec = buildFileSpec(
+            "Bank",
+            mapOf("name" to PropertySpecInit(STRING)),
+            properties = mapOf(
+                "id" to PropertySpecInit(
+                    LONG,
+                    "%LL",
+                    0,
+                    annotations = listOf(
+                        MapName::class to mapOf(
+                            "name = %S" to listOf("bankId"),
+                            "`for` = %L" to listOf("[DestinationObject::class]")
+                        )
+                    )
+                )
+            )
+        )
+        val bankClassName = bankSpec.typeSpecs.first().name!!
+        val sourceObjectClassName = ClassName(packageName, "SourceObject")
+        val otherSourceSpec = buildFileSpec("OtherSourceObject", mapOf("bankId" to PropertySpecInit(LONG)))
+        val otherSourceClassName = ClassName(packageName, otherSourceSpec.typeSpecs.first().name!!)
+        val converterSpec = buildConverter(
+            otherSourceClassName,
+            LONG,
+            sourceObjectClassName,
+            ClassName(packageName, bankClassName),
+            "return Bank(\"Resolved\")"
+        )
+        val converterClassName = converterSpec.typeSpecs.first().name!!
+        val destinationSpec = buildFileSpec("DestinationObject", mapOf("bankId" to PropertySpecInit(LONG, isNullable = true)))
+        val destinationClassName = destinationSpec.typeSpecs.first().name!!
+        val sourceSpec = buildFileSpec(
+            sourceObjectClassName.simpleName,
+            mapOf(
+                "bank" to PropertySpecInit(
+                    ClassName(packageName, bankClassName),
+                    isNullable = true,
+                    parametrizedAnnotations = listOf(
+                        MapConvert::class.asTypeName()
+                            .parameterizedBy(
+                                otherSourceClassName,
+                                sourceObjectClassName,
+                                ClassName(packageName, converterClassName)
+                            ) to mapOf(
+                            "converter = %L" to listOf("$converterClassName::class"),
+                            "name = %S" to listOf("bankId")
+                        )
+                    )
+                )
+            ),
+            listOf(
+                KOMMMap::class to mapOf("to = %L" to listOf("[$destinationClassName::class]")),
+                MapEmbedded::class to mapOf(
+                    "name = %S" to listOf("bank"),
+                    "`for` = %L" to listOf("[$destinationClassName::class]")
+                )
+            )
+        )
+        val sourceClassName = sourceSpec.typeSpecs.first().name!!
+        val generated = generate(
+            bankSpec,
+            otherSourceSpec,
+            converterSpec,
+            destinationSpec,
+            sourceSpec
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val bankClass = generated.classLoader.loadClass("$packageName.$bankClassName")
+        val sourceClass = generated.classLoader.loadClass("$packageName.$sourceClassName")
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val bank = bankClass.constructors.first().newInstance("Primary")
+        bankClass.getDeclaredField("id").apply {
+            isAccessible = true
+            set(bank, 42L)
+        }
+        val source = sourceClass.constructors.first().newInstance(bank)
+        val destination = mappingClass.declaredMethods.first().invoke(null, source)
+
+        destination::class.shouldHaveMemberProperty("bankId") {
+            it.getter.call(destination).shouldBe(42L)
+        }
+
+        val sourceWithoutBank = sourceClass.constructors.first().newInstance(null)
+        val destinationWithoutBank = mappingClass.declaredMethods.first().invoke(null, sourceWithoutBank)
+
+        destinationWithoutBank::class.shouldHaveMemberProperty("bankId") {
+            it.getter.call(destinationWithoutBank).shouldBe(null)
         }
     }
 }
