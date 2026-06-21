@@ -19,7 +19,8 @@ class KOMMPropertyMapper(
     private val config: KSAnnotation,
     private val plugins: List<KOMMCastPlugin>,
     private val imports: MutableMap<String, List<String>>,
-    private val contextParameterName: String?
+    private val contextParameterName: String?,
+    private val nullableContext: Boolean
 ) {
 
     private val annotationFinder = KOMMAnnotationFinder(
@@ -118,8 +119,16 @@ class KOMMPropertyMapper(
         return false
     }
 
-    private fun getRequiredContextParameterName() = contextParameterName
-        ?: throw KOMMException("${KOMMMap::class.simpleName}.context is required when using context-aware @${MapConvert::class.simpleName} or @${MapDefault::class.simpleName}.")
+    private fun getRequiredContextParameterName(): String {
+        val parameterName = contextParameterName
+            ?: throw KOMMException("${KOMMMap::class.simpleName}.context is required when using context-aware @${MapConvert::class.simpleName} or @${MapDefault::class.simpleName}.")
+
+        return if (nullableContext) {
+            "$parameterName ?: throw IllegalArgumentException(\"KOMM context is required for context-aware mapping.\")"
+        } else {
+            parameterName
+        }
+    }
 
     private fun getSourceProperty(sourceName: String): EmbeddedSourceProperty? {
         sourceProperties[sourceName]?.let { return EmbeddedSourceProperty(null, it) }
