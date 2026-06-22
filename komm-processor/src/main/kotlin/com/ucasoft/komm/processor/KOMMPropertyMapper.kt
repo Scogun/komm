@@ -35,7 +35,7 @@ class KOMMPropertyMapper(
     private val classAnnotationFinder = KOMMClassAnnotationFinder(forClass, annotationOwner)
 
     private val sourceProperties = getSourceProperties(source)
-    private val embeddedSourceProperties = getEmbeddedSourceProperties(source, destination)
+    private val embeddedSourceProperties = getEmbeddedSourceProperties(source)
 
     fun map(destination: KSPropertyDeclaration, mapTo: KOMMVisitor.MapTo): String? {
         val resolver = propertyAnnotationFinder.findResolver(destination)
@@ -206,8 +206,7 @@ class KOMMPropertyMapper(
     }
 
     private fun getEmbeddedSourceProperties(
-        source: KSType,
-        destination: KSType
+        source: KSType
     ): Map<String, List<EmbeddedSourceProperty>> {
         return classAnnotationFinder.getSuitedEmbeddedAnnotations()
             .flatMap { annotation ->
