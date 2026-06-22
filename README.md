@@ -28,6 +28,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * [@MapConverter](#use-converter)
   * [Context](#use-context)
   * [@MapDefault](#use-resolver)
+  * [@MapTargetDefault](#class-level-target-default)
   * [@NullSubstitute](#use-nullsubstitute)
     * [Allow Not-Null Assertion](#mapping-configuration-1)
   * [Multi Sources](#multi-sources-support)
@@ -59,6 +60,7 @@ The **Kotlin Object Multiplatform Mapper** provides you a possibility to generat
   * Specify a converter to map data from source unusual way
   * Specify a top-level extension function for property casting
   * Specify a resolver to map default values into properties
+  * Specify target property default values from class-level annotations
   * Specify null substitute to map nullable properties into not-nullable
 * Support extension via plugins
 
@@ -87,7 +89,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -100,7 +102,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 kotlin {
     jvm {
@@ -532,6 +534,43 @@ fun SourceObject.toDestinationObject(): DestinationObject = DestinationObject(
     it.otherDate = DateResolver(it).resolve()
 }
 ```
+### Class-level target default
+Use `@MapTargetDefault` when a target property needs `@MapDefault`, but the target class cannot be annotated.
+This is useful for `to` mappings into external models.
+
+#### Classes declaration
+```kotlin
+data class AccountCardMapContext(val accountId: Long)
+
+class AccountIdResolver(
+    destination: DbAccountCard?,
+    context: AccountCardMapContext
+) : KOMMContextResolver<AccountCardMapContext, DbAccountCard, Long>(destination, context) {
+
+    override fun resolve(): Long = context.accountId
+}
+
+@KOMMMap(to = [DbAccountCard::class], context = AccountCardMapContext::class)
+@MapTargetDefault(
+    name = "accountId",
+    default = MapDefault(AccountIdResolver::class),
+    `for` = [DbAccountCard::class]
+)
+data class AccountCard(
+    val id: Long,
+    val type: String,
+    val number: String
+)
+```
+#### Generated extension function
+```kotlin
+fun AccountCard.toDbAccountCard(kommContext: AccountCardMapContext): DbAccountCard = DbAccountCard(
+    id = id,
+    accountId = AccountIdResolver(null, kommContext).resolve(),
+    type = type,
+    number = number
+)
+```
 ### Use NullSubstitute
 #### Mapping configuration
 ###### Classes declaration
@@ -670,7 +709,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -684,7 +723,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 //...
 
@@ -744,7 +783,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -788,7 +827,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -802,7 +841,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.71.1"
+val kommVersion = "0.80.3"
 
 //...
 

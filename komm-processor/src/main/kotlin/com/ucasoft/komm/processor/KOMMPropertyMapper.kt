@@ -10,6 +10,8 @@ import com.ucasoft.komm.plugins.exceptions.KOMMPluginsException
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
+import com.ucasoft.komm.processor.finders.annotation.KOMMClassAnnotationFinder
+import com.ucasoft.komm.processor.finders.annotation.KOMMPropertyAnnotationFinder
 
 class KOMMPropertyMapper(
     source: KSType,
@@ -21,18 +23,23 @@ class KOMMPropertyMapper(
     private val contextParameterName: String?
 ) {
 
-    private val annotationFinder = KOMMAnnotationFinder(
-        when (direction) {
-            KOMMVisitor.Direction.From -> source
-            KOMMVisitor.Direction.To -> destination
-        }
-    )
+    private val forClass = when (direction) {
+        KOMMVisitor.Direction.From -> source
+        KOMMVisitor.Direction.To -> destination
+    }
+    private val annotationOwner = when (direction) {
+        KOMMVisitor.Direction.From -> destination.declaration
+        KOMMVisitor.Direction.To -> source.declaration
+    } as KSClassDeclaration
+    private val propertyAnnotationFinder = KOMMPropertyAnnotationFinder(forClass)
+    private val classAnnotationFinder = KOMMClassAnnotationFinder(forClass, annotationOwner)
 
     private val sourceProperties = getSourceProperties(source)
-    private val embeddedSourceProperties = getEmbeddedSourceProperties(source, destination)
+    private val embeddedSourceProperties = getEmbeddedSourceProperties(source)
 
     fun map(destination: KSPropertyDeclaration, mapTo: KOMMVisitor.MapTo): String? {
-        val resolver = annotationFinder.findResolver(destination)
+        val resolver = propertyAnnotationFinder.findResolver(destination)
+            ?: classAnnotationFinder.findTargetDefaultResolver(destination)
         if (!config.getConfigValue<Boolean>(MapConfiguration::mapDefaultAsFallback.name) && resolver != null) {
             return "$destination = ${mapResolver(resolver, mapTo)}"
         }
@@ -43,21 +50,21 @@ class KOMMPropertyMapper(
         val sourceProperty = source.sourceProperty
 
         val converter = when (direction) {
-            KOMMVisitor.Direction.From -> annotationFinder.findConverter(destination)
+            KOMMVisitor.Direction.From -> propertyAnnotationFinder.findConverter(destination)
             KOMMVisitor.Direction.To -> (sourceProperty as? KSPropertyDeclaration)?.let {
-                annotationFinder.findConverter(it)
+                propertyAnnotationFinder.findConverter(it)
             }
         }
         val function = when (direction) {
-            KOMMVisitor.Direction.From -> annotationFinder.findFunction(destination)
+            KOMMVisitor.Direction.From -> propertyAnnotationFinder.findFunction(destination)
             KOMMVisitor.Direction.To -> (sourceProperty as? KSPropertyDeclaration)?.let {
-                annotationFinder.findFunction(it)
+                propertyAnnotationFinder.findFunction(it)
             }
         }
         val nullSubstituteResolver = when (direction) {
-            KOMMVisitor.Direction.From -> annotationFinder.findSubstituteResolver(destination)
+            KOMMVisitor.Direction.From -> propertyAnnotationFinder.findSubstituteResolver(destination)
             KOMMVisitor.Direction.To -> (sourceProperty as? KSPropertyDeclaration)?.let {
-                annotationFinder.findSubstituteResolver(it)
+                propertyAnnotationFinder.findSubstituteResolver(it)
             }
         }
         return when {
@@ -137,7 +144,7 @@ class KOMMPropertyMapper(
     }
 
     private fun getMapNames(member: KSPropertyDeclaration): List<String> {
-        val mapsFor = annotationFinder.getSuitedNamedAnnotations(member)
+        val mapsFor = propertyAnnotationFinder.getSuitedNamedAnnotations(member)
         val result = mutableListOf(member.toString()).apply {
             addAll(mapsFor.map { it.arguments.first { it.name?.asString() == MapName::name.name }.value.toString() }
                 .filter { it.isNotEmpty() }.toMutableList())
@@ -147,7 +154,7 @@ class KOMMPropertyMapper(
     }
 
     private fun getMapName(member: KSPropertyDeclaration): String {
-        val mapFrom = annotationFinder.getSuitedNamedAnnotation(member)
+        val mapFrom = propertyAnnotationFinder.getSuitedNamedAnnotation(member)
 
         if (mapFrom != null) {
             val nameArgument = mapFrom.arguments.first { it.name?.asString() == MapName::name.name }
@@ -199,15 +206,9 @@ class KOMMPropertyMapper(
     }
 
     private fun getEmbeddedSourceProperties(
-        source: KSType,
-        destination: KSType
+        source: KSType
     ): Map<String, List<EmbeddedSourceProperty>> {
-        val annotationOwner = when (direction) {
-            KOMMVisitor.Direction.From -> destination.declaration
-            KOMMVisitor.Direction.To -> source.declaration
-        } as KSClassDeclaration
-
-        return annotationFinder.getSuitedEmbeddedAnnotations(annotationOwner)
+        return classAnnotationFinder.getSuitedEmbeddedAnnotations()
             .flatMap { annotation ->
                 val embeddedName = annotation.arguments
                     .first { it.name?.asString() == MapEmbedded::name.name }
