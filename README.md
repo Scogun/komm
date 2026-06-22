@@ -87,7 +87,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -100,7 +100,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 kotlin {
     jvm {
@@ -223,6 +223,30 @@ fun SourceObject.convertToDestination(): DestinationObject = DestinationObject(
 ).also { 
     it.intToString = intToString.toString()
 }
+```
+#### Nullable Context
+Set `nullableContext = true` when a mapping context should be optional at the mapping function boundary.
+KOMM generates a nullable context parameter with a default `null` value.
+If a context-aware converter or resolver is used, the generated mapper checks that the context was provided before calling it.
+
+###### Classes declaration
+```kotlin
+@KOMMMap(
+    from = [SourceObject::class],
+    context = SourceMapContext::class,
+    config = MapConfiguration(
+        nullableContext = true
+    )
+)
+data class DestinationObject(
+    val id: Int
+)
+```
+###### Generated extension function
+```kotlin
+fun SourceObject.toDestinationObject(kommContext: SourceMapContext? = null): DestinationObject = DestinationObject(
+    id = id
+)
 ```
 
 ### @MapFunction annotation
@@ -646,7 +670,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -660,7 +684,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 //...
 
@@ -720,7 +744,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -764,7 +788,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 depensencies {
     implementation("com.ucasoft.komm:komm-annotations:$kommVersion")
@@ -778,7 +802,7 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.9"
 }
 
-val kommVersion = "0.70.8"
+val kommVersion = "0.71.1"
 
 //...
 

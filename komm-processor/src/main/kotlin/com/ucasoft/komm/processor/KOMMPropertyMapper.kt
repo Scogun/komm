@@ -10,7 +10,6 @@ import com.ucasoft.komm.plugins.exceptions.KOMMPluginsException
 import com.ucasoft.komm.processor.exceptions.KOMMCastException
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import com.ucasoft.komm.processor.extensions.getConfigValue
-import com.ucasoft.komm.processor.extensions.resolveTypeArgument
 
 class KOMMPropertyMapper(
     source: KSType,
@@ -69,10 +68,10 @@ class KOMMPropertyMapper(
                     "$destination = $converter(this).convert(${getSourceAccessName(source)})"
             nullSubstituteResolver != null ->
                 "$destination = ${
-                    getSourceWithCast(destination, source, config, function, useSafeAccess = true)
+                    getSourceWithCast(destination, source, function, useSafeAccess = true)
                 } ?: ${mapResolver(nullSubstituteResolver, mapTo)}"
             else ->
-                "$destination = ${getSourceWithCast(destination, source, config, function)}"
+                "$destination = ${getSourceWithCast(destination, source, function)}"
         }
     }
 
@@ -93,8 +92,7 @@ class KOMMPropertyMapper(
 
     private fun isContext(
         declaration: KSClassDeclaration,
-        superClassName: String,
-        typeSubstitutions: Map<String, KSType> = emptyMap()
+        superClassName: String
     ): Boolean {
         for (superTypeReference in declaration.superTypes) {
             val superType = superTypeReference.resolve()
@@ -104,13 +102,7 @@ class KOMMPropertyMapper(
                 return true
             }
 
-            val superSubstitutions = superDeclaration.typeParameters
-                .zip(superType.arguments)
-                .mapNotNull { (parameter, argument) ->
-                    argument.resolveTypeArgument(typeSubstitutions)?.let { parameter.name.asString() to it }
-                }
-                .toMap()
-            if (isContext(superDeclaration, superClassName, superSubstitutions)) {
+            if (isContext(superDeclaration, superClassName)) {
                 return true
             }
         }
@@ -118,8 +110,16 @@ class KOMMPropertyMapper(
         return false
     }
 
-    private fun getRequiredContextParameterName() = contextParameterName
-        ?: throw KOMMException("${KOMMMap::class.simpleName}.context is required when using context-aware @${MapConvert::class.simpleName} or @${MapDefault::class.simpleName}.")
+    private fun getRequiredContextParameterName(): String {
+        val parameterName = contextParameterName
+            ?: throw KOMMException("${KOMMMap::class.simpleName}.context is required when using context-aware @${MapConvert::class.simpleName} or @${MapDefault::class.simpleName}.")
+
+        return if (config.getConfigValue<Boolean>(MapConfiguration::nullableContext.name)) {
+            "$parameterName ?: throw IllegalArgumentException(\"KOMM context is required for context-aware mapping.\")"
+        } else {
+            parameterName
+        }
+    }
 
     private fun getSourceProperty(sourceName: String): EmbeddedSourceProperty? {
         sourceProperties[sourceName]?.let { return EmbeddedSourceProperty(null, it) }
@@ -231,7 +231,6 @@ class KOMMPropertyMapper(
     private fun getSourceWithCast(
         destinationProperty: KSPropertyDeclaration,
         source: EmbeddedSourceProperty,
-        config: KSAnnotation,
         function: Pair<String, String>?,
         useSafeAccess: Boolean = false
     ): String {
@@ -243,16 +242,12 @@ class KOMMPropertyMapper(
         val sourceIsNullable = source.isNullable
         val effectiveSourceType = if (sourceIsNullable) propertyType.makeNullable() else propertyType
 
-        getAssignableSource(
-            source,
-            propertyName,
-            destinationType,
-            destinationIsNullable,
-            sourceIsNullable,
-            effectiveSourceType,
-            useSafeAccess
-        )?.let {
-            return it
+        if (destinationType.isAssignableFrom(effectiveSourceType)) {
+            return if (sourceIsNullable && destinationIsNullable) {
+                getSourceAccessName(source, useSafeAccess = true)
+            } else {
+                propertyName
+            }
         }
 
         if (!config.getConfigValue<Boolean>(MapConfiguration::tryAutoCast.name)) {
@@ -272,6 +267,29 @@ class KOMMPropertyMapper(
             return if (useSafeAccess) propertyName else getSourceAccessName(source, assertNotNull = true)
         }
 
+        val conversionFunctionName = "to${destinationType.declaration.simpleName.asString()}"
+        val functionName = function?.second?.ifEmpty { conversionFunctionName } ?: conversionFunctionName
+        if (function != null) {
+            imports[function.first] = imports[function.first].orEmpty() + functionName
+        }
+        val receiverPrefix = getCastReceiverPrefix(
+            source,
+            propertyName,
+            sourceIsNullable,
+            destinationIsNullable,
+            useSafeAccess
+        )
+
+        return "$receiverPrefix$functionName()"
+    }
+
+    private fun getCastReceiverPrefix(
+        source: EmbeddedSourceProperty,
+        propertyName: String,
+        sourceIsNullable: Boolean,
+        destinationIsNullable: Boolean,
+        useSafeAccess: Boolean
+    ): String {
         val shouldUseSafeCall = sourceIsNullable && (useSafeAccess || destinationIsNullable)
         val sourceAccessName = when {
             shouldUseSafeCall -> getSourceAccessName(source, useSafeAccess = true)
@@ -279,34 +297,7 @@ class KOMMPropertyMapper(
             else -> propertyName
         }
 
-        val conversionFunctionName = "to${destinationType.declaration.simpleName.asString()}"
-        val functionName = function?.second?.ifEmpty { conversionFunctionName } ?: conversionFunctionName
-        if (function != null) {
-            imports[function.first] = imports[function.first].orEmpty() + functionName
-        }
-        val receiverPrefix = "$sourceAccessName${if (shouldUseSafeCall) "?." else "."}"
-
-        return "$receiverPrefix$functionName()"
-    }
-
-    private fun getAssignableSource(
-        source: EmbeddedSourceProperty,
-        propertyName: String,
-        destinationType: KSType,
-        destinationIsNullable: Boolean,
-        sourceIsNullable: Boolean,
-        effectiveSourceType: KSType,
-        useSafeAccess: Boolean
-    ): String? {
-        if (!destinationType.isAssignableFrom(effectiveSourceType)) {
-            return null
-        }
-
-        return if (sourceIsNullable && destinationIsNullable) {
-            getSourceAccessName(source, useSafeAccess = true)
-        } else {
-            propertyName
-        }
+        return "$sourceAccessName${if (shouldUseSafeCall) "?." else "."}"
     }
 
     private fun canMapNullableSource(

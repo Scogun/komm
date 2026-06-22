@@ -7,7 +7,6 @@ import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.ucasoft.komm.abstractions.KOMMContextConverter
-import com.ucasoft.komm.abstractions.KOMMContextResolver
 import com.ucasoft.komm.abstractions.KOMMConverter
 import com.ucasoft.komm.annotations.*
 import com.ucasoft.komm.processor.exceptions.KOMMException

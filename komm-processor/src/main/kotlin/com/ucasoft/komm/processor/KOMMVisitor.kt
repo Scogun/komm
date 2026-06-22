@@ -4,6 +4,7 @@ import com.google.devtools.ksp.isPrivate
 import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
@@ -89,11 +90,17 @@ class KOMMVisitor(
     ) : FunSpec {
         val convertFunctionName = config.getConfigValue<String>(MapConfiguration::convertFunctionName.name)
         val fromSourceFunctionName = convertFunctionName.ifEmpty { "to${destination.toClassName().simpleName}" }
+        val nullableContext = config.getConfigValue<Boolean>(MapConfiguration::nullableContext.name)
         return FunSpec.builder(fromSourceFunctionName)
             .receiver(getSourceName(source))
             .apply {
                 if (context != null) {
-                    addParameter("kommContext", context.toTypeName())
+                    val contextParameterBuilder = ParameterSpec
+                        .builder("kommContext", context.toTypeName().copy(nullable = nullableContext))
+                    if (nullableContext) {
+                        contextParameterBuilder.defaultValue("null")
+                    }
+                    addParameter(contextParameterBuilder.build())
                 }
             }
             .returns(destination.toClassName())

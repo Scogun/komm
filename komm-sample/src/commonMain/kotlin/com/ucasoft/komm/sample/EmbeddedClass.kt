@@ -14,7 +14,7 @@ data class EmbeddedSourceObject(
     val description: String
 )
 
-@KOMMMap(from = [EmbeddedSourceObject::class], to = [], context = Unit::class, config = MapConfiguration(allowNotNullAssertion = false, tryAutoCast = true, mapDefaultAsFallback = false, convertFunctionName = ""))
+@KOMMMap(from = [EmbeddedSourceObject::class], to = [], context = Unit::class, config = MapConfiguration(allowNotNullAssertion = false, tryAutoCast = true, mapDefaultAsFallback = false, nullableContext = false, convertFunctionName = ""))
 @MapEmbedded("details")
 data class EmbeddedDestinationObject(
     val id: Long,
