@@ -141,8 +141,7 @@ class KOMMVisitor(
             config,
             castPlugins,
             imports,
-            context?.let { "kommContext" },
-            config.getConfigValue<Boolean>(MapConfiguration::nullableContext.name)
+            context?.let { "kommContext" }
         )
         val properties = destination.getAllProperties().groupBy { p ->
             destination.primaryConstructor?.parameters?.any { it.name == p.simpleName }
