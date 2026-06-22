@@ -11,6 +11,7 @@ import com.ucasoft.komm.annotations.KOMMMap
 import com.ucasoft.komm.annotations.MapDefault
 import com.ucasoft.komm.annotations.MapConvert
 import com.ucasoft.komm.annotations.MapConfiguration
+import com.ucasoft.komm.annotations.MapTargetDefault
 import com.ucasoft.komm.processor.exceptions.KOMMException
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.reflection.shouldHaveMemberProperty
@@ -266,6 +267,124 @@ internal class ContextTests : SatelliteTests() {
         destinationInstance.shouldNotBeNull()
         destinationInstance::class.shouldHaveMemberProperty("accountName") {
             it.getter.call(destinationInstance).shouldBe("Cash")
+        }
+    }
+
+    @Test
+    fun mapTargetDefaultWithContextResolverForMapTo() {
+        val sourceClassName = ClassName(packageName, "AccountCard")
+        val destinationClassName = ClassName(packageName, "DbAccountCard")
+        val contextSpec = buildFileSpec("AccountCardMapContext", mapOf("accountId" to PropertySpecInit(INT)))
+        val contextClassName = ClassName(packageName, "AccountCardMapContext")
+        val resolverSpec = buildContextResolver(
+            destinationClassName,
+            contextClassName,
+            INT,
+            "return context.accountId"
+        )
+        val resolverClassName = ClassName(packageName, resolverSpec.typeSpecs.first().name!!)
+        val sourceSpec = buildFileSpec(
+            sourceClassName.simpleName,
+            mapOf(
+                "id" to PropertySpecInit(INT),
+                "type" to PropertySpecInit(STRING),
+                "number" to PropertySpecInit(STRING)
+            ),
+            listOf(
+                KOMMMap::class to mapOf(
+                    "to = %L" to listOf("[${destinationClassName.simpleName}::class]"),
+                    "context = %L" to listOf("${contextClassName.simpleName}::class")
+                ),
+                MapTargetDefault::class to mapOf(
+                    "name = %S" to listOf("accountId"),
+                    "default = %L" to listOf("${MapDefault::class.simpleName}(${resolverClassName.simpleName}::class)"),
+                    "`for` = %L" to listOf("[${destinationClassName.simpleName}::class]")
+                )
+            )
+        )
+        val destinationSpec = buildFileSpec(
+            destinationClassName.simpleName,
+            mapOf(
+                "id" to PropertySpecInit(INT),
+                "accountId" to PropertySpecInit(INT),
+                "type" to PropertySpecInit(STRING),
+                "number" to PropertySpecInit(STRING)
+            )
+        )
+        val generated = generate(
+            sourceSpec,
+            contextSpec,
+            resolverSpec,
+            destinationSpec
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceClassName.canonicalName)
+        val contextClass = generated.classLoader.loadClass(contextClassName.canonicalName)
+        val sourceInstance = sourceClass.constructors.first().newInstance(3, "visa", "4242")
+        val contextInstance = contextClass.constructors.first().newInstance(45)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance, contextInstance)
+
+        destinationInstance.shouldNotBeNull()
+        destinationInstance::class.shouldHaveMemberProperty("id") {
+            it.getter.call(destinationInstance).shouldBe(3)
+        }
+        destinationInstance::class.shouldHaveMemberProperty("accountId") {
+            it.getter.call(destinationInstance).shouldBe(45)
+        }
+        destinationInstance::class.shouldHaveMemberProperty("type") {
+            it.getter.call(destinationInstance).shouldBe("visa")
+        }
+        destinationInstance::class.shouldHaveMemberProperty("number") {
+            it.getter.call(destinationInstance).shouldBe("4242")
+        }
+    }
+
+    @Test
+    fun mapTargetDefaultWithResolverForMapFrom() {
+        val sourceSpec = buildFileSpec("SourceObject", mapOf("id" to PropertySpecInit(INT)))
+        val sourceClassName = ClassName(packageName, "SourceObject")
+        val destinationClassName = ClassName(packageName, "DestinationObject")
+        val resolverSpec = buildResolver(destinationClassName, STRING, "return \"fallback\"")
+        val resolverClassName = ClassName(packageName, resolverSpec.typeSpecs.first().name!!)
+        val generated = generate(
+            sourceSpec,
+            resolverSpec,
+            buildFileSpec(
+                destinationClassName.simpleName,
+                mapOf(
+                    "id" to PropertySpecInit(INT),
+                    "name" to PropertySpecInit(STRING)
+                ),
+                listOf(
+                    KOMMMap::class to mapOf(
+                        "from = %L" to listOf("[${sourceClassName.simpleName}::class]")
+                    ),
+                    MapTargetDefault::class to mapOf(
+                        "name = %S" to listOf("name"),
+                        "default = %L" to listOf("${MapDefault::class.simpleName}(${resolverClassName.simpleName}::class)")
+                    )
+                )
+            )
+        )
+
+        generated.exitCode.shouldBe(KotlinCompilation.ExitCode.OK)
+
+        val mappingClass = generated.classLoader.loadClass("$packageName.MappingExtensionsKt")
+        val mappingMethod = mappingClass.declaredMethods.first()
+        val sourceClass = generated.classLoader.loadClass(sourceClassName.canonicalName)
+        val sourceInstance = sourceClass.constructors.first().newInstance(7)
+        val destinationInstance = mappingMethod.invoke(null, sourceInstance)
+
+        destinationInstance.shouldNotBeNull()
+        destinationInstance::class.shouldHaveMemberProperty("id") {
+            it.getter.call(destinationInstance).shouldBe(7)
+        }
+        destinationInstance::class.shouldHaveMemberProperty("name") {
+            it.getter.call(destinationInstance).shouldBe("fallback")
         }
     }
 

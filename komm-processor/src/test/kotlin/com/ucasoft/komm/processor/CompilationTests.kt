@@ -25,7 +25,7 @@ abstract class CompilationTests {
         `package`: String = packageName
     ) = FileSpec
         .builder(`package`, "$className.kt")
-        .addImport("com.ucasoft.komm.annotations", "MapConfiguration", "MapDefault")
+        .addImport("com.ucasoft.komm.annotations", "MapConfiguration", "MapDefault", "MapTargetDefault")
         .addImport("java.util", "Currency")
         .addType(
             TypeSpec
