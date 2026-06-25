@@ -33,7 +33,7 @@ val steps = listOf(
         listOf(
             CodeData(
                 Type.KMP, """
-                val kommVersion = "0.60.0"
+                val kommVersion = "0.80.3"
 
                 kotlin {
                     jvm()
@@ -60,7 +60,7 @@ val steps = listOf(
             ),
             CodeData(
                 Type.JVM, """
-                val kommVersion = "0.60.0"
+                val kommVersion = "0.80.3"
 
                 dependencies {
                     implementation("com.ucasoft.komm:komm-annotations:${'$'}kommVersion")

@@ -63,6 +63,64 @@ val mapResolve =
                         """.trimIndent()
                     )
                 )
+            ),
+            Step(
+                "Context-aware resolver",
+                "Use a context-aware resolver when the default value depends on KOMMMap.context.",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            data class TransactionMapContext(
+                                val accounts: Map<Long, Account>,
+                                val accountCurrencies: Map<Long, AccountCurrency>,
+                                val categories: Map<Long, Category>
+                            )
+
+                            class FallbackAccountResolver(
+                                destination: Transaction?,
+                                context: TransactionMapContext
+                            ) : KOMMContextResolver<TransactionMapContext, Transaction, Account?>(destination, context) {
+
+                                override fun resolve(): Account? {
+                                    return context.accounts.values.firstOrNull()
+                                }
+                            }
+                        """.trimIndent()
+                    )
+                )
+            ),
+            Step(
+                "Context-aware resolver",
+                "Classes declaration",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            @KOMMMap(from = [DbTransaction::class], context = TransactionMapContext::class)
+                            data class Transaction(
+                                //...
+                                @MapDefault<FallbackAccountResolver>(FallbackAccountResolver::class)
+                                val expenseAccount: Account?
+                            )
+                        """.trimIndent()
+                    )
+                )
+            ),
+            Step(
+                "Context-aware resolver",
+                "Generated extension function",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            fun DbTransaction.toTransaction(kommContext: TransactionMapContext): Transaction = Transaction(
+                                //... 
+                                expenseAccount = FallbackAccountResolver(null, kommContext).resolve()
+                            )
+                        """.trimIndent()
+                    )
+                )
             )
         )
     )

@@ -156,6 +156,11 @@ val navigationData = listOf(
             IconItem(Settings.create { size = 40 }, "@KOMMMap", "Main annotation for marking mapping classes"),
             IconItem(
                 Settings.create { size = 40 },
+                "@MapFunction",
+                "Calls a configured top-level extension function for property conversion"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
                 "@MapName",
                 "Provides possibility to map properties with different names"
             ),
@@ -173,6 +178,11 @@ val navigationData = listOf(
                 Settings.create { size = 40 },
                 "@MapDefault",
                 "Provides possibility to add default values for orphans properties"
+            ),
+            IconItem(
+                Settings.create { size = 40 },
+                "@MapTargetDefault",
+                "Defines target property defaults for external destination classes"
             ),
             IconItem(Settings.create { size = 40 }, "@NullSubstitute", "Extends mapping from nullable type properties")
         )

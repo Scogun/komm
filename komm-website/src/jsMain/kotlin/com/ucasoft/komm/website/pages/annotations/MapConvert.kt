@@ -68,6 +68,61 @@ val mapConvert =
                         """.trimIndent()
                     )
                 )
+            ),
+            Step(
+                "Context-aware converter",
+                "Use a context-aware converter when the conversion also needs values from KOMMMap.context.",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            data class AccountMapContext(
+                                val banks: Map<Long, Bank>
+                            )
+
+                            class BankConverter(
+                                source: FullAccount,
+                                context: AccountMapContext
+                            ) : KOMMContextConverter<FullAccount, Long?, AccountMapContext, Account, Bank?>(source, context) {
+
+                                override fun convert(sourceMember: Long?): Bank? =
+                                    sourceMember?.let(context.banks::get)
+                            }
+                        """.trimIndent()
+                    )
+                )
+            ),
+            Step(
+                "Context-aware converter",
+                "Classes declaration",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            @KOMMMap(from = [FullAccount::class], context = AccountMapContext::class)
+                            data class Account(
+                                //...
+                                @MapConvert<FullAccount, Account, BankConverter>(BankConverter::class, "bankId")
+                                val bank: Bank?
+                            )
+                        """.trimIndent()
+                    )
+                )
+            ),
+            Step(
+                "Context-aware converter",
+                "Generated extension function",
+                listOf(
+                    CodeData(
+                        Type.KMP,
+                        """
+                            fun FullAccount.toAccount(kommContext: AccountMapContext): Account = Account(
+                                //...
+                                bank = BankConverter(this, kommContext).convert(bankId)
+                            )
+                        """.trimIndent()
+                    )
+                )
             )
         )
     )

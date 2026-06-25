@@ -79,6 +79,41 @@ val kommMap = DetailItem(
             )
         ),
         Step(
+            "Use Context",
+            "Attach a context type to the mapping so the generated function requires that context argument.",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                    data class TransactionMapContext(
+                        val accounts: Map<Long, Account>,
+                        val accountCurrencies: Map<Long, AccountCurrency>,
+                        val categories: Map<Long, Category>
+                    )
+
+                    @KOMMMap(from = [DbTransaction::class], context = TransactionMapContext::class)
+                    data class Transaction(
+                        //...
+                    )
+                """.trimIndent()
+                )
+            )
+        ),
+        Step(
+            "Use Context",
+            "The generated mapper receives the context as a kommContext parameter.",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                    fun DbTransaction.toTransaction(kommContext: TransactionMapContext): Transaction = Transaction(
+                        //...
+                    )
+                """.trimIndent()
+                )
+            )
+        ),
+        Step(
             "Multi Sources Support",
             "Classes declaration",
             listOf(
@@ -239,6 +274,41 @@ val kommMap = DetailItem(
                         e: [ksp] com.ucasoft.komm.processor.exceptions.KOMMCastException: Auto Not-Null Assertion is not allowed! You have to use @NullSubstitute annotation for id property.
                     """.trimIndent(),
                     "console"
+                )
+            )
+        ),
+        Step(
+            "Nullable Context",
+            "Set nullableContext = true when a mapping context should be optional at the mapping function boundary.",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                    @KOMMMap(
+                        from = [SourceObject::class],
+                        context = SourceMapContext::class,
+                        config = MapConfiguration(
+                            nullableContext = true
+                        )
+                    )
+                    data class DestinationObject(
+                        val id: Int
+                    )
+                """.trimIndent()
+                )
+            )
+        ),
+        Step(
+            "Nullable Context",
+            "KOMM generates a nullable context parameter with a default null value.",
+            listOf(
+                CodeData(
+                    Type.KMP,
+                    """
+                    fun SourceObject.toDestinationObject(kommContext: SourceMapContext? = null): DestinationObject = DestinationObject(
+                        id = id
+                    )
+                """.trimIndent()
                 )
             )
         ),
