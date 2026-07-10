@@ -5,7 +5,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.ksp.toClassName
 import com.ucasoft.komm.plugins.iterable.annotations.KOMMIterableString
 
 class IterableStringPlugin: BaseIterablePlugin() {
