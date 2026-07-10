@@ -14,8 +14,17 @@ kotlin {
             }
         }
     }
+    js {
+        nodejs()
+    }
+    linuxX64()
+    mingwX64()
+    macosArm64()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
     sourceSets {
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(project(":komm-annotations"))
                 implementation(project(":komm-plugins-core"))
@@ -23,7 +32,7 @@ kotlin {
             }
             kotlin.srcDir("src/main/kotlin")
         }
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.junit.jupiter)

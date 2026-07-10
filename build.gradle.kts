@@ -6,13 +6,13 @@ plugins {
 }
 
 tasks.wrapper {
-    gradleVersion = "9.5.1"
+    gradleVersion = "9.6.1"
 }
 
 allprojects {
     group = "com.ucasoft.komm"
 
-    version = "0.80.3"
+    version = "0.81.7"
 
     repositories {
         mavenCentral()

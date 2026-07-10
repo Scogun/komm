@@ -5,7 +5,6 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.ksp.toClassName
 import com.ucasoft.komm.plugins.iterable.annotations.KOMMIterableString
 
 class IterableStringPlugin: BaseIterablePlugin() {
@@ -24,8 +23,7 @@ class IterableStringPlugin: BaseIterablePlugin() {
         val (sourceIsNullable, destinationIsNullOrNullSubstitute) = parseMappingData(sourceType, sourceProperty, destinationType, destinationProperty)
         val stringBuilder = StringBuilder(sourceName)
         stringBuilder.append(addSafeNullCall(sourceIsNullable, safeCallOrNullAssertion(destinationIsNullOrNullSubstitute)))
-        val pluginAnnotation = destinationProperty.annotations.firstOrNull { it.shortName.asString() == KOMMIterableString::class.simpleName }
-        val delimiter = pluginAnnotation?.arguments?.firstOrNull { it.name?.asString() == KOMMIterableString::delimiter.name }?.value?.toString() ?: DEFAULT_DELIMITER
+        val delimiter = getDelimiter(sourceProperty, sourceType, destinationProperty, destinationType)
         if (sourceType.isIterable()) {
             stringBuilder.append(".joinToString(")
             if (delimiter != DEFAULT_DELIMITER) {
@@ -42,6 +40,34 @@ class IterableStringPlugin: BaseIterablePlugin() {
 
         return stringBuilder.toString().trimEnd('?')
     }
+
+    private fun getDelimiter(
+        sourceProperty: KSDeclaration,
+        sourceType: KSType,
+        destinationProperty: KSPropertyDeclaration,
+        destinationType: KSType
+    ): String {
+        val sourceAnnotation = sourceProperty.findIterableStringAnnotation()
+        val destinationAnnotation = destinationProperty.findIterableStringAnnotation()
+        val annotation = if (sourceType.isString() && destinationType.isIterable()) {
+            sourceAnnotation ?: destinationAnnotation
+        } else {
+            destinationAnnotation ?: sourceAnnotation
+        }
+
+        return annotation
+            ?.arguments
+            ?.firstOrNull { it.name?.asString() == KOMMIterableString::delimiter.name }
+            ?.value
+            ?.toString()
+            ?: DEFAULT_DELIMITER
+    }
+
+    private fun KSDeclaration.findIterableStringAnnotation() =
+        annotations.firstOrNull { it.shortName.asString() == KOMMIterableString::class.simpleName }
+
+    private fun KSType.isString() =
+        declaration.qualifiedName?.asString() == STRING.canonicalName
 
     companion object {
         private const val DEFAULT_DELIMITER = ", "

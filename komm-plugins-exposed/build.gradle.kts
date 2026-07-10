@@ -15,7 +15,7 @@ kotlin {
         }
     }
     sourceSets {
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(project(":komm-plugins-core"))
                 implementation(libs.exposed.core)
@@ -23,7 +23,7 @@ kotlin {
             }
             kotlin.srcDir("src/main/kotlin")
         }
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.junit.jupiter)

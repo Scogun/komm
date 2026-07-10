@@ -10,18 +10,18 @@ kotlin {
         binaries.executable()
     }
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
                 implementation(project(":komm-annotations"))
                 implementation(project(":komm-plugins-enum"))
             }
         }
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(libs.exposed.core)
             }
         }
-        val jsMain by getting
+        jsMain
     }
 }
 
