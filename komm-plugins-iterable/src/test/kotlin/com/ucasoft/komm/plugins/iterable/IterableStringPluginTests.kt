@@ -7,6 +7,7 @@ import com.ucasoft.komm.plugins.iterable.annotations.KOMMIterableString
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -29,22 +30,35 @@ internal class IterableStringPluginTests: BaseIterablePluginTests() {
     fun castResult(sourceName: String, sourceType: KType, sourceHasNullSubstitute: Boolean, destinationType: KType, destinationHasNullSubstitute: Boolean, delimiter: String, result: String) {
         var destination = buildProperty(destinationHasNullSubstitute)
         if (delimiter.isNotEmpty()) {
-            destination = with(mockk<KSPropertyDeclaration>()) {
-                every { annotations } returns destination.annotations.toMutableList().apply {
-                    add(with(mockk<KSAnnotation>()) {
-                        every { shortName.asString() } returns KOMMIterableString::class.simpleName.toString()
-                        every { arguments } returns listOf(with(mockk<KSValueArgument>()) {
-                            every { name?.asString() } returns KOMMIterableString::delimiter.name
-                            every { value?.toString() } returns delimiter
-                            this
-                        })
-                        this
-                    })
-                }.asSequence()
-                this
-            }
+            destination = destination.withDelimiter(delimiter)
         }
         plugin.cast(buildProperty(sourceHasNullSubstitute), sourceName, buildKSType(sourceType), destination, buildKSType(destinationType)).shouldBe(result)
+    }
+
+    @Test
+    fun castReadsDelimiterFromSourceString() {
+        plugin.cast(
+            buildProperty(false).withDelimiter("//"),
+            "sourceString",
+            buildKSType(typeOf<String>()),
+            buildProperty(false),
+            buildKSType(typeOf<List<Int>>())
+        ).shouldBe("sourceString.split(\"//\")")
+    }
+
+    private fun KSPropertyDeclaration.withDelimiter(delimiter: String) = with(mockk<KSPropertyDeclaration>()) {
+        every { annotations } returns this@withDelimiter.annotations.toMutableList().apply {
+            add(with(mockk<KSAnnotation>()) {
+                every { shortName.asString() } returns KOMMIterableString::class.simpleName.toString()
+                every { arguments } returns listOf(with(mockk<KSValueArgument>()) {
+                    every { name?.asString() } returns KOMMIterableString::delimiter.name
+                    every { value?.toString() } returns delimiter
+                    this
+                })
+                this
+            })
+        }.asSequence()
+        this
     }
 
     companion object {
