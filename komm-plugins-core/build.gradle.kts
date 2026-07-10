@@ -7,7 +7,7 @@ kotlin {
     jvmToolchain(17)
     jvm()
     sourceSets {
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 api(libs.ksp.processor)
             }

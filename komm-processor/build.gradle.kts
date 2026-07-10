@@ -15,7 +15,7 @@ kotlin {
         }
     }
     sourceSets {
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation(project(":komm-annotations"))
                 implementation(project(":komm-plugins-core"))
@@ -26,7 +26,7 @@ kotlin {
             kotlin.srcDir("src/main/kotlin")
             resources.srcDir("src/main/resources")
         }
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlin.compile.testing.ksp)
